@@ -1,0 +1,59 @@
+<div class="table-responsive">
+    <table class="table table-striped">
+        <tr>
+            <th>
+                OWL File location
+            </th>
+            <th>
+                Status
+            </th>
+        </tr>
+        <tr>
+            <td>
+                <input ng-disabled="frontReasoner.isLoading" id="owlInput" type="text" ng-model="frontReasoner.owlFileName" ng-change="getOwl()" />
+                <input type="button" id="classifyButton" class="btn btn-default btn-sm" ng-disabled="!frontReasoner.owlFileLocation" value="Launch reasoner" ng-click="startWorker()"/>
+                <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
+            </td>
+            <td>
+                <span ng-class="(frontReasoner.isLoading) ? 'label label-warning busy-status' : 'label label-info'">{{ frontReasoner.isLoading | displayStatus }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <textarea class="form-control sparql" rows="10" ng-model="frontReasoner.query"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="3">
+                Web-worker's log
+            </th>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <div scroll-glue class="scrollable worker-log">
+                    <div ng-repeat="log in frontReasoner.workerlog">
+                        <span class="worker-log time">{{ log | displayDate }}</span>
+                        <span ng-class="(log.isError) ? 'worker-log error' : 'worker-log msg'">{{ log | displayMsg }}</span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="3">
+                SPARQL results
+            </th>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <div class="scrollable-results">
+                    <div class="sparqlresult"  ng-repeat="result in frontReasoner.sparqlResults">
+                        <span ng-repeat="(key, value) in result">
+                            <span class="sparqlvar">{{ key }}</span> : <span class="sparqlval">{{ value }}</span>
+                        </span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</div>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html class="no-js">
+
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="styles/main.css">
+    </head>
+
+    <body ng-app="owlReasonerApp">
+
+        <script src="bower_components/es5-shim/es5-shim.js"></script>
+        <script src="bower_components/json3/lib/json3.js"></script>
+        <script src="bower_components/jquery/dist/jquery.js"></script>
+        <script src="bower_components/angular/angular.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="bower_components/angular-resource/angular-resource.js"></script>
+
+        <script src="scripts/app.js"></script>
+        <script src="scripts/config.js"></script>
+        <script src="scripts/controllers/main.js"></script>
+        <script src="scripts/controllers/about.js"></script>
+
+        <script src="scripts/filters/mainFilters.js"></script>
+        <script src="scripts/resources/mainResources.js"></script>
+        <script src="scripts/services/mainServices.js"></script>
+
+        <script src="bower_components/angularjs-scroll-glue/src/scrollglue.js"></script>
+
+
+
+        <div class="container">
+            <div class="header">
+                <ul class="nav nav-pills pull-right">
+                    <li class="active"><a ng-href="#">Home</a></li>
+                    <li><a ng-href="#">About</a></li>
+                    <li><a ng-href="#">Contact</a></li>
+                </ul>
+                <h3 class="text-muted">owlReasoner</h3>
+            </div>
+
+            <div ng-include="'views/main.html'" ng-controller="MainCtrl"></div>
+            <div class="footer"></div>
+        </div>
+
+    </body>
+
+</html>

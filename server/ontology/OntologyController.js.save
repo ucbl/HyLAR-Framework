@@ -1,0 +1,110 @@
+/**
+ * Created by Spadon on 02/10/2014.
+ */
+
+var fs = require('fs'),
+    _ = require('lodash'),
+    JswParser = require('./jsw/JswParser'),
+    JswOWL = require('./jsw/JswOWL'),
+    JswRDF = require('./jsw/JswRDF'),
+    JswOntology = require('./jsw/JswOntology');
+
+module.exports = {
+
+    /**
+     * Simple HelloWorld
+     * @param req
+     * @param res
+     */
+    hello: function(req, res) {
+        res.send('hello world');
+    },
+
+    /**
+     * CORS Middleware
+     * @param req
+     * @param res
+     */
+    allowCrossDomain: function(req, res, next) {
+        res.header('Access-Control-Allow-Origin', 'http://dataconf.liris.cnrs.fr/');
+        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+        res.header('Access-Control-Allow-Headers', 'Content-Type');
+        next();
+    },
+
+    /**
+     * OWL File content to text
+     * @param req
+     * @param res
+     * @param next
+     */
+    getOntology: function(req, res, next) {
+        var filename = req.param('filename');
+
+        fs.readFile('./ontologies/' + filename, function(err, data) {
+            if(err) {
+                res.status(500).send(err.toString());
+            } else {
+                req.owl = data.toString().replace(/(&)([a-z0-9]+)(;)/gi, '$2:');
+                next();
+            };
+        });
+    },
+
+    /**
+     * String parser
+     * @param req
+     * @param res
+     */
+    parseString: function(req, res) {
+        var rdfXml = req.owl,
+            data = JswParser.parse(rdfXml,
+                function(err) {
+                    res.status(500).send(err);
+                });
+
+        res.status(200).send({ 'data': data });
+    },
+
+    /**
+     * Returns config from JSW OWL
+     * @param req
+     * @param res
+     */
+    getJswOWL: function(req, res) {
+      res.send(JswOWL);
+    },
+
+    /**
+     * Returns config from JSW RDF
+     * @param req
+     * @param res
+     */
+    getJswRDF: function(req, res) {
+        res.send(JswRDF);
+    },
+
+    /**
+     * Returns an empty jsw ontology object
+     * @param req
+     * @param res
+     */
+    generateOntology: function(req, res) {
+        res.send({ data: new JswOntology.ontology() });
+    },
+
+    /**
+     * End-method returning an ontology
+     * @param req
+     * @param res
+     */
+    sendOntology: function(req, res) {
+        res.send({ 'data': req.owl });
+    },
+
+    bulkImport: function(req, res) {
+        var content = JswOntology.exports() + ' \n ' + JswOWL.exports();
+        res.header('Content-type', 'text/javascript');
+        res.send(content);
+    }
+};

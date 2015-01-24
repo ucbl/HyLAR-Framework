@@ -1,0 +1,189 @@
+/* Space out content a bit */
+body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* Everything but the jumbotron gets side spacing for mobile first views */
+.header,
+.marketing,
+.footer {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Custom page header */
+.header {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* Make the masthead heading the same height as the navigation */
+.header h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 40px;
+    padding-bottom: 19px;
+}
+
+/* Custom page footer */
+.footer {
+    padding-top: 19px;
+    color: #777;
+    border-top: 1px solid #e5e5e5;
+}
+
+/* Customize container */
+@media (min-width: 1000px) {
+    .container {
+        max-width: 1000px;
+    }
+}
+
+.container-narrow > hr {
+    margin: 30px 0;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+}
+
+/* Supporting marketing content */
+.marketing {
+    margin: 40px 0;
+}
+
+.marketing p + h4 {
+    margin-top: 28px;
+}
+
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+    /* Remove the padding we set earlier */
+    .header,
+    .marketing,
+    .footer {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Space out the masthead */
+    .header {
+        margin-bottom: 30px;
+    }
+
+    /* Remove the bottom border on the jumbotron for visual effect */
+    .jumbotron {
+        border-bottom: 0;
+    }
+}
+
+/* REASONER */
+
+.sparql {
+    font-family: courier;
+}
+
+.worker-log {
+    font-family: courier;
+    font-weight: bold;
+    padding: 5px;
+    margin: 5px;
+}
+
+.worker-log .time {
+    color: #105cb6;
+    border-radius: 5px;
+}
+
+.worker-log .msg {
+    color: #245269;
+}
+
+.worker-log .error {
+    color: #c9302c;
+}
+
+.busy-status {
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+
+    -moz-animation-name: blinker;
+    -moz-animation-duration: 2s;
+    -moz-animation-timing-function: linear;
+    -moz-animation-iteration-count: infinite;
+
+    animation-name: blinker;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@-moz-keyframes blinker {
+    0% { background-color: #67b168; }
+    50% { background-color: #c9302c; }
+    100% { background-color: #67b168; }
+}
+
+@-webkit-keyframes blinker {
+    0% {
+        color: #e38d13;
+        border-radius: 20px;
+        background-color: #e0e0e0;
+    }
+    50% {
+        color: #c9302c;
+        border-radius: 0px;
+        background-color: #ffffff;
+    }
+    100% {
+        color: #e38d13;
+        border-radius: 20px;
+        background-color: #e0e0e0;
+    }
+}
+
+@keyframes blinker {
+    0% { background-color: #67b168; }
+    50% { background-color: #c9302c; }
+    100% { background-color: #67b168; }
+}
+
+.scrollable {
+    border: dotted #105cb6 1px;
+    background-color: #EBF4FD;
+    overflow: auto;
+    height: 150px;
+}
+
+.scrollable-results {
+    overflow: scroll;
+    height: 300px;
+    font-family: courier;
+    font-weight: bold;
+    padding: 5px;
+    margin: 5px;
+
+}
+
+.sparqlresult {
+    border-bottom: 1px dashed #d58512;
+    margin: 3px;
+    padding: 3px;
+}
+
+.sparqlvar {
+    color: #d58512;
+}
+
+.sparqlval {
+    color: #66512c;
+}

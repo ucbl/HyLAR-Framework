@@ -1,0 +1,11 @@
+node_modules
+bower_components
+.idea
+.hgignore
+.hg/
+dist
+.tmp
+.sass-cache
+app/context.json
+npm-debug.log
+app/scripts/config.js
