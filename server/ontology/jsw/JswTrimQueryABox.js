@@ -4,7 +4,8 @@
 
 try {
 
-    var TrimPath = require('./TrimPathQuery');
+    var TrimPath = require('./TrimPathQuery'),
+        rdf = require('./JswRDF');
 
     module.exports = {
         trimQueryABox: function() {
@@ -44,14 +45,12 @@ TrimQueryABox.prototype = {
         var sql = this.createSql(query);
 
         try {
-            if (JSON.stringify(this.queryLang) == '{}') {
-                this.queryLang = this.createQueryLang();
-            }
-        } catch(e) {
-            // JSON is circular and then queryLang is not empty
+            return this.queryLang.parseSQL(sql).filter(this.database);
+        } catch (ex) {
+            /* Recreate the query language object, since the previous object can not be used now.*/
+            this.queryLang = this.createQueryLang();
+            throw ex;
         }
-
-        return this.queryLang.parseSQL(sql).filter(this.database);
     },
 
     /**
@@ -109,7 +108,7 @@ TrimQueryABox.prototype = {
 
         from = '';
         where = '';
-        rdfTypeIri = CONFIG.rdf.IRIs.TYPE;
+        rdfTypeIri = rdf.IRIs.TYPE;
 //AJOUT Lionel
 //subClassOfIri = jsw.rdf.IRIs.SUBCLASS;
 
@@ -127,9 +126,9 @@ TrimQueryABox.prototype = {
                 value = expr.value,
                 varField;
 
-            if (type === CONFIG.rdf.ExpressionTypes.IRI_REF) {
+            if (type === rdf.ExpressionTypes.IRI_REF) {
                 where += table + '.' + field + "=='" + value + "' AND ";
-            } else if (type === CONFIG.rdf.ExpressionTypes.VAR) {
+            } else if (type === rdf.ExpressionTypes.VAR) {
                 varField = varFields[value];
 
                 if (varField) {
@@ -137,7 +136,7 @@ TrimQueryABox.prototype = {
                 } else {
                     varFields[value] = table + '.' + field;
                 }
-            } else if (type === CONFIG.rdf.ExpressionTypes.LITERAL) {
+            } else if (type === rdf.ExpressionTypes.LITERAL) {
                 throw 'Literal expressions in RDF queries are not supported by the library yet!';
             } else {
                 throw 'Unknown type of expression found in the RDF query: ' + type + '!';
@@ -158,7 +157,7 @@ TrimQueryABox.prototype = {
             table = 't' + tripleIndex;
 
 
-            if (predicateType === CONFIG.rdf.ExpressionTypes.IRI_REF) {
+            if (predicateType === rdf.ExpressionTypes.IRI_REF) {
                 if (predicateValue === rdfTypeIri) {
                     from += 'ClassAssertion AS ' + table + ', ';
                     subjectField = 'individual';
@@ -176,7 +175,7 @@ TrimQueryABox.prototype = {
                     from += 'ObjectPropertyAssertion AS ' + table + ', ';
                     where += table + ".objectProperty=='" + predicateValue + "' AND ";
                 }
-            } else if (predicateType === CONFIG.rdf.ExpressionTypes.VAR) {
+            } else if (predicateType === rdf.ExpressionTypes.VAR) {
                 from += 'ObjectPropertyAssertion AS ' + table + ', ';
                 varField = varFields[predicateValue];
 
@@ -243,7 +242,7 @@ TrimQueryABox.prototype = {
         for (varIndex = 0; varIndex < varCount; varIndex += 1) {
             variable = vars[varIndex];
 
-            if (variable.type !== CONFIG.rdf.ExpressionTypes.VAR) {
+            if (variable.type !== rdf.ExpressionTypes.VAR) {
                 throw 'Unknown type of expression found in ORDER BY: ' + variable.type + '!';
             }
 

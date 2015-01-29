@@ -1,17 +1,3 @@
-try {
-    module.exports = {
-        makeQueryLang: function () {
-            return TrimPath.makeQueryLang();
-        },
-
-        toString: function () {
-            return TrimPath.toString();
-        }
-    }
-} catch(e) {
-    // if exception occurs, we are client side
-}
-
 /**
  * TrimPath Query. Release 1.1.14.
  * Copyright (C) 2004 - 2007 TrimPath.
@@ -125,7 +111,7 @@ if (typeof(TrimPath) == 'undefined')
             aliasArr.push({ aliasKey: aliasKey, scope: scope, orig: scope[aliasKey] });
             scope[aliasKey] = obj;
             return obj;
-        }
+        };
 
         var queryLang = new QueryLang();
 
@@ -1002,3 +988,13 @@ if (typeof(TrimPath) == 'undefined')
         }
     }
 }) ();
+
+module.exports = {
+    makeQueryLang: function (tableInfos, etc) {
+        return TrimPath.makeQueryLang(tableInfos, etc);
+    },
+
+    toString: function () {
+        return TrimPath.toString();
+    }
+}

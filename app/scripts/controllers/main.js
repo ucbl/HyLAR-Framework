@@ -9,9 +9,12 @@
  */
 app.controller('MainCtrl',
 
-    function ($scope, $http, $q, OntologyParser, WorkerService) {
+    function ($scope, $http, $q, OntologyClassifier, OntologyFetcher, OntologyParser, QueryProcessor, ReasoningService) {
 
         $scope.frontReasoner = {
+            'reasoner': localStorage.getItem('reasoner'),
+            'classification': 'server',
+            'querying': 'client',
             'workerlog':  [],
             'owlFileName': 'Keywords_WWW2012_V3_min.owl',
             'isLoading': false,
@@ -36,8 +39,12 @@ app.controller('MainCtrl',
             processMessage = function(message) {
                 if(message.msg) postLog(message.msg, message.isError, message.toggleLoads);
                 if(message.sparqlResults) $scope.frontReasoner.sparqlResults = message.sparqlResults;
-                //else if(message.save)
             };
+
+        $scope.removeReasoner = function() {
+            localStorage.removeItem('reasoner');
+            $scope.frontReasoner.reasoner = localStorage.getItem('reasoner');
+        };
 
 
         $scope.getOwl = function() {
@@ -50,40 +57,43 @@ app.controller('MainCtrl',
 
             if(this.frontReasoner.owlFileLocation && !this.frontReasoner.isLoading) {
 
-                postLog("OWL ontology parsing & aBox generation started ...", false, true);
+                postLog("Initializing...", false, true);
+                var promise;
 
-                var promises = [
-                    OntologyParser.classify({
+                if(this.frontReasoner.classification == 'server') {
+                    promise = OntologyClassifier.classify({
+                            filename: this.frontReasoner.owlFileName,
+                            time: new Date().getTime()
+                        }).$promise;
+                } else {
+                    promise = OntologyFetcher.get({
                         filename: this.frontReasoner.owlFileName,
                         time: new Date().getTime()
-                    }).$promise
-                ];
+                    }).$promise;
+                }
 
-                $q.all(promises).then(
-                    function (responses) {
-                        var data = responses[0],
-                            responseDelay = new Date().getTime() - data.time;
+                promise.then(
+                    function (response) {
+                        var data = response.data,
+                            responseDelay = new Date().getTime() - data.time,
+                            startTime = new Date().getTime();
+
                         data.command = 'start';
 
-                        postLog("OWL ontology parsed: " + data.ontology.axioms.length + " axioms", false, true);
-                        postLog("Reasoner initialized: " + data.reasoner.aBox.database.ClassAssertion.length + " class assertions, " + data.reasoner.aBox.database.ObjectPropertyAssertion.length + " object property assertions.");
-                        postLog("Configuring worker for reasoning ... ", false, true);
-
-                        WorkerService
-                            .process(JSON.stringify(data))
+                        ReasoningService
+                            .process(data)
                             .then(function(message) {
                                 processMessage(message);
-
-                                postLog('Requesting time : ' + data.requestDelay, false, false);
-                                postLog('Classifying time : ' + data.processingDelay, false, false);
-                                postLog('Response delay : ' + responseDelay, false, false);
+                                postLog('Requesting time : ' + data.requestDelay);
+                                postLog('Response delay : ' + responseDelay);
+                                postLog('Classifying time : ' + (data.processingDelay || new Date().getTime() - startTime));
+                                $scope.frontReasoner.reasoner = localStorage.getItem('reasoner');
                             });
                     },
                     function (err) {
                         postLog("OWL Parsing failed. " + err.data, true, true);
                     }
                 );
-
 
             } else {
                 postLog('Busy', true);
@@ -92,42 +102,31 @@ app.controller('MainCtrl',
 
         $scope.executeQuery = function() {
 
+            var promise;
             postLog("Evaluating query ... ", false, true);
-            var before = new Date().getTime();
 
-            /*
-             Decommenter ceci puis commenter les lignes suivantes de la fonction pour
-             les tests sur x requetes
-             var promises = [];
+            if($scope.frontReasoner.querying == 'client') {
+                promise = ReasoningService.process({
+                    command: 'process',
+                    reasoner: localStorage.getItem('reasoner'),
+                    sparqlQuery: this.frontReasoner.query
+                }).$promise;
+            } else {
+                promise = QueryProcessor.query({
+                    'query': this.frontReasoner.query,
+                    'time': new Date().getTime()
+                }).$promise;
+            }
 
-             for(var i = 0; i < 1000; i++) {
-             promises.push(WorkerService.process(
-             JSON.stringify({
-             before: before,
-             reasoner: Reasoner,
-             command: 'process',
-             sparqlQuery: $scope.frontReasoner.query
-             })
-             )
-             );
-             }
-
-             $q.all(promises).then(
-             function (message) {
-
-             }
-             );*/
-
-            WorkerService
-                .process(
-                    JSON.stringify({
-                        command: 'process',
-                        sparqlQuery: this.frontReasoner.query
-                    })
-                )
-                .then(function(message) {
-                    processMessage(message);
-                    postLog("Querying : " + (new Date().getTime() - before).toString(), false, false);
+            promise.then(function(response) {
+                    var responseDelay = new Date().getTime() - response.time;
+                    postLog(response.data.length + ' results.', false, true);
+                    postLog('Requesting time : ' + response.requestDelay, false, false);
+                    postLog('Querying time : ' + response.processingDelay, false, false);
+                    postLog('Response delay : ' + responseDelay, false, false);
+                },
+                function(response) {
+                    postLog(response.data.data, true, true);
                 });
         };
 

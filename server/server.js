@@ -13,16 +13,11 @@ app.all('*', OntologyController.allowCrossDomain);
 app.get('/', OntologyController.hello);
 
 // OWL ontology parsing, getting, classifying
-app.get('/ontologies/:filename', OntologyController.getOntology, OntologyController.sendOntology);
-app.post('/classify', OntologyController.getOntology, OntologyController.parseString, OntologyController.generateReasoner);
+app.get('/ontology/:filename', OntologyController.getOntology, OntologyController.sendOntology);
+app.post('/classify', OntologyController.getOntology, OntologyController.parseString, OntologyController.generateReasoner, OntologyController.sendClassificationData);
 
-// Jsw config
-app.get('/jsw/owl', OntologyController.getJswOWL);
-app.get('/jsw/rdf', OntologyController.getJswRDF);
-app.get('/jsw/ontology', OntologyController.generateOntology);
-
-// Preparing imports for angular
-OntologyController.saveExportsToClient();
+//SPARQL query processing
+app.get('/query', OntologyController.processSPARQL);
 
 // Launching server
 app.listen(3000);

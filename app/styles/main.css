@@ -136,17 +136,14 @@ body {
 @-webkit-keyframes blinker {
     0% {
         color: #e38d13;
-        border-radius: 20px;
         background-color: #e0e0e0;
     }
     50% {
         color: #c9302c;
-        border-radius: 0px;
         background-color: #ffffff;
     }
     100% {
         color: #e38d13;
-        border-radius: 20px;
         background-color: #e0e0e0;
     }
 }
@@ -186,4 +183,12 @@ body {
 
 .sparqlval {
     color: #66512c;
+}
+
+.list-group-small {
+    font-size: 10px;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }

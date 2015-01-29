@@ -4,10 +4,14 @@
 
 var fs = require('fs'),
     _ = require('lodash'),
+    Stopwatch = require('node-stopwatch').Stopwatch,
+
     JswParser = require('./jsw/JswParser'),
     JswOWL = require('./jsw/JswOWL'),
     JswRDF = require('./jsw/JswRDF'),
-    JswOntology = require('./jsw/JswOntology');
+    JswOntology = require('./jsw/JswOntology'),
+    JswBrandT = require('./jsw/JswBrandT'),
+    Exporter = require('./jsw/Exporter');
 
 module.exports = {
 
@@ -26,7 +30,7 @@ module.exports = {
      * @param res
      */
     allowCrossDomain: function(req, res, next) {
-        res.header('Access-Control-Allow-Origin', 'http://dataconf.liris.cnrs.fr/');
+        res.header('Access-Control-Allow-Origin', 'http://localhost:9000');
         res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
         res.header('Access-Control-Allow-Headers', 'Content-Type');
         next();
@@ -39,6 +43,10 @@ module.exports = {
      * @param next
      */
     getOntology: function(req, res, next) {
+        var initialTime = req.param('time'),
+            receivedReqTime = new Date().getTime();
+
+        req.requestDelay =  receivedReqTime - initialTime;
         var filename = req.param('filename');
 
         fs.readFile('./ontologies/' + filename, function(err, data) {
@@ -56,14 +64,38 @@ module.exports = {
      * @param req
      * @param res
      */
-    parseString: function(req, res) {
+    parseString: function(req, res, next) {
         var rdfXml = req.owl,
-            data = JswParser.parse(rdfXml,
+            ontology = JswParser.parse(rdfXml,
                 function(err) {
                     res.status(500).send(err);
                 });
 
-        res.status(200).send({ 'data': data });
+        req.ontology = ontology;
+        next();
+    },
+
+    generateReasoner: function(req, res) {
+        var data = {
+            ontology: req.ontology,
+            resultOntology: new JswOntology.ontology(),
+            owl: JswOWL,
+            rdf: JswRDF
+        },
+            initialTime = new Date().getTime();
+
+        var reasoner = new JswBrandT.reasoner(data);
+        req.processingDelay  = new Date().getTime() - initialTime;
+
+        res.send({
+            ontology: data.resultOntology,
+            reasoner: reasoner,
+            owl: data.owl,
+            rdf: data.rdf,
+            requestDelay: req.requestDelay,
+            processingDelay: req.processingDelay,
+            time: new Date().getTime()
+        });
     },
 
     /**
@@ -102,9 +134,18 @@ module.exports = {
         res.send({ 'data': req.owl });
     },
 
-    bulkImport: function(req, res) {
-        var content = JswOntology.exports() + ' \n ' + JswOWL.exports();
-        res.header('Content-type', 'text/javascript');
-        res.send(content);
+    /**
+     * Exports need JS files containing
+     * prototypes for use on client
+     */
+    saveExportsToClient: function() {
+        Exporter.getJsExports().then(function(content) {
+            fs.writeFile("./app/workers/owlreasoner_common.js", content, function(err) {
+                if(err) {
+                    console.log(err);
+                }
+            });
+            return;
+        });
     }
 };

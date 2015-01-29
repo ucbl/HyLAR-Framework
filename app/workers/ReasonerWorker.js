@@ -6,8 +6,7 @@ importScripts('../scripts/reasoning/JswRDFQuery.js');
 importScripts('../scripts/reasoning/JswReasoner.js');
 importScripts('../scripts/reasoning/JswXSD.js');
 importScripts('../scripts/reasoning/JswSPARQL.js');
-
-importScripts('./owlreasoner_common.js');
+importScripts('../scripts/reasoning/owlreasoner_common.js');
 
 function send(data) {
     postMessage(data);
@@ -18,6 +17,6 @@ self.onmessage = function(event) {
     if(data.command === "start") {
         startReasoner(data);
     } else if(data.command === "process") {
-        queryReasoner(data.sparqlQuery);
+        queryReasoner(data.sparqlQuery, data.reasoner);
     }
 };

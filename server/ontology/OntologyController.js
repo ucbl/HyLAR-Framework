@@ -4,14 +4,18 @@
 
 var fs = require('fs'),
     _ = require('lodash'),
-    Stopwatch = require('node-stopwatch').Stopwatch,
+    md5 = require('MD5'),
 
     JswParser = require('./jsw/JswParser'),
     JswOWL = require('./jsw/JswOWL'),
     JswRDF = require('./jsw/JswRDF'),
     JswOntology = require('./jsw/JswOntology'),
     JswBrandT = require('./jsw/JswBrandT'),
-    Exporter = require('./jsw/Exporter');
+    Exporter = require('./jsw/Exporter'),
+    JswSPARQL = require('./jsw/JswSPARQL'),
+
+    ClassificationData = null,
+    stringifiedReasoner = null;
 
 module.exports = {
 
@@ -75,54 +79,54 @@ module.exports = {
         next();
     },
 
-    generateReasoner: function(req, res) {
+    generateReasoner: function(req, res, next) {
         var data = {
-            ontology: req.ontology,
-            resultOntology: new JswOntology.ontology(),
-            owl: JswOWL,
-            rdf: JswRDF
-        },
+                ontology: req.ontology,
+                resultOntology: new JswOntology.ontology(),
+                owl: JswOWL,
+                rdf: JswRDF
+            },
             initialTime = new Date().getTime();
 
         var reasoner = new JswBrandT.reasoner(data);
+
         req.processingDelay  = new Date().getTime() - initialTime;
-
-        res.send({
+        req.classificationData = {
             ontology: data.resultOntology,
-            reasoner: reasoner,
-            owl: data.owl,
-            rdf: data.rdf,
-            requestDelay: req.requestDelay,
-            processingDelay: req.processingDelay,
-            time: new Date().getTime()
+            reasoner: reasoner
+        };
+
+        next();
+    },
+
+    sendClassificationData: function(req, res) {
+        var seen = [];
+        ClassificationData = req.classificationData;
+        stringifiedReasoner = JSON.stringify(ClassificationData.reasoner, function(key, val) {
+            if (val != null && typeof val == "object") {
+                if (seen.indexOf(val) >= 0)
+                    return;
+                seen.push(val)
+            }
+            return val
         });
-    },
 
-    /**
-     * Returns config from JSW OWL
-     * @param req
-     * @param res
-     */
-    getJswOWL: function(req, res) {
-      res.send(JswOWL);
-    },
-
-    /**
-     * Returns config from JSW RDF
-     * @param req
-     * @param res
-     */
-    getJswRDF: function(req, res) {
-        res.send(JswRDF);
-    },
-
-    /**
-     * Returns an empty jsw ontology object
-     * @param req
-     * @param res
-     */
-    generateOntology: function(req, res) {
-        res.send({ data: new JswOntology.ontology() });
+        fs.writeFileSync('./db/' + req.param('filename') + '.json',
+            '{' +
+                'reasoner: ' + stringifiedReasoner + ',' +
+                'ontology: ' + JSON.stringify(ClassificationData.ontology) +
+            '}'
+        );
+        
+        res.status(200).send({
+            data : {
+                reasoner: stringifiedReasoner,
+                ontology: ClassificationData.ontology,
+                requestDelay: req.requestDelay,
+                processingDelay: req.processingDelay,
+                time: new Date().getTime()
+            }
+        });
     },
 
     /**
@@ -131,7 +135,13 @@ module.exports = {
      * @param res
      */
     sendOntology: function(req, res) {
-        res.send({ 'data': req.owl });
+        res.send({
+            'data': {
+                'ontology': req.owl,
+                'requestDelay': req.requestDelay,
+                'time': new Date().getTime()
+            }
+        });
     },
 
     /**
@@ -147,5 +157,34 @@ module.exports = {
             });
             return;
         });
+    },
+
+    processSPARQL: function(req, res) {
+        var initialTime = req.param('time'),
+            receivedReqTime = new Date().getTime(),
+            requestDelay =  receivedReqTime - initialTime,
+            processedTime;
+
+        if(!ClassificationData) {
+            processedTime = new Date().getTime();
+            res.status(500).send({
+                data : 'Reasoner not initialized!',
+                processingDelay: 0,
+                requestDelay : requestDelay,
+                time: processedTime
+            });
+        } else {
+            var sparql = new JswSPARQL.sparql(),
+                query = sparql.parse(req.param('query')),
+                results = ClassificationData.reasoner.aBox.answerQuery(query);
+
+            processedTime = new Date().getTime();
+            res.status(200).send({
+                data : results,
+                processingDelay: processedTime - receivedReqTime,
+                requestDelay : requestDelay,
+                time : new Date().getTime()
+            });
+        }
     }
 };

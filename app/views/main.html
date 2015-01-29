@@ -5,6 +5,9 @@
                 OWL File location
             </th>
             <th>
+                Control
+            </th>
+            <th>
                 Status
             </th>
         </tr>
@@ -15,7 +18,24 @@
                 <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
             </td>
             <td>
-                <span ng-class="(frontReasoner.isLoading) ? 'label label-warning busy-status' : 'label label-info'">{{ frontReasoner.isLoading | displayStatus }}</span>
+                <ul>
+                    <li>
+                        Classification : server-side <input ng-model="frontReasoner.classification" value="server" type="radio"/> client-side <input ng-model="frontReasoner.classification" value="client" type="radio"/>
+                    </li>
+                    <li>
+                        Querying : server-side <input  ng-model="frontReasoner.querying" value="server" type="radio"/> client-side <input ng-model="frontReasoner.querying" value="client" checked type="radio"/>
+                    </li>
+                </ul>
+
+            </td>
+            <td>
+                <ul class="list-group-small">
+                    <li ng-class="(frontReasoner.isLoading) ? 'list-group-item list-group-item-warning busy-status ' : 'list-group-item list-group-item-success'">{{ frontReasoner.isLoading | displayHyLARStatus }}</li>
+                    <li ng-class="(frontReasoner.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
+                        {{ frontReasoner.reasoner | displayReasonerStatus }}
+                        <a href="" ng-show="frontReasoner.reasoner" ng-click="removeReasoner()">(remove)</a>
+                    </li>
+                </ul>
             </td>
         </tr>
         <tr>

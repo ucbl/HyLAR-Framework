@@ -16,9 +16,16 @@ app.filter('displayMsg', function() {
         }
     }])
 
-    .filter('displayStatus', function($filter) {
+    .filter('displayReasonerStatus', function($filter) {
+        return function(exists) {
+            if(!exists) return 'No local reasoner';
+            return 'Local reasoner is ready';
+        }
+    })
+
+    .filter('displayHyLARStatus', function($filter) {
         return function(isLoading) {
             if(isLoading) return 'Busy';
-            return 'Ready';
+            return 'HyLAR is ready';
         }
     });
