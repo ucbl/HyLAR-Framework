@@ -66,7 +66,7 @@ app.controller('MainCtrl',
                             time: new Date().getTime()
                         }).$promise;
                 } else {
-                    promise = OntologyFetcher.get({
+                    promise = OntologyFetcher.fetch({
                         filename: this.frontReasoner.owlFileName,
                         time: new Date().getTime()
                     }).$promise;
@@ -102,6 +102,11 @@ app.controller('MainCtrl',
 
         $scope.executeQuery = function() {
 
+            if($scope.frontReasoner.querying == 'client' && !localStorage.getItem('reasoner')) {
+                postLog("Client-side reasoner not ready ", true, false);
+                return;
+            }
+
             var promise;
             postLog("Evaluating query ... ", false, true);
 
@@ -110,7 +115,7 @@ app.controller('MainCtrl',
                     command: 'process',
                     reasoner: localStorage.getItem('reasoner'),
                     sparqlQuery: this.frontReasoner.query
-                }).$promise;
+                });
             } else {
                 promise = QueryProcessor.query({
                     'query': this.frontReasoner.query,
@@ -121,9 +126,9 @@ app.controller('MainCtrl',
             promise.then(function(response) {
                     var responseDelay = new Date().getTime() - response.time;
                     postLog(response.data.length + ' results.', false, true);
-                    postLog('Requesting time : ' + response.requestDelay, false, false);
-                    postLog('Querying time : ' + response.processingDelay, false, false);
-                    postLog('Response delay : ' + responseDelay, false, false);
+                    response.requestDelay && postLog('Requesting time : ' + response.requestDelay, false, false);
+                    responseDelay && postLog('Response delay : ' + responseDelay, false, false);
+                    postLog('Querying processing time : ' + response.processingDelay, false, false);
                 },
                 function(response) {
                     postLog(response.data.data, true, true);

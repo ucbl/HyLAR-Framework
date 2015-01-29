@@ -35,6 +35,9 @@
                         {{ frontReasoner.reasoner | displayReasonerStatus }}
                         <a href="" ng-show="frontReasoner.reasoner" ng-click="removeReasoner()">(remove)</a>
                     </li>
+                    <!--<li ng-class="(frontReasoner.reasoner.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
+                        <span ng-repeat="classifiedOntology in frontReasoner.reasoner" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
+                    </li>-->
                 </ul>
             </td>
         </tr>

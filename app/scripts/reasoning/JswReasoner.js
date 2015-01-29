@@ -12,7 +12,7 @@ function startReasoner(data) {
     /**
      * Creating a reasoner object for the given ontology
      */
-    //try {
+    try {
         var reasoner, stringifiedReasoner,
             seen = [];
         // If the reasoner has been already initialized
@@ -35,9 +35,9 @@ function startReasoner(data) {
         CONFIG.rdf = data.rdf;
         send({msg: "Reasoner ready. " + reasoner.aBox.database.ClassAssertion.length + " class assertions, " + reasoner.aBox.database.ObjectPropertyAssertion.length + " object property assertions.", toggleLoads:true});
         send({reasoner: stringifiedReasoner});
-    /*} catch(err) {
-        send({ msg: "Reasoner unavailable. " + err.toString(), isError:true, toggleLoads: true });
-    }*/
+    } catch(err) {
+        send({ msg: "Reasoner unavailable. " + err.toString(), name: data.name, isError:true, toggleLoads: true });
+    }
 }
 
 function queryReasoner(queryString, reasoner) {
@@ -57,14 +57,14 @@ function queryReasoner(queryString, reasoner) {
      */
 
     try {
-        reasoner.aBox.__proto__ = TrimQueryABox.prototype;
+        var results, before, processingDelay;
 
-        var results = reasoner.aBox.answerQuery(query);
-        send({
-            msg: "Query : " + query.triples.length + " triple(s), " + query.variables.length + " variable(s). Results : " + results.length,
-            toggleLoads: true
-        });
-        if(results.length) send({sparqlResults: results});
+        reasoner.aBox.__proto__ = TrimQueryABox.prototype;
+        before = new Date().getTime();
+        results = reasoner.aBox.answerQuery(query);
+        processingDelay = new Date().getTime() - before;
+
+        send({data: results, processingDelay: processingDelay});
     } catch(err) {
         send({ msg: 'Error while evaluating. ' + err.toString(), isError: true, toggleLoads: true })
     }

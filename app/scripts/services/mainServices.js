@@ -19,9 +19,9 @@ app.factory('ReasoningService', ['$q', 'OntologyParser', function($q, OntologyPa
     ReasonerWorker.addEventListener('message', function(message) {
         if(message.data.reasoner) {
             localStorage.setItem('reasoner', message.data.reasoner);
-        } else {
-            defer.resolve(message.data)
         }
+        defer.resolve(message.data);
+
     }, false);
 
     return {

@@ -124,7 +124,8 @@ module.exports = {
                 ontology: ClassificationData.ontology,
                 requestDelay: req.requestDelay,
                 processingDelay: req.processingDelay,
-                time: new Date().getTime()
+                time: new Date().getTime(),
+                name: req.param('filename')
             }
         });
     },
@@ -139,7 +140,8 @@ module.exports = {
             'data': {
                 'ontology': req.owl,
                 'requestDelay': req.requestDelay,
-                'time': new Date().getTime()
+                'time': new Date().getTime(),
+                'name': req.param('filename')
             }
         });
     },

@@ -14,7 +14,7 @@ app.get('/', OntologyController.hello);
 
 // OWL ontology parsing, getting, classifying
 app.get('/ontology/:filename', OntologyController.getOntology, OntologyController.sendOntology);
-app.post('/classify', OntologyController.getOntology, OntologyController.parseString, OntologyController.generateReasoner, OntologyController.sendClassificationData);
+app.get('/classify', OntologyController.getOntology, OntologyController.parseString, OntologyController.generateReasoner, OntologyController.sendClassificationData);
 
 //SPARQL query processing
 app.get('/query', OntologyController.processSPARQL);
