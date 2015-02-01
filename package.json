@@ -4,6 +4,7 @@
   "dependencies": {
     "MD5": "^1.2.1",
     "circular-json": "^0.1.6",
+    "express": "^4.11.1",
     "grunt-contrib-uglify": "^0.6.0",
     "grunt-ng-constant": "^1.0.0",
     "jsonld": "^0.3.4",

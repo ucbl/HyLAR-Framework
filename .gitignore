@@ -3,6 +3,7 @@ bower_components
 .idea
 .hgignore
 .hg/*
+db/*
 dist
 .tmp
 .sass-cache
