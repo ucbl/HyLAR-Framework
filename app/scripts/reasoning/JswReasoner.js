@@ -13,7 +13,7 @@ function startReasoner(data) {
      * Creating a reasoner object for the given ontology
      */
     try {
-        var reasoner, stringifiedReasoner,
+        var reasoner, stringifiedReasoner, endMsg, errMsg,
             seen = [];
         // If the reasoner has been already initialized
         if(data.reasoner) {
@@ -33,22 +33,53 @@ function startReasoner(data) {
         });
 
         CONFIG.rdf = data.rdf;
-        send({msg: "Reasoner ready. " + reasoner.aBox.database.ClassAssertion.length + " class assertions, " + reasoner.aBox.database.ObjectPropertyAssertion.length + " object property assertions.", toggleLoads:true});
-        send({reasoner: stringifiedReasoner});
+        endMsg = {
+            msg: "Reasoner ready. " + reasoner.aBox.database.ClassAssertion.length + " class assertions, " + reasoner.aBox.database.ObjectPropertyAssertion.length + " object property assertions.",
+            toggleLoads:true,
+            reasoner: stringifiedReasoner
+        };
+
+        if(data.inWorker) {
+            send(endMsg);
+        } else {
+            return endMsg;
+        }
+
     } catch(err) {
-        send({ msg: "Reasoner unavailable. " + err.toString(), name: data.name, isError:true, toggleLoads: true });
+        errMsg = {
+            msg: "Reasoner unavailable. " + err.toString(),
+            name: data.name,
+            isError:true,
+            toggleLoads: true
+        };
+
+        if(data.inWorker) {
+            send(errMsg);
+        } else {
+            return errMsg;
+        }
     }
 }
 
-function queryReasoner(queryString, reasoner) {
+function queryReasoner(queryString, reasoner, inWorker) {
     /**
      * Creating SPARQL query
      */
 
     try {
-        var query = sparql.parse(queryString);
+        var errMsg, query = sparql.parse(queryString);
     } catch(err) {
-        send({ msg: "SPARQL parsing failed. " + err.toString(), isError:true, toggleLoads: true });
+        errMsg = {
+            msg: "SPARQL parsing failed. " + err.toString(),
+            isError:true,
+            toggleLoads: true
+        };
+
+        if(inWorker) {
+            send(errMsg);
+        } else {
+            return errMsg;
+        }
     }
 
 
@@ -57,16 +88,36 @@ function queryReasoner(queryString, reasoner) {
      */
 
     try {
-        var results, before, processingDelay;
+        var results, before, processingDelay, endMsg, errMsg;
 
         reasoner.aBox.__proto__ = TrimQueryABox.prototype;
         before = new Date().getTime();
         results = reasoner.aBox.answerQuery(query);
         processingDelay = new Date().getTime() - before;
+        endMsg = {
+            data: results,
+            processingDelay: processingDelay,
+            toggleLoads: true
+        };
 
-        send({data: results, processingDelay: processingDelay});
+        if(inWorker) {
+            send(endMsg);
+        } else {
+            return endMsg;
+        }
     } catch(err) {
-        send({ msg: 'Error while evaluating. ' + err.toString(), isError: true, toggleLoads: true })
+
+        errMsg = {
+            msg: 'Error while evaluating. ' + err.toString(),
+            isError: true,
+            toggleLoads: true
+        };
+
+        if(inWorker) {
+            send(errMsg);
+        } else {
+            return errMsg;
+        }
     }
 
 }

@@ -192,3 +192,25 @@ body {
     padding: 0;
     text-align: center;
 }
+
+.list-group-center {
+    text-align: center;
+    position: absolute;
+    box-shadow: 2px 2px 12px #aaa;
+}
+
+input[type="checkbox"] {
+    text-align: center;
+}
+
+th {
+    text-align: center;
+}
+
+.three-column td {
+    width: 33%
+}
+
+.thlabel > .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+   vertical-align: middle;
+}

@@ -14,6 +14,7 @@ app.controller('MainCtrl',
         $scope.frontReasoner = {
             'reasoner': localStorage.getItem('reasoner'),
             'classification': 'server',
+            'inWorker': true,
             'querying': 'client',
             'workerlog':  [],
             'owlFileName': 'Keywords_WWW2012_V3_min.owl',
@@ -37,8 +38,10 @@ app.controller('MainCtrl',
             },
 
             processMessage = function(message) {
-                if(message.msg) postLog(message.msg, message.isError, message.toggleLoads);
-                if(message.sparqlResults) $scope.frontReasoner.sparqlResults = message.sparqlResults;
+                if(message) {
+                    if (message.msg) postLog(message.msg, message.isError, message.toggleLoads);
+                    if (message.sparqlResults) $scope.frontReasoner.sparqlResults = message.sparqlResults;
+                }
             };
 
         $scope.removeReasoner = function() {
@@ -79,6 +82,7 @@ app.controller('MainCtrl',
                             startTime = new Date().getTime();
 
                         data.command = 'start';
+                        data.inWorker = $scope.frontReasoner.inWorker;
 
                         ReasoningService
                             .process(data)
@@ -114,12 +118,14 @@ app.controller('MainCtrl',
                 promise = ReasoningService.process({
                     command: 'process',
                     reasoner: localStorage.getItem('reasoner'),
-                    sparqlQuery: this.frontReasoner.query
+                    sparqlQuery: this.frontReasoner.query,
+                    inWorker: this.frontReasoner.inWorker
                 });
             } else {
                 promise = QueryProcessor.query({
-                    'query': this.frontReasoner.query,
-                    'time': new Date().getTime()
+                    query: this.frontReasoner.query,
+                    time: new Date().getTime(),
+                    inWorker: this.frontReasoner.inWorker
                 }).$promise;
             }
 

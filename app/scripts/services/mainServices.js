@@ -36,7 +36,20 @@ app.factory('ReasoningService', ['$q', 'OntologyParser', function($q, OntologyPa
                 data.reasoner = JSON.parse(data.reasoner);
             }
 
-            ReasonerWorker.postMessage(JSON.stringify(data));
+            if(data.inWorker) {
+                ReasonerWorker.postMessage(JSON.stringify(data));
+            } else {
+                // Special case when processing outside of the worker
+                var received = receive({
+                    data: JSON.stringify(data)
+                });
+
+                if(received.reasoner) {
+                    localStorage.setItem('reasoner',received.reasoner);
+                }
+                defer.resolve(received);
+            }
+
             return defer.promise;
         }
     };
