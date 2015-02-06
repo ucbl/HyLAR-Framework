@@ -10,10 +10,21 @@
 app.controller('MainCtrl',
 
     function ($scope, $http, $q,
-              OntologyClassifier, OntologyFetcher, OntologyParser, QueryProcessor, ReasoningService,
+              OntologyClassifier, OntologyFetcher, QueryProcessor, RemoteOntologies,    // resources
+              OntologyParser, ReasoningService,                                         // services
               FileUploader) {
 
+        $scope.updateList = function() {
+            $scope.ontologyList = RemoteOntologies.getList();
+        };
+
         $scope.uploader = new FileUploader();
+        $scope.uploader.url = angular.injector(['config']).get('ENV').serverRootPath +  '/ontology';
+        $scope.uploader.autoUpload = true;
+        $scope.uploader.onSuccessItem = function() {
+            postLog('Your file has been sucessfully uploaded. You can choose it on the list !', false, false);
+            $scope.updateList();
+        };
 
         $scope.frontReasoner = {
             'reasoner': localStorage.getItem('reasoner'),
@@ -61,9 +72,6 @@ app.controller('MainCtrl',
         };
 
         $scope.startWorker = function() {
-
-            this.uploader.queue[0].url = 'http://localhost:3000/ontology';
-            this.uploader.queue[0].upload();
 
             if(this.frontReasoner.owlFileLocation && !this.frontReasoner.isLoading) {
 
@@ -149,5 +157,6 @@ app.controller('MainCtrl',
         };
 
         $scope.getOwl();
+        $scope.updateList();
 
   });

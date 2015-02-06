@@ -20,6 +20,15 @@ app.factory('OntologyClassifier', ['$resource',
         }
     ])
 
+    .factory('RemoteOntologies', ['$resource',
+        function($resource) {
+            var ENV = angular.injector(['config']).get('ENV');
+            return $resource(ENV.serverRootPath + '/ontology', {}, {
+                'getList': { method: 'GET', params: {}, isArray: true }
+            });
+        }
+    ])
+
     .factory('QueryProcessor', ['$resource',
         function($resource) {
             var ENV = angular.injector(['config']).get('ENV');

@@ -2,25 +2,34 @@
     <table class="table table-striped three-column">
         <tr>
             <th class="thlabel">
-                <span>OWL File</span>
+                OWL File
             </th>
             <th>
-                <span>Status</span>
+                Status
             </th>
             <th>
-                <button class="btn" ng-click="viewControls = !viewControls">
-                    <span class="glyphicon glyphicon-wrench"/>
-                </button>
+                Controls
             </th>
         </tr>
         <tr>
             <td>
-                <ul class="list-group-small">
+                <ul class="list-group-small list-group-small-forms">
                     <li class="list-group-item">
-                        <input ng-disabled="frontReasoner.isLoading" id="owlInput" type="file" ng-model="frontReasoner.owlFileName" nv-file-select uploader="uploader" ng-change="getOwl()" />
+                        <input ng-disabled="frontReasoner.isLoading" id="owlInput" type="file" ng-model="fileToUpload" nv-file-select uploader="uploader"/>
                     </li>
                     <li class="list-group-item">
-                        <input type="button" id="classifyButton" class="btn btn-default btn-sm" ng-disabled="!frontReasoner.owlFileLocation" value="Launch reasoner" ng-click="startWorker()"/>
+                        <table>
+                            <tr>
+                                <td>
+                                    <select ng-model="frontReasoner.owlFileName" ng-options="filename for filename in ontologyList"/>
+                                </td>
+                                <td>
+                                    <input type="button" id="classifyButton" class="btn btn-default btn-sm" ng-disabled="!frontReasoner.owlFileLocation" value="Classify ontology" ng-click="startWorker()"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </li>
+                    <li class="list-group-item">
                         <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
                     </li>
                 </ul>
@@ -38,38 +47,26 @@
                 </ul>
             </td>
             <td>
-                <ul ng-show="viewControls" class="list-group list-group-center">
+                <ul class="list-group list-group-small-forms">
                     <li class="list-group-item">
-                        <div class="panel panel-danger">
-                            <div class="panel-heading">
-                                Classification
-                            </div>
-                            <div class="panel-body">
-                                <label class="btn btn-sm btn-default" for="classificationRadioServer">server-side</label>
-                                <input class="radio-inline" id="classificationRadioServer" ng-model="frontReasoner.classification" value="server" type="radio"/>
+                        Classification :
+                        <label for="classificationRadioServer">server-side</label>
+                        <input class="radio-inline" id="classificationRadioServer" ng-model="frontReasoner.classification" value="server" type="radio"/>
 
-                                <label class="btn btn-sm btn-default" for="classificationRadioClient">client-side</label>
-                                <input class="radio-inline" id="classificationRadioClient" ng-model="frontReasoner.classification" value="client" type="radio"/>
-                            </div>
-                        </div>
+                        <label for="classificationRadioClient">client-side</label>
+                        <input class="radio-inline" id="classificationRadioClient" ng-model="frontReasoner.classification" value="client" type="radio"/>
                     </li>
                     <li class="list-group-item">
-                        <div class="panel panel-warning">
-                            <div class="panel-heading">
-                                Querying
-                            </div>
-                            <div class="panel-body">
-                                <label class="btn btn-sm btn-default" for="queryingRadioServer">server-side</label>
-                                <input id="queryingRadioServer" ng-model="frontReasoner.querying" value="server" type="radio"/>
+                        Querying :
+                        <label for="queryingRadioServer">server-side</label>
+                        <input id="queryingRadioServer" ng-model="frontReasoner.querying" value="server" type="radio"/>
 
-                                <label for="queryingRadioClient" class="btn btn-sm btn-default">client-side</label>
-                                <input id="queryingRadioClient" ng-model="frontReasoner.querying" value="client" checked type="radio"/>
-                            </div>
-                        </div>
+                        <label for="queryingRadioClient">client-side</label>
+                        <input id="queryingRadioClient" ng-model="frontReasoner.querying" value="client" checked type="radio"/>
                     </li>
                     <li class="list-group-item">
                         <label class="btn btn-sm btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
-                        <input id="executeInWorkerCheckbox" class="checkbox checkbox-inline" id="workerCheckbox" type="checkbox" ng-model="frontReasoner.inWorker"/>
+                        <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="frontReasoner.inWorker"/>
                     </li>
                 </ul>
 

@@ -196,11 +196,16 @@ module.exports = {
     upload: function(req, res) {
         req.pipe(req.busboy);
         req.busboy.on('file', function (fieldname, file, filename) {
-            var fstream = fs.createWriteStream(ontoDir + filename);
+            var filePath = ontoDir + filename,
+                fstream = fs.createWriteStream(filePath);
             file.pipe(fstream);
             fstream.on('close', function () {
-                res.send();
+                res.send(filePath);
             });
         });
+    },
+
+    list: function(req, res) {
+        res.send(fs.readdirSync(ontoDir));
     }
 };

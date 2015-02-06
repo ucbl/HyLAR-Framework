@@ -33,6 +33,9 @@ app.get('/query', OntologyController.processSPARQL);
 //File uploading
 app.post('/ontology', OntologyController.upload)
 
+//Ontology listing
+app.get('/ontology', OntologyController.list);
+
 // Launching server
 app.listen(3000);
 
