@@ -9,7 +9,11 @@
  */
 app.controller('MainCtrl',
 
-    function ($scope, $http, $q, OntologyClassifier, OntologyFetcher, OntologyParser, QueryProcessor, ReasoningService) {
+    function ($scope, $http, $q,
+              OntologyClassifier, OntologyFetcher, OntologyParser, QueryProcessor, ReasoningService,
+              FileUploader) {
+
+        $scope.uploader = new FileUploader();
 
         $scope.frontReasoner = {
             'reasoner': localStorage.getItem('reasoner'),
@@ -17,7 +21,7 @@ app.controller('MainCtrl',
             'inWorker': true,
             'querying': 'client',
             'workerlog':  [],
-            'owlFileName': 'Keywords_WWW2012_V3_min.owl',
+            'owlFileName': 'test.owl',
             'isLoading': false,
             'status': 'Ready',
             'query': 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select ?o { <#Spatial-temporal_systems> <rdf:type> ?o }'
@@ -57,6 +61,9 @@ app.controller('MainCtrl',
         };
 
         $scope.startWorker = function() {
+
+            this.uploader.queue[0].url = 'http://localhost:3000/ontology';
+            this.uploader.queue[0].upload();
 
             if(this.frontReasoner.owlFileLocation && !this.frontReasoner.isLoading) {
 

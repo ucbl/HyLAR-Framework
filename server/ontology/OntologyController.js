@@ -4,7 +4,7 @@
 
 var fs = require('fs'),
     _ = require('lodash'),
-    md5 = require('MD5'),
+    path = require('path'),
 
     JswParser = require('./jsw/JswParser'),
     JswOWL = require('./jsw/JswOWL'),
@@ -15,7 +15,10 @@ var fs = require('fs'),
     JswSPARQL = require('./jsw/JswSPARQL'),
 
     ClassificationData = null,
-    stringifiedReasoner = null;
+    stringifiedReasoner = null,
+    appDir = path.dirname(require.main.filename),
+    ontoDir = appDir + '/../ontologies/',
+    dbDir = appDir + '/../db/';
 
 module.exports = {
 
@@ -53,7 +56,7 @@ module.exports = {
         req.requestDelay =  receivedReqTime - initialTime;
         var filename = req.param('filename');
 
-        fs.readFile('./ontologies/' + filename, function(err, data) {
+        fs.readFile(ontoDir + filename, function(err, data) {
             if(err) {
                 res.status(500).send(err.toString());
             } else {
@@ -111,7 +114,7 @@ module.exports = {
             return val
         });
 
-        fs.writeFileSync('./db/' + req.param('filename') + '.json',
+        fs.writeFileSync(dbDir + req.param('filename') + '.json',
             '{' +
                 'reasoner: ' + stringifiedReasoner + ',' +
                 'ontology: ' + JSON.stringify(ClassificationData.ontology) +
@@ -188,5 +191,16 @@ module.exports = {
                 time : new Date().getTime()
             });
         }
+    },
+
+    upload: function(req, res) {
+        req.pipe(req.busboy);
+        req.busboy.on('file', function (fieldname, file, filename) {
+            var fstream = fs.createWriteStream(ontoDir + filename);
+            file.pipe(fstream);
+            fstream.on('close', function () {
+                res.send();
+            });
+        });
     }
 };

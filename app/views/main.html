@@ -2,7 +2,7 @@
     <table class="table table-striped three-column">
         <tr>
             <th class="thlabel">
-                <span>OWL File location</span>
+                <span>OWL File</span>
             </th>
             <th>
                 <span>Status</span>
@@ -15,9 +15,15 @@
         </tr>
         <tr>
             <td>
-                <input ng-disabled="frontReasoner.isLoading" id="owlInput" type="text" ng-model="frontReasoner.owlFileName" ng-change="getOwl()" />
-                <input type="button" id="classifyButton" class="btn btn-default btn-sm" ng-disabled="!frontReasoner.owlFileLocation" value="Launch reasoner" ng-click="startWorker()"/>
-                <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
+                <ul class="list-group-small">
+                    <li class="list-group-item">
+                        <input ng-disabled="frontReasoner.isLoading" id="owlInput" type="file" ng-model="frontReasoner.owlFileName" nv-file-select uploader="uploader" ng-change="getOwl()" />
+                    </li>
+                    <li class="list-group-item">
+                        <input type="button" id="classifyButton" class="btn btn-default btn-sm" ng-disabled="!frontReasoner.owlFileLocation" value="Launch reasoner" ng-click="startWorker()"/>
+                        <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
+                    </li>
+                </ul>
             </td>
             <td>
                 <ul class="list-group-small">
