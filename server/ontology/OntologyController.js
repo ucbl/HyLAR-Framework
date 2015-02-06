@@ -17,8 +17,8 @@ var fs = require('fs'),
     ClassificationData = null,
     stringifiedReasoner = null,
     appDir = path.dirname(require.main.filename),
-    ontoDir = appDir + '/../ontologies/',
-    dbDir = appDir + '/../db/';
+    ontoDir = appDir + '/ontologies/',
+    dbDir = appDir + '/db/';
 
 module.exports = {
 
