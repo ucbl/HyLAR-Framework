@@ -11,7 +11,7 @@ app.controller('MainCtrl',
 
     function ($scope, $http, $q,
               OntologyClassifier, OntologyFetcher, QueryProcessor, RemoteOntologies, ServerTime,
-              OntologyParser, ReasoningService,
+              OntologyParser, ReasoningService, LoggingService,
               FileUploader) {
 
         $scope.updateList = function() {
@@ -22,7 +22,7 @@ app.controller('MainCtrl',
         $scope.uploader.url = angular.injector(['config']).get('ENV').serverRootPath +  '/ontology';
         $scope.uploader.autoUpload = true;
         $scope.uploader.onSuccessItem = function() {
-            postLog('Your file has been sucessfully uploaded. You can choose it on the list !', false, false);
+            LoggingService.postLog('Your file has been sucessfully uploaded. You can choose it on the list !', false, false);
             $scope.updateList();
         };
 
@@ -31,33 +31,19 @@ app.controller('MainCtrl',
             'classification': 'server',
             'inWorker': true,
             'querying': 'client',
-            'workerlog':  [],
+            'workerlog':  LoggingService.log,
             'owlFileName': 'test.owl',
             'isLoading': false,
             'status': 'Ready',
             'query': 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select ?o { <#Spatial-temporal_systems> <rdf:type> ?o }'
         };
 
-        var postLog = function(msg, isError, toggleLoads) {
-                $scope.frontReasoner.workerlog.push({
-                    'time': new Date().getTime(),
-                    'msg':  msg,
-                    'isError': isError
-                });
-
-                if(toggleLoads) toggleLoading();
-            },
-
-            toggleLoading = function() {
-                $scope.frontReasoner.isLoading = !$scope.frontReasoner.isLoading;
-            },
-
-            processMessage = function(message) {
-                if(message) {
-                    if (message.msg) postLog(message.msg, message.isError, message.toggleLoads);
-                    if (message.sparqlResults) $scope.frontReasoner.sparqlResults = message.sparqlResults;
-                }
-            };
+        var processMessage = function(message) {
+            if(message) {
+                if (message.msg) LoggingService.postLog(message.msg, message.isError, message.toggleLoads);
+                if (message.sparqlResults) $scope.frontReasoner.sparqlResults = message.sparqlResults;
+            }
+        };
 
         $scope.removeReasoner = function() {
             localStorage.removeItem('reasoner');
@@ -75,7 +61,7 @@ app.controller('MainCtrl',
 
             if(this.frontReasoner.owlFileLocation && !this.frontReasoner.isLoading) {
 
-                postLog("Initializing...", false, true);
+                LoggingService.postLog("Initializing...", false, true);
                 var promise;
 
                 ServerTime.getServerTime().$promise.then(function(time) {
@@ -107,9 +93,9 @@ app.controller('MainCtrl',
                                     .then(function(message) {
                                         ServerTime.getServerTime().$promise.then(function(time) {
                                             processMessage(message);
-                                            postLog('Requesting time : ' + data.requestDelay);
-                                            postLog('Response delay : ' + responseDelay);
-                                            postLog('Classifying time : ' + (data.processingDelay || time.milliseconds - startTime));
+                                            LoggingService.postLog('Requesting time : ' + data.requestDelay);
+                                            LoggingService.postLog('Response delay : ' + responseDelay);
+                                            LoggingService.postLog('Classifying time : ' + (data.processingDelay || time.milliseconds - startTime));
                                             $scope.frontReasoner.reasoner = localStorage.getItem('reasoner');
                                         });
                                     });
@@ -118,26 +104,26 @@ app.controller('MainCtrl',
 
                         },
                         function (err) {
-                            postLog("OWL Parsing failed. " + err.data, true, true);
+                            LoggingService.postLog("OWL Parsing failed. " + err.data, true, true);
                         }
                     );
 
                 });
 
             } else {
-                postLog('Busy', true);
+                LoggingService.postLog('Busy', true);
             }
         };
 
         $scope.executeQuery = function() {
 
             if($scope.frontReasoner.querying == 'client' && !localStorage.getItem('reasoner')) {
-                postLog("Client-side reasoner not ready ", true, false);
+                LoggingService.postLog("Client-side reasoner not ready ", true, false);
                 return;
             }
 
             var promise;
-            postLog("Evaluating query ... ", false, true);
+            LoggingService.postLog("Evaluating query ... ", false, true);
 
             ServerTime.getServerTime().$promise.then(function(time) {
                 if($scope.frontReasoner.querying == 'client') {
@@ -158,13 +144,13 @@ app.controller('MainCtrl',
                 promise.then(function(response) {
                     ServerTime.getServerTime().$promise.then(function(time) {
                             var responseDelay = time.milliseconds - response.time;
-                            postLog(response.data.length + ' results.', false, true);
-                            response.requestDelay && postLog('Requesting time : ' + response.requestDelay, false, false);
-                            responseDelay && postLog('Response delay : ' + responseDelay, false, false);
-                            postLog('Querying processing time : ' + response.processingDelay, false, false);
+                            LoggingService.postLog(response.data.length + ' results.', false, true);
+                            response.requestDelay && LoggingService.postLog('Requesting time : ' + response.requestDelay, false, false);
+                            responseDelay && LoggingService.postLog('Response delay : ' + responseDelay, false, false);
+                            LoggingService.postLog('Querying processing time : ' + response.processingDelay, false, false);
                         },
                         function(response) {
-                            postLog(response.data.data, true, true);
+                            LoggingService.postLog(response.data.data, true, true);
                         });
                 });
             });

@@ -4,7 +4,7 @@
 
 app.factory('OntologyParser', function() {
     return {
-        parse: function(data) {
+        parse: function(data) {Avata
             return JswParser.parse(data, function(e) {
                 console.log('error when parsing');
             });
@@ -54,3 +54,22 @@ app.factory('ReasoningService', ['$q', 'OntologyParser', function($q, OntologyPa
         }
     };
 }]);
+
+app.service('LoggingService', function() {
+    var isLoading = false;
+
+    var toggleLoading = function() {
+        isLoading = !isLoading;
+    };
+
+    this.log = [];
+
+    this.postLog = function(msg, isError, toggleLoads) {
+        this.log.push({
+            'time': new Date().getTime(),
+            'msg':  msg,
+            'isError': isError
+        });
+        if(toggleLoads) toggleLoading();
+    }
+});
