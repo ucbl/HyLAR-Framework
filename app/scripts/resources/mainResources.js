@@ -37,4 +37,13 @@ app.factory('OntologyClassifier', ['$resource',
             });
         }
     ])
+
+    .factory('ServerTime', ['$resource',
+        function($resource) {
+            var ENV = angular.injector(['config']).get('ENV');
+            return $resource(ENV.serverRootPath + '/time', {}, {
+                'getServerTime': { method: 'GET', params: {}, isArray: false }
+            });
+        }
+    ])
 ;
