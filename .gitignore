@@ -10,3 +10,5 @@ dist
 app/context.json
 npm-debug.log
 app/scripts/config.js
+server/ontologies/*
+server/db/*

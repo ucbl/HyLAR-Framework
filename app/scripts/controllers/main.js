@@ -10,8 +10,8 @@
 app.controller('MainCtrl',
 
     function ($scope, $http, $q,
-              OntologyClassifier, OntologyFetcher, QueryProcessor, RemoteOntologies,    // resources
-              OntologyParser, ReasoningService,                                         // services
+              OntologyClassifier, OntologyFetcher, QueryProcessor, RemoteOntologies, ServerTime,
+              OntologyParser, ReasoningService,
               FileUploader) {
 
         $scope.updateList = function() {
@@ -78,41 +78,51 @@ app.controller('MainCtrl',
                 postLog("Initializing...", false, true);
                 var promise;
 
-                if(this.frontReasoner.classification == 'server') {
-                    promise = OntologyClassifier.classify({
-                            filename: this.frontReasoner.owlFileName,
-                            time: new Date().getTime()
+                ServerTime.getServerTime().$promise.then(function(time) {
+
+                    if($scope.frontReasoner.classification == 'server') {
+                        promise = OntologyClassifier.classify({
+                            filename: $scope.frontReasoner.owlFileName,
+                            time: time.milliseconds
                         }).$promise;
-                } else {
-                    promise = OntologyFetcher.fetch({
-                        filename: this.frontReasoner.owlFileName,
-                        time: new Date().getTime()
-                    }).$promise;
-                }
-
-                promise.then(
-                    function (response) {
-                        var data = response.data,
-                            responseDelay = new Date().getTime() - data.time,
-                            startTime = new Date().getTime();
-
-                        data.command = 'start';
-                        data.inWorker = $scope.frontReasoner.inWorker;
-
-                        ReasoningService
-                            .process(data)
-                            .then(function(message) {
-                                processMessage(message);
-                                postLog('Requesting time : ' + data.requestDelay);
-                                postLog('Response delay : ' + responseDelay);
-                                postLog('Classifying time : ' + (data.processingDelay || new Date().getTime() - startTime));
-                                $scope.frontReasoner.reasoner = localStorage.getItem('reasoner');
-                            });
-                    },
-                    function (err) {
-                        postLog("OWL Parsing failed. " + err.data, true, true);
+                    } else {
+                        promise = OntologyFetcher.fetch({
+                            filename: $scope.frontReasoner.owlFileName,
+                            time: time.milliseconds
+                        }).$promise;
                     }
-                );
+
+                    promise.then(
+                        function (response) {
+                            ServerTime.getServerTime().$promise.then(function(time) {
+                                var data = response.data,
+                                    responseDelay = time.milliseconds - data.time,
+                                    startTime = time.milliseconds;
+
+                                data.command = 'start';
+                                data.inWorker = $scope.frontReasoner.inWorker;
+
+                                ReasoningService
+                                    .process(data)
+                                    .then(function(message) {
+                                        ServerTime.getServerTime().$promise.then(function(time) {
+                                            processMessage(message);
+                                            postLog('Requesting time : ' + data.requestDelay);
+                                            postLog('Response delay : ' + responseDelay);
+                                            postLog('Classifying time : ' + (data.processingDelay || time.milliseconds - startTime));
+                                            $scope.frontReasoner.reasoner = localStorage.getItem('reasoner');
+                                        });
+                                    });
+                            });
+
+
+                        },
+                        function (err) {
+                            postLog("OWL Parsing failed. " + err.data, true, true);
+                        }
+                    );
+
+                });
 
             } else {
                 postLog('Busy', true);
@@ -129,31 +139,35 @@ app.controller('MainCtrl',
             var promise;
             postLog("Evaluating query ... ", false, true);
 
-            if($scope.frontReasoner.querying == 'client') {
-                promise = ReasoningService.process({
-                    command: 'process',
-                    reasoner: localStorage.getItem('reasoner'),
-                    sparqlQuery: this.frontReasoner.query,
-                    inWorker: this.frontReasoner.inWorker
-                });
-            } else {
-                promise = QueryProcessor.query({
-                    query: this.frontReasoner.query,
-                    time: new Date().getTime(),
-                    inWorker: this.frontReasoner.inWorker
-                }).$promise;
-            }
+            ServerTime.getServerTime().$promise.then(function(time) {
+                if($scope.frontReasoner.querying == 'client') {
+                    promise = ReasoningService.process({
+                        command: 'process',
+                        reasoner: localStorage.getItem('reasoner'),
+                        sparqlQuery: $scope.frontReasoner.query,
+                        inWorker: $scope.frontReasoner.inWorker
+                    });
+                } else {
+                    promise = QueryProcessor.query({
+                        query: $scope.frontReasoner.query,
+                        time: time.milliseconds,
+                        inWorker: $scope.frontReasoner.inWorker
+                    }).$promise;
+                }
 
-            promise.then(function(response) {
-                    var responseDelay = new Date().getTime() - response.time;
-                    postLog(response.data.length + ' results.', false, true);
-                    response.requestDelay && postLog('Requesting time : ' + response.requestDelay, false, false);
-                    responseDelay && postLog('Response delay : ' + responseDelay, false, false);
-                    postLog('Querying processing time : ' + response.processingDelay, false, false);
-                },
-                function(response) {
-                    postLog(response.data.data, true, true);
+                promise.then(function(response) {
+                    ServerTime.getServerTime().$promise.then(function(time) {
+                            var responseDelay = time.milliseconds - response.time;
+                            postLog(response.data.length + ' results.', false, true);
+                            response.requestDelay && postLog('Requesting time : ' + response.requestDelay, false, false);
+                            responseDelay && postLog('Response delay : ' + responseDelay, false, false);
+                            postLog('Querying processing time : ' + response.processingDelay, false, false);
+                        },
+                        function(response) {
+                            postLog(response.data.data, true, true);
+                        });
                 });
+            });
         };
 
         $scope.getOwl();

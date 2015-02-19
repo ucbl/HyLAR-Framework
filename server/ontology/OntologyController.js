@@ -23,27 +23,6 @@ var fs = require('fs'),
 module.exports = {
 
     /**
-     * Simple HelloWorld
-     * @param req
-     * @param res
-     */
-    hello: function(req, res) {
-        res.send('hello world');
-    },
-
-    /**
-     * CORS Middleware
-     * @param req
-     * @param res
-     */
-    allowCrossDomain: function(req, res, next) {
-        res.header('Access-Control-Allow-Origin', 'http://localhost:9000');
-        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-        res.header('Access-Control-Allow-Headers', 'Content-Type');
-        next();
-    },
-
-    /**
      * OWL File content to text
      * @param req
      * @param res

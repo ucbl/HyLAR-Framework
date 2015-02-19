@@ -7,7 +7,8 @@ var express = require('express'),
 var bodyParser = require('body-parser'),
     busboy  = require('connect-busboy');
 
-var OntologyController = require('./ontology/OntologyController');
+var OntologyController = require('./ontology/OntologyController'),
+    Utils = require('./utils/Utils');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -17,11 +18,10 @@ app.use(busboy({ immediate: true }));
 // parse application/json
 app.use(bodyParser.json())
 
-// Cross domain allowed
-app.all('*', OntologyController.allowCrossDomain);
-
-// Hello world
-app.get('/', OntologyController.hello);
+// Server utils
+app.all('*', Utils.allowCrossDomain);   // Cross domain allowed
+app.get('/', Utils.hello);              // Hello world
+app.get('/time', Utils.time);
 
 // OWL ontology parsing, getting, classifying
 app.get('/ontology/:filename', OntologyController.getOntology, OntologyController.sendOntology);
@@ -35,6 +35,8 @@ app.post('/ontology', OntologyController.upload)
 
 //Ontology listing
 app.get('/ontology', OntologyController.list);
+
+//Time
 
 // Launching server
 app.listen(3000);
