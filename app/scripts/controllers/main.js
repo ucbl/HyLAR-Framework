@@ -11,7 +11,7 @@ app.controller('MainCtrl',
 
     function ($scope, $http, $q,
               OntologyClassifier, OntologyFetcher, QueryProcessor, RemoteOntologies, ServerTime,
-              OntologyParser, ReasoningService, LoggingService,
+              OntologyParser, ReasoningService, LoggingService, Hylar,
               FileUploader) {
 
         $scope.updateList = function() {
@@ -33,26 +33,21 @@ app.controller('MainCtrl',
             'querying': 'client',
             'workerlog':  LoggingService.log,
             'owlFileName': 'test.owl',
-            'isLoading': false,
+            'isLoading': Hylar.status,
             'status': 'Ready',
             'query': 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select ?o { <#Spatial-temporal_systems> <rdf:type> ?o }'
         };
 
         var processMessage = function(data) {
-            var command = LoggingService;
-            if(data) {
-                if (data.msg) {
-                    if(data.isError) {
-                        command  = command.err(data.msg)
-                    } else command  = command.msg(data.msg);
-                    if(data.toggleLoads) {
-                        command  = command.change();
-                    }
-                    command.submit();
-                } else if (data.sparqlResults) {
-                    $scope.frontReasoner.sparqlResults = data.sparqlResults;
-                }
+            if (data && data.msg) {
+                if(data.isError) {
+                    LoggingService.err(data.msg)
+                } else LoggingService.msg(data.msg);
+                LoggingService.submit();
+            } else if (data && data.sparqlResults) {
+                $scope.frontReasoner.sparqlResults = data.sparqlResults;
             }
+
         };
 
         $scope.removeReasoner = function() {
@@ -102,10 +97,11 @@ app.controller('MainCtrl',
                                     .process(data)
                                     .then(function(message) {
                                         ServerTime.getServerTime().$promise.then(function(time) {
+                                            var classifyingTime = data.processingDelay || time.milliseconds - startTime;
                                             processMessage(message);
                                             LoggingService.msg('Requesting time : ' + data.requestDelay).submit();
                                             LoggingService.msg('Response delay : ' + responseDelay).submit();
-                                            LoggingService.msg('Classifying time : ' + (data.processingDelay || time.milliseconds - startTime)).submit();
+                                            LoggingService.msg('Classifying time : ' + classifyingTime).submit();
                                             $scope.frontReasoner.reasoner = localStorage.getItem('reasoner');
                                         });
                                     });
@@ -114,7 +110,7 @@ app.controller('MainCtrl',
 
                         },
                         function (err) {
-                            LoggingService.err('OWL Parsing failed. ' + err.data).change().submit();
+                            LoggingService.err('OWL Parsing failed. ' + err.data).submit();
                         }
                     );
 
@@ -133,7 +129,7 @@ app.controller('MainCtrl',
             }
 
             var promise;
-            LoggingService.msg('Evaluating query ... ').change().submit();
+            LoggingService.msg('Evaluating query ... ').submit();
 
             ServerTime.getServerTime().$promise.then(function(time) {
                 if($scope.frontReasoner.querying == 'client') {
@@ -154,13 +150,13 @@ app.controller('MainCtrl',
                 promise.then(function(response) {
                     ServerTime.getServerTime().$promise.then(function(time) {
                             var responseDelay = time.milliseconds - response.time;
-                            LoggingService.msg(response.data.length + ' results.').change().submit();
+                            LoggingService.msg(response.data.length + ' results.').submit();
                             response.requestDelay && LoggingService.msg('Requesting time : ' + response.requestDelay).submit();
                             responseDelay && LoggingService.msg('Response delay : ' + responseDelay).submit();
                             LoggingService.msg('Querying processing time : ' + response.processingDelay).submit();
                         },
                         function(response) {
-                            LoggingService.err(response.data.data).change().submit();
+                            LoggingService.err(response.data.data).submit();
                         });
                 });
             });

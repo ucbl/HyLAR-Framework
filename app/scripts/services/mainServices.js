@@ -55,14 +55,13 @@ app.factory('ReasoningService', ['$q', 'OntologyParser', function($q, OntologyPa
     };
 }]);
 
+app.service('Hylar', function() {
+
+});
+
 app.service('LoggingService', function() {
 
-    var isLoading = false,
-        msgData;
-
-    var toggleLoading = function() {
-        isLoading = !isLoading;
-    };
+    var msgData;
 
     this.log = [];
 
@@ -76,18 +75,12 @@ app.service('LoggingService', function() {
     this.err = function(content) {
         msgData = new Object();
         msgData.msg = content;
-        msgData.isError = false;
-        return this;
-    };
-
-    this.change = function() {
-        msgData.toggleLoads = true;
+        msgData.isError = true;
         return this;
     };
 
     this.submit = function() {
         msgData.time = new Date().getTime();
         this.log.push(msgData);
-        if(msgData.toggleLoads) toggleLoading();
     }
 });
