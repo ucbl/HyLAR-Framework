@@ -93,6 +93,10 @@ module.exports = {
             return val
         });
 
+        if(!fs.existsSync(dbDir)) {
+            fs.mkdirSync(dbDir);
+        }
+
         fs.writeFileSync(dbDir + req.param('filename') + '.json',
             '{' +
                 'reasoner: ' + stringifiedReasoner + ',' +
@@ -175,6 +179,11 @@ module.exports = {
     upload: function(req, res) {
         req.pipe(req.busboy);
         req.busboy.on('file', function (fieldname, file, filename) {
+
+            if(!fs.existsSync(ontoDir)) {
+                fs.mkdirSync(ontoDir);
+            }
+
             var filePath = ontoDir + filename,
                 fstream = fs.createWriteStream(filePath);
             file.pipe(fstream);
