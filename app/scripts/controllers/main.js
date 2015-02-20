@@ -10,8 +10,8 @@
 app.controller('MainCtrl',
 
     function ($scope, $http, $q,
-              HylarRemote, ServerTime,
-              OntologyParser, ReasoningService, LoggingService, Hylar,
+              HylarRemote, Hylar,
+              ServerTime, LoggingService,
               FileUploader) {
 
         $scope.updateList = function() {
@@ -93,9 +93,7 @@ app.controller('MainCtrl',
                                 data.command = 'start';
                                 data.inWorker = $scope.frontReasoner.inWorker;
 
-                                ReasoningService
-                                    .process(data)
-                                    .then(function(message) {
+                                Hylar.process(data).then(function(message) {
                                         ServerTime.getServerTime().$promise.then(function(time) {
                                             var classifyingTime = data.processingDelay || time.milliseconds - startTime;
                                             processMessage(message);
@@ -133,7 +131,7 @@ app.controller('MainCtrl',
 
             ServerTime.getServerTime().$promise.then(function(time) {
                 if($scope.frontReasoner.querying == 'client') {
-                    promise = ReasoningService.process({
+                    promise = Hylar.process({
                         command: 'process',
                         reasoner: localStorage.getItem('reasoner'),
                         sparqlQuery: $scope.frontReasoner.query,
