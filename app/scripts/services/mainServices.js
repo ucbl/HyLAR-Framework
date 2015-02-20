@@ -56,7 +56,9 @@ app.factory('ReasoningService', ['$q', 'OntologyParser', function($q, OntologyPa
 }]);
 
 app.service('LoggingService', function() {
-    var isLoading = false;
+
+    var isLoading = false,
+        msgData;
 
     var toggleLoading = function() {
         isLoading = !isLoading;
@@ -64,12 +66,28 @@ app.service('LoggingService', function() {
 
     this.log = [];
 
-    this.postLog = function(msg, isError, toggleLoads) {
-        this.log.push({
-            'time': new Date().getTime(),
-            'msg':  msg,
-            'isError': isError
-        });
-        if(toggleLoads) toggleLoading();
+    this.msg = function(content) {
+        msgData = new Object();
+        msgData.msg = content;
+        msgData.isError = false;
+        return this;
+    };
+
+    this.err = function(content) {
+        msgData = new Object();
+        msgData.msg = content;
+        msgData.isError = false;
+        return this;
+    };
+
+    this.change = function() {
+        msgData.toggleLoads = true;
+        return this;
+    };
+
+    this.submit = function() {
+        msgData.time = new Date().getTime();
+        this.log.push(msgData);
+        if(msgData.toggleLoads) toggleLoading();
     }
 });
