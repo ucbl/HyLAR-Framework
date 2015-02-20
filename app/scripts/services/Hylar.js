@@ -58,29 +58,3 @@ app.factory('ReasoningService', ['$q', 'OntologyParser', function($q, OntologyPa
 app.service('Hylar', function() {
 
 });
-
-app.service('LoggingService', function() {
-
-    var msgData;
-
-    this.log = [];
-
-    this.msg = function(content) {
-        msgData = new Object();
-        msgData.msg = content;
-        msgData.isError = false;
-        return this;
-    };
-
-    this.err = function(content) {
-        msgData = new Object();
-        msgData.msg = content;
-        msgData.isError = true;
-        return this;
-    };
-
-    this.submit = function() {
-        msgData.time = new Date().getTime();
-        this.log.push(msgData);
-    }
-});
