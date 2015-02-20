@@ -10,12 +10,12 @@
 app.controller('MainCtrl',
 
     function ($scope, $http, $q,
-              OntologyClassifier, OntologyFetcher, QueryProcessor, RemoteOntologies, ServerTime,
+              HylarRemote, ServerTime,
               OntologyParser, ReasoningService, LoggingService, Hylar,
               FileUploader) {
 
         $scope.updateList = function() {
-            $scope.ontologyList = RemoteOntologies.getList();
+            $scope.ontologyList = HylarRemote.list;
         };
 
         $scope.uploader = new FileUploader();
@@ -72,12 +72,12 @@ app.controller('MainCtrl',
                 ServerTime.getServerTime().$promise.then(function(time) {
 
                     if($scope.frontReasoner.classification == 'server') {
-                        promise = OntologyClassifier.classify({
+                        promise = HylarRemote.classify({
                             filename: $scope.frontReasoner.owlFileName,
                             time: time.milliseconds
                         }).$promise;
                     } else {
-                        promise = OntologyFetcher.fetch({
+                        promise = HylarRemote.fetch({
                             filename: $scope.frontReasoner.owlFileName,
                             time: time.milliseconds
                         }).$promise;
@@ -140,7 +140,7 @@ app.controller('MainCtrl',
                         inWorker: $scope.frontReasoner.inWorker
                     });
                 } else {
-                    promise = QueryProcessor.query({
+                    promise = HylarRemote.query({
                         query: $scope.frontReasoner.query,
                         time: time.milliseconds,
                         inWorker: $scope.frontReasoner.inWorker
