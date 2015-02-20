@@ -47,3 +47,7 @@ app.factory('OntologyClassifier', ['$resource',
         }
     ])
 ;
+
+app.service('HylarRemote', function() {
+
+});
