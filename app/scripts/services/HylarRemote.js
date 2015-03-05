@@ -7,7 +7,6 @@ app.service('HylarRemote', ['OntologyClassifier', 'OntologyFetcher', 'RemoteOnto
         this.classify = OntologyClassifier.classify;
         this.fetch = OntologyFetcher.fetch;
         this.query = QueryProcessor.query;
-
         this.list = RemoteOntologies.getList();
     }
 ]);

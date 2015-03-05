@@ -31,7 +31,7 @@ app.factory('OntologyParser',
                     defer = $q.defer();
 
                     // if the ontology is not yet parsed
-                    // done outside the worker in order to use DOMParser
+                    // (done outside the worker in order to use DOMParser)
                     if(!data.reasoner) {
                         data.ontology = OntologyParser.parse(data.ontology);
                     } else {

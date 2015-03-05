@@ -15,16 +15,16 @@
             <td>
                 <ul class="list-group-small list-group-small-forms">
                     <li class="list-group-item">
-                        <input ng-disabled="frontReasoner.isLoading" id="owlInput" type="file" ng-model="fileToUpload" nv-file-select uploader="uploader"/>
+                        <input id="owlInput" type="file" ng-model="fileToUpload" nv-file-select uploader="uploader"/>
                     </li>
                     <li class="list-group-item">
                         <table>
                             <tr>
                                 <td>
-                                    <select ng-model="frontReasoner.owlFileName" ng-options="filename for filename in ontologyList"/>
+                                    <select ng-model="owlFileName" ng-options="filename for filename in ontologyList"/>
                                 </td>
                                 <td>
-                                    <input type="button" id="classifyButton" class="btn btn-default btn-sm" ng-disabled="!frontReasoner.owlFileLocation" value="Classify ontology" ng-click="startWorker()"/>
+                                    <input type="button" id="classifyButton" class="btn btn-default btn-sm" value="Classify ontology" ng-click="startWorker()"/>
                                 </td>
                             </tr>
                         </table>
@@ -36,10 +36,9 @@
             </td>
             <td>
                 <ul class="list-group-small">
-                    <li ng-class="(frontReasoner.isLoading) ? 'list-group-item list-group-item-warning busy-status ' : 'list-group-item list-group-item-success'">{{ frontReasoner.isLoading | displayHyLARStatus }}</li>
-                    <li ng-class="(frontReasoner.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
-                        {{ frontReasoner.reasoner | displayReasonerStatus }}
-                        <a href="" ng-show="frontReasoner.reasoner" ng-click="removeReasoner()">(remove)</a>
+                    <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
+                        {{ config.reasoner | displayReasonerStatus }}
+                        <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
                     </li>
                     <!--<li ng-class="(frontReasoner.reasoner.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
                         <span ng-repeat="classifiedOntology in frontReasoner.reasoner" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
@@ -51,22 +50,22 @@
                     <li class="list-group-item">
                         Classification :
                         <label for="classificationRadioServer">server-side</label>
-                        <input class="radio-inline" id="classificationRadioServer" ng-model="frontReasoner.classification" value="server" type="radio"/>
+                        <input class="radio-inline" id="classificationRadioServer" ng-model="config.classification" value="server" type="radio"/>
 
                         <label for="classificationRadioClient">client-side</label>
-                        <input class="radio-inline" id="classificationRadioClient" ng-model="frontReasoner.classification" value="client" type="radio"/>
+                        <input class="radio-inline" id="classificationRadioClient" ng-model="config.classification" value="client" type="radio"/>
                     </li>
                     <li class="list-group-item">
                         Querying :
                         <label for="queryingRadioServer">server-side</label>
-                        <input id="queryingRadioServer" ng-model="frontReasoner.querying" value="server" type="radio"/>
+                        <input id="queryingRadioServer" ng-model="config.querying" value="server" type="radio"/>
 
                         <label for="queryingRadioClient">client-side</label>
-                        <input id="queryingRadioClient" ng-model="frontReasoner.querying" value="client" checked type="radio"/>
+                        <input id="queryingRadioClient" ng-model="config.querying" value="client" checked type="radio"/>
                     </li>
                     <li class="list-group-item">
                         <label class="btn btn-sm btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
-                        <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="frontReasoner.inWorker"/>
+                        <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
                     </li>
                 </ul>
 
@@ -74,7 +73,8 @@
         </tr>
         <tr>
             <td colspan="3">
-                <textarea class="form-control sparql" rows="10" ng-model="frontReasoner.query"></textarea>
+                <textarea class="form-control sparql" rows="10" ng-model="query">
+                </textarea>
             </td>
         </tr>
         <tr>
@@ -85,7 +85,7 @@
         <tr>
             <td colspan="3">
                 <div scroll-glue class="scrollable worker-log">
-                    <div ng-repeat="log in frontReasoner.workerlog">
+                    <div ng-repeat="log in workerlog">
                         <span class="worker-log time">{{ log | displayDate }}</span>
                         <span ng-class="(log.isError) ? 'worker-log error' : 'worker-log msg'">{{ log | displayMsg }}</span>
                     </div>
@@ -100,7 +100,7 @@
         <tr>
             <td colspan="3">
                 <div class="scrollable-results">
-                    <div class="sparqlresult"  ng-repeat="result in frontReasoner.sparqlResults">
+                    <div class="sparqlresult"  ng-repeat="result in sparqlResults">
                         <span ng-repeat="(key, value) in result">
                             <span class="sparqlvar">{{ key }}</span> : <span class="sparqlval">{{ value }}</span>
                         </span>
