@@ -2,10 +2,10 @@
     <table class="table table-striped three-column">
         <tr>
             <th class="thlabel">
-                OWL File
+                Run
             </th>
             <th>
-                Status
+                Classified Ontologies
             </th>
             <th>
                 Controls
@@ -21,7 +21,9 @@
                         <table>
                             <tr>
                                 <td>
-                                    <select ng-model="owlFileName" ng-options="filename for filename in ontologyList"/>
+                                    <select ng-model="owlFileName" ng-options="filename for filename in ontologyList">
+                                        <option value="">-- choose below --</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <input type="button" id="classifyButton" class="btn btn-default btn-sm" value="Classify ontology" ng-click="startWorker()"/>
@@ -35,18 +37,19 @@
                 </ul>
             </td>
             <td>
-                <ul class="list-group-small">
-                    <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
-                        {{ config.reasoner | displayReasonerStatus }}
-                        <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
+                <ul class="list-group-small list-group-small-forms">
+                    <li class="list-group-item">
+                        Local ontology used : <select ng-model="localOntology" ng-options="key for (key, val) in dbList"/>
+                        <br/>
+                        <a href="#" ng-click="purgeLocalDb()">(remove all)</a>
                     </li>
-                    <!--<li ng-class="(frontReasoner.reasoner.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
-                        <span ng-repeat="classifiedOntology in frontReasoner.reasoner" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
-                    </li>-->
+                    <li class="list-group-item">
+                        Remote ontology used : <select ng-model="remoteOntology" ng-options="key for (key, val) in dbList"/>
+                    </li>
                 </ul>
             </td>
             <td>
-                <ul class="list-group list-group-small-forms">
+                <ul class="list-group-small list-group-small-forms">
                     <li class="list-group-item">
                         Classification :
                         <label for="classificationRadioServer">server-side</label>
