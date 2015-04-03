@@ -18,21 +18,25 @@
                         <input id="owlInput" type="file" ng-model="fileToUpload" nv-file-select uploader="uploader"/>
                     </li>
                     <li class="list-group-item">
-                        <table>
-                            <tr>
-                                <td>
-                                    <select ng-model="owlFileName" ng-options="filename for filename in ontologyList">
-                                        <option value="">-- choose below --</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="button" id="classifyButton" class="btn btn-default btn-sm" value="Classify ontology" ng-click="startWorker()"/>
-                                </td>
-                            </tr>
-                        </table>
+                        <div layout="row" layout-align="center center">
+                            <div flex="50">
+                                <md-select ng-model="owlFileName">
+                                    <md-option ng-value="filename" data-ng-repeat="filename in ontologyList">
+                                        {{ filename }}
+                                    </md-option>
+                                </md-select>
+                            </div>
+                            <div flex="50">
+                                <md-button class="md-raised md-primary" id="classifyButton" ng-click="startWorker()">
+                                    Classify ontology
+                                </md-button>
+                            </div>
+                        </div>
                     </li>
                     <li class="list-group-item">
-                        <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
+                        <md-button class="md-raised md-primary" id="sparqlButton" class="btn btn-default btn-sm" ng-click="executeQuery()">
+                            Run query
+                        </md-button>
                     </li>
                 </ul>
             </td>
@@ -49,29 +53,27 @@
                 </ul>
             </td>
             <td>
-                <ul class="list-group-small list-group-small-forms">
-                    <li class="list-group-item">
+                <div layout="row">
+                    <div>
                         Classification :
-                        <label for="classificationRadioServer">server-side</label>
-                        <input class="radio-inline" id="classificationRadioServer" ng-model="config.classification" value="server" type="radio"/>
-
-                        <label for="classificationRadioClient">client-side</label>
-                        <input class="radio-inline" id="classificationRadioClient" ng-model="config.classification" value="client" type="radio"/>
-                    </li>
-                    <li class="list-group-item">
+                        <md-radio-group>
+                            <md-radio-button id="classificationRadioServer" ng-model="config.classification" value="server">Server-side</md-radio-button>
+                            <md-radio-button id="classificationRadioClient" ng-model="config.classification" value="client">Client-side</md-radio-button>
+                        </md-radio-group>
+                    </div>
+                    <div>
                         Querying :
-                        <label for="queryingRadioServer">server-side</label>
-                        <input id="queryingRadioServer" ng-model="config.querying" value="server" type="radio"/>
-
-                        <label for="queryingRadioClient">client-side</label>
-                        <input id="queryingRadioClient" ng-model="config.querying" value="client" checked type="radio"/>
-                    </li>
-                    <li class="list-group-item">
-                        <label class="btn btn-sm btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
-                        <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
-                    </li>
-                </ul>
-
+                        <md-radio-group>
+                            <md-radio-button id="queryingRadioServer" ng-model="config.querying" value="server">Server-side</md-radio-button>
+                            <md-radio-button id="queryingRadioClient" ng-model="config.querying" value="client">Client-side</md-radio-button>
+                        </md-radio-group>
+                    </div>
+                    <div>
+                        <md-checkbox id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker" aria-label="Execute in worker">
+                            Execute in worker
+                        </md-checkbox>
+                    </div>
+                </div>
             </td>
         </tr>
         <tr>
