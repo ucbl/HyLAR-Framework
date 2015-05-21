@@ -2,7 +2,7 @@
 
 # HyLAR #
 
-HyLAR (for Hybrid Location-Agnostic Reasoner) is an adaptable architecture for OWL reasoning, based on [JSW and OWLReasoner](https://code.google.com/p/owlreasoner/). HyLAR switches the different parts of the reasoning code either client or server side.
+HyLAR (for Hybrid Location-Agnostic Reasoning) is an adaptable architecture for OWL reasoning, based on [JSW and OWLReasoner](https://code.google.com/p/owlreasoner/). HyLAR switches the different parts of the reasoning code either client or server side.
 
 ## Docs ##
 
