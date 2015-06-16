@@ -7,8 +7,7 @@ app.service('Hylar', ['HylarClient', 'HylarRemote',
         this.config = {
             classification: 'server',
             querying: 'client',
-            inWorker: true,
-            reasoner: localStorage.getItem('reasoner')
+            inWorker: true
         };
 
         this.client = HylarClient;
