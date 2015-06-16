@@ -36,8 +36,7 @@ function startReasoner(data) {
         endMsg = {
             msg: "Reasoner ready. " + reasoner.aBox.database.ClassAssertion.length + " class assertions, " + reasoner.aBox.database.ObjectPropertyAssertion.length + " object property assertions.",
             toggleLoads:true,
-            reasoner: stringifiedReasoner,
-            name: data.name
+            reasoner: stringifiedReasoner
         };
 
         if(data.inWorker) {

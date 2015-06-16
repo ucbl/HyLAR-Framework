@@ -27,8 +27,8 @@ app.controller('MainCtrl',
         };
 
         $scope.config = Hylar.config;
-        $scope.dbList = Hylar.client.db.list();
         $scope.query = 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> SELECT ?o { ?a rdf:type ?o }';
+        $scope.owlFileName = 'test.owl';
         $scope.workerlog = LoggingService.log;
 
         var processMessage = function(data) {
@@ -43,16 +43,16 @@ app.controller('MainCtrl',
 
         };
 
-        $scope.purgeLocalDb = function() {
-            Hylar.client.db.purge();
-            $scope.dbList = Hylar.client.db.list();
+        $scope.removeReasoner = function() {
+            localStorage.removeItem('reasoner');
+            $scope.config.reasoner = localStorage.getItem('reasoner');
         };
 
         $scope.startWorker = function() {
 
-            if($scope.owlFileName) {
+            if(this.owlFileName) {
                 var promise,
-                    filename = $scope.owlFileName;
+                    filename = this.owlFileName;
                 LoggingService.msg('Initializing...').submit();
 
                 ServerTime.getServerTime().$promise.then(function(time) {
@@ -77,7 +77,6 @@ app.controller('MainCtrl',
                                     startTime = time.milliseconds;
 
                                 data.command = 'start';
-                                data.name = $scope.owlFileName;
                                 data.inWorker = Hylar.config.inWorker;
 
                                 Hylar.client.process(data).then(function(message) {
@@ -87,7 +86,7 @@ app.controller('MainCtrl',
                                             LoggingService.msg('Requesting time : ' + data.requestDelay).submit();
                                             LoggingService.msg('Response delay : ' + responseDelay).submit();
                                             LoggingService.msg('Classifying time : ' + classifyingTime).submit();
-                                            $scope.dbList = Hylar.client.db.list();
+                                            $scope.config.reasoner = localStorage.getItem('reasoner');
                                         });
                                     });
                             });
@@ -106,7 +105,7 @@ app.controller('MainCtrl',
 
         $scope.executeQuery = function() {
 
-            if(Hylar.config.querying == 'client' && !Hylar.client.db.get($scope.localOntology)) {
+            if(Hylar.config.querying == 'client' && !localStorage.getItem('reasoner')) {
                 LoggingService.err('Client-side reasoner not ready').submit();
                 return;
             }
@@ -119,7 +118,7 @@ app.controller('MainCtrl',
                 if(Hylar.config.querying == 'client') {
                     promise = Hylar.client.process({
                         command: 'process',
-                        reasoner: Hylar.client.db.get($scope.localOntology),
+                        reasoner: localStorage.getItem('reasoner'),
                         sparqlQuery: query,
                         inWorker: Hylar.config.inWorker
                     });

@@ -13,42 +13,14 @@ app.factory('OntologyParser',
         }
     })
 
-    .factory('DbManager',
-        function() {
-            return {
-                list: function() {
-                    return JSON.parse(localStorage.getItem('db'));
-                },
-
-                get: function(field) {
-                    return JSON.parse(localStorage.getItem('db'))[field];
-                },
-
-                update: function(field, data) {
-                    var db = JSON.parse(localStorage.getItem('db')) || {};
-                    db[field] = data;
-                    localStorage.setItem('db', JSON.stringify(db));
-                },
-
-                delete: function(field) {
-                    localStorage.removeItem(field);
-                },
-
-                purge: function(field) {
-                    localStorage.removeItem('db');
-                }
-            }
-        }
-    )
-
-    .factory('ReasoningService', ['$q', 'OntologyParser', 'DbManager',
-        function($q, OntologyParser, DbManager) {
+    .factory('ReasoningService', ['$q', 'OntologyParser',
+        function($q, OntologyParser) {
             var ReasonerWorker = new Worker('workers/ReasonerWorker.js'),
                 defer = $q.defer();
 
             ReasonerWorker.addEventListener('message', function(message) {
                 if(message.data.reasoner) {
-                    DbManager.update(message.data.name, message.data.reasoner);
+                    localStorage.setItem('reasoner', message.data.reasoner);
                 }
                 defer.resolve(message.data);
 
@@ -75,7 +47,7 @@ app.factory('OntologyParser',
                         });
 
                         if(received.reasoner) {
-                            DbManager.update(received.name, received.reasoner);
+                            localStorage.setItem('reasoner',received.reasoner);
                         }
                         defer.resolve(received);
                     }
