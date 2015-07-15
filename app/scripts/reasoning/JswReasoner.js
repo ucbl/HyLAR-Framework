@@ -15,12 +15,15 @@ function startReasoner(data) {
     try {
         var reasoner, stringifiedReasoner, endMsg, errMsg,
             seen = [];
+
         // If the reasoner has been already initialized
         if(data.reasoner) {
             reasoner = data.reasoner;
         // If the classification is done client side
         } else {
-            reasoner = new BrandT(data);
+          // Recover ontology proto due to its loss during the JSON serialization
+          data.ontology.__proto__ = new JswOntology.ontology().__proto__;
+          reasoner = new BrandT(data.ontology);
         }
 
         stringifiedReasoner = JSON.stringify(reasoner, function(key, val) {
@@ -67,7 +70,7 @@ function queryReasoner(queryString, reasoner, inWorker) {
      */
 
     try {
-        var errMsg, query = sparql.parse(queryString);
+        var errMsg, query = SPARQL.parse(queryString);
     } catch(err) {
         errMsg = {
             msg: "SPARQL parsing failed. " + err.toString(),
@@ -90,7 +93,8 @@ function queryReasoner(queryString, reasoner, inWorker) {
     try {
         var results, before, processingDelay, endMsg, errMsg;
 
-        reasoner.aBox.__proto__ = TrimQueryABox.prototype;
+        reasoner.aBox.__proto__ = TrimQueryABox.trimQueryABox.prototype;
+        reasoner.aBox.queryLang.__proto__ = new QueryLang().__proto__;
         before = new Date().getTime();
         results = reasoner.aBox.answerQuery(query);
         processingDelay = new Date().getTime() - before;
