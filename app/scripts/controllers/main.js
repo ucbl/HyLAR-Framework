@@ -136,7 +136,8 @@ app.controller('MainCtrl',
                             LoggingService.err(response.msg).submit();
                         } else {
                             var responseDelay = time.milliseconds - response.time;
-                            LoggingService.msg(response.data.length + ' results.').submit();
+                            $scope.sparqlResults = response.data;
+                            LoggingService.msg($scope.sparqlResults.length + ' results.').submit();
                             response.requestDelay && LoggingService.msg('Requesting time : ' + response.requestDelay).submit();
                             responseDelay && LoggingService.msg('Response delay : ' + responseDelay).submit();
                             LoggingService.msg('Querying processing time : ' + response.processingDelay).submit();
