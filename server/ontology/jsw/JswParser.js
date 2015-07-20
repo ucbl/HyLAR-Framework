@@ -2,12 +2,12 @@
  * Created by Spadon on 14/10/2014.
  */
 
-var JswOWL = require('./JswOWL'),
-    JswOntology = require('./JswOntology'),
-    JswUtils = require('./JswUtils'),
-    TextFile = require('./JswTextFile');
+JswOWL = require('./JswOWL');
+JswOntology = require('./JswOntology');
+JswUtils = require('./JswUtils');
+TextFile = require('./JswTextFile');
 
-module.exports = {
+JswParser = {
 
     /**
      * Parses the given OWL/XML string into the Ontology object.
@@ -587,3 +587,5 @@ module.exports = {
     }
 
 };
+
+module.exports = JswParser;

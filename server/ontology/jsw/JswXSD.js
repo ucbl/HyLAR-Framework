@@ -1,7 +1,7 @@
 /**
  * Created by Spadon on 17/10/2014.
  */
-var XSD = function() {
+XSD = function() {
 // ============================== XSD namespace ===============================
 
     var xsd = {};

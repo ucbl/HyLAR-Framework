@@ -2,11 +2,9 @@
  * Created by Spadon on 14/10/2014.
  */
 
-var JswOWL = require('./JswOWL'),
-    _ = require('lodash');
-
+JswOWL = require('./JswOWL');
 /** Ontology represents a set of statements about some domain of interest. */
-var Ontology = function() {
+Ontology = function() {
     var exprTypes = JswOWL.ExpressionTypes,
         classType = exprTypes.ET_CLASS,
         individualType = exprTypes.ET_INDIVIDUAL,

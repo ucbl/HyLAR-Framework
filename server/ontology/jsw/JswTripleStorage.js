@@ -94,7 +94,5 @@ TripleStorage.prototype = {
 };
 
 module.exports = {
-    tripleStorage: function() {
-        return new TripleStorage();
-    }
+    tripleStorage: TripleStorage
 };

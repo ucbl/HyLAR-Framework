@@ -1,35 +1,38 @@
 /**
- * Created by Spadon on 17/10/2014.
- */
+* Created by Spadon on 17/10/2014.
+*/
 
-var StopWatch = require('./JswStopWatch'),
-    Queue = require('./JswQueue'),
-    PairStorage = require('./JswPairStorage'),
-    TripleStorage = require('./JswTripleStorage'),
-    TrimQueryABox = require('./JswTrimQueryABox'),
-    CONFIG = {};
+StopWatch = require('./JswStopWatch');
+Queue = require('./JswQueue');
+PairStorage = require('./JswPairStorage');
+TripleStorage = require('./JswTripleStorage');
+TrimQueryABox = require('./JswTrimQueryABox');
+JswOWL = require('./JswOWL');
+JswRDF = require('./JswRDF');
+JswOntology = require('./JswOntology'),
+
 
 /**
  * BrandT is an OWL-EL reasoner. Currently, it has some limitations and does not allow
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
-var BrandT = function (data) {
+  BrandT = function (ontology) {
     var clock, normalizedOntology;
-    CONFIG = data;
 
     /** Stores information about how much time different steps of building a reasoner took. */
     this.timeInfo = {};
     /** Original ontology from which the reasoner was built. */
-    CONFIG.originalOntology = CONFIG.ontology;
+    this.originalOntology = ontology;
+    this.resultOntology = new JswOntology.ontology();
 
     clock = new StopWatch.stopWatch();
 
     clock.start();
-    normalizedOntology = this.normalizeOntology(CONFIG.ontology);
+    normalizedOntology = this.normalizeOntology();
     this.timeInfo.normalization = clock.stop();
 
     clock.start();
-    CONFIG.objectPropertySubsumers = this.buildObjectPropertySubsumerSets(normalizedOntology);
+    this.objectPropertySubsumers = this.buildObjectPropertySubsumerSets(normalizedOntology);
     this.timeInfo.objectPropertySubsumption = clock.stop();
 
     clock.start();
@@ -44,13 +47,13 @@ var BrandT = function (data) {
     // Remove entity IRIs introduced during normalization stage from the subsumer sets.
     this.removeIntroducedEntities(
         this.classSubsumers,
-        CONFIG.ontology.getClasses(),
-        [CONFIG.owl.IRIs.THING, CONFIG.owl.IRIs.NOTHING]
+        this.originalOntology.getClasses(),
+        [JswOWL.IRIs.THING, JswOWL.IRIs.NOTHING]
     );
     this.removeIntroducedEntities(
-        CONFIG.objectPropertySubsumers,
-        CONFIG.ontology.getObjectProperties(),
-        [CONFIG.owl.IRIs.TOP_OBJECT_PROPERTY, CONFIG.owl.IRIs.BOTTOM_OBJECT_PROPERTY]
+        this.objectPropertySubsumers,
+        this.originalOntology.getObjectProperties(),
+        [JswOWL.IRIs.TOP_OBJECT_PROPERTY, JswOWL.IRIs.BOTTOM_OBJECT_PROPERTY]
     );
 
     clock.start();
@@ -74,7 +77,7 @@ BrandT.prototype = {
             objectPropertySubsumers, opropType, reqAxiomType, queue, subsumer, subsumers,
             topObjectProperty;
 
-        topObjectProperty = CONFIG.owl.IRIs.TOP_OBJECT_PROPERTY;
+        topObjectProperty = JswOWL.IRIs.TOP_OBJECT_PROPERTY;
         objectPropertySubsumers = new PairStorage.pairStorage();
         objectPropertySubsumers.add(topObjectProperty, topObjectProperty);
         objectProperties = ontology.getObjectProperties();
@@ -89,8 +92,8 @@ BrandT.prototype = {
         }
 
         axioms = ontology.axioms;
-        opropType = CONFIG.owl.ExpressionTypes.ET_OPROP;
-        reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_SUB;
+        opropType = JswOWL.ExpressionTypes.ET_OPROP;
+        reqAxiomType = JswOWL.ExpressionTypes.AXIOM_OPROP_SUB;
 
         // Add object property subsumptions explicitly mentioned in the ontology.
         for (axiomIndex = axioms.length; axiomIndex--;) {
@@ -167,8 +170,9 @@ BrandT.prototype = {
             instruction,
             leftChainSubsumers = chainSubsumers.left,
             node,
-            nothing = CONFIG.owl.IRIs.NOTHING,
-            originalOntology = CONFIG.originalOntology,
+            nothing = JswOWL.IRIs.NOTHING,
+            objectPropertySubsumers = this.objectPropertySubsumers,
+            originalOntology = this.originalOntology,
             queue,
             queues = {},
             rightChainSubsumers = chainSubsumers.right,
@@ -182,10 +186,10 @@ BrandT.prototype = {
             var axiom, axioms, axiomIndex, axiomType, classType, firstArgType,
                 intersectType, reqAxiomType, secondArgType, someValuesType;
 
-            reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
-            classType = CONFIG.owl.ExpressionTypes.ET_CLASS;
-            intersectType = CONFIG.owl.ExpressionTypes.CE_INTERSECT;
-            someValuesType = CONFIG.owl.ExpressionTypes.CE_OBJ_VALUES_FROM;
+            reqAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+            classType = JswOWL.ExpressionTypes.ET_CLASS;
+            intersectType = JswOWL.ExpressionTypes.CE_INTERSECT;
+            someValuesType = JswOWL.ExpressionTypes.CE_OBJ_VALUES_FROM;
             axioms = ontology.axioms;
 
             for (axiomIndex = axioms.length; axiomIndex--;) {
@@ -390,7 +394,7 @@ BrandT.prototype = {
         function initialise() {
             var classes = ontology.getClasses(),
                 classIri,
-                thing = CONFIG.owl.IRIs.THING;
+                thing = JswOWL.IRIs.THING;
 
 // Put different axioms into different 'baskets'.
             splitAxiomSet();
@@ -418,9 +422,9 @@ BrandT.prototype = {
         function addRemainingSubsumerSets() {
             var classes = ontology.getClasses(),
                 classIri,
-                nothing = CONFIG.owl.IRIs.NOTHING,
-                originalClasses = CONFIG.originalOntology.getClasses(),
-                thing = CONFIG.owl.IRIs.THING;
+                nothing = JswOWL.IRIs.NOTHING,
+                originalClasses = originalOntology.getClasses(),
+                thing = JswOWL.IRIs.THING;
 
                 // We add Nothing to the subsumer sets only if some of the original classes has Nothing
                 // as a subsumer.
@@ -459,7 +463,7 @@ BrandT.prototype = {
             rChainSubsumers = rightChainSubsumers;
 
             // For all subsumers of object property P, including P itself.
-            for (q in CONFIG.objectPropertySubsumers.get(p)) {
+            for (q in objectPropertySubsumers.get(p)) {
             // Add q as a label between A and B.
                 edges.add(a, b, q);
 
@@ -663,13 +667,13 @@ BrandT.prototype = {
         var args, axiom, axioms, axiomIndex, chainSubsumer, leftSubsumers, leftOprop,
             opropChainType, reqAxiomType, rightOprop, rightSubsumers;
 
-        axioms = CONFIG.ontology.axioms;
-
         leftSubsumers = new TripleStorage.tripleStorage();
-        rightSubsumers = new TripleStorage.tripleStorage();
 
-        reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_SUB;
-        opropChainType = CONFIG.owl.ExpressionTypes.OPE_CHAIN;
+      axioms = this.originalOntology.axioms;
+      rightSubsumers = new TripleStorage.tripleStorage();
+
+        reqAxiomType = JswOWL.ExpressionTypes.AXIOM_OPROP_SUB;
+        opropChainType = JswOWL.ExpressionTypes.OPE_CHAIN;
 
         for (axiomIndex = axioms.length; axiomIndex--;) {
             axiom = axioms[axiomIndex];
@@ -705,7 +709,7 @@ BrandT.prototype = {
             axiomCount = axioms.length,
             classSubsumers = this.classSubsumers,
             aBox = new TrimQueryABox.trimQueryABox(),
-            objectPropertySubsumers = CONFIG.objectPropertySubsumers,
+            objectPropertySubsumers = this.objectPropertySubsumers,
             originalOntology = this.originalOntology;
 
         /**
@@ -718,7 +722,7 @@ BrandT.prototype = {
                 subsumerIri;
 
             individualClasses = new PairStorage.pairStorage();
-            classFactType = CONFIG.owl.ExpressionTypes.FACT_CLASS;
+            classFactType = JswOWL.ExpressionTypes.FACT_CLASS;
 
             for (axiomIndex = axiomCount; axiomIndex--;) {
                 axiom = axioms[axiomIndex];
@@ -731,7 +735,7 @@ BrandT.prototype = {
                 classIri = axiom.classExpr.IRI;
 
                 for (subsumerIri in classSubsumers.get(classIri)) {
-                    if (CONFIG.originalOntology.containsClass(subsumerIri, CONFIG.owl.IRIs)) {
+                    if (originalOntology.containsClass(subsumerIri, JswOWL.IRIs)) {
                         individualClasses.add(individualIri, subsumerIri);
                     }
                 }
@@ -756,9 +760,9 @@ BrandT.prototype = {
                 reflexiveOpropType, reqAxiomType, reqExprType, rightInd, rightOprop, storage;
 
             storage = new TripleStorage.tripleStorage();
-            reflexiveOpropType = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_REFL;
-            opropFactType = CONFIG.owl.ExpressionTypes.FACT_OPROP;
-            individuals = CONFIG.originalOntology.getIndividuals();
+            reflexiveOpropType = JswOWL.ExpressionTypes.AXIOM_OPROP_REFL;
+            opropFactType = JswOWL.ExpressionTypes.FACT_OPROP;
+            individuals = originalOntology.getIndividuals();
 
             for (axiomIndex = axiomCount; axiomIndex--;) {
                 axiom = axioms[axiomIndex];
@@ -780,8 +784,8 @@ BrandT.prototype = {
                 }
             }
 
-            reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_SUB;
-            reqExprType = CONFIG.owl.ExpressionTypes.OPE_CHAIN;
+            reqAxiomType = JswOWL.ExpressionTypes.AXIOM_OPROP_SUB;
+            reqExprType = JswOWL.ExpressionTypes.OPE_CHAIN;
 
             do {
                 changesHappened = false;
@@ -815,7 +819,7 @@ BrandT.prototype = {
 
             // Put object property assertions into the database.
             for (oprop in storage.get(null, null)) {
-                if (!CONFIG.originalOntology.containsObjectProperty(oprop, CONFIG.owl.IRIs)) {
+                if (!originalOntology.containsObjectProperty(oprop, JswOWL.IRIs)) {
                     continue;
                 }
 
@@ -851,7 +855,7 @@ BrandT.prototype = {
         }
 
         //If the query is about class subsumption
-        if (query.triples[0].predicate.value == CONFIG.rdf.IRIs.SUBCLASS) {
+        if (query.triples[0].predicate.value == JswRDF.IRIs.SUBCLASS) {
             var subject, object, subsumee, subsumer, result;
 
             result = [];
@@ -896,9 +900,11 @@ BrandT.prototype = {
      *
      * @return jsw Ontology ontology which is a normalized version of the given one.
      */
-    normalizeOntology: function (ontology) {
+    normalizeOntology: function (ontology, resultOntology) {
         var axiom, axiomIndex, queue, nothingClass, resultAxioms,
-            rules, ruleCount, ruleIndex, instanceClasses;
+            rules, ruleCount, ruleIndex, instanceClasses,
+            ontology = this.originalOntology,
+            resultOntology = this.resultOntology;
 
         /**
          * Copies all entities from the source ontology to the result ontology.
@@ -914,7 +920,7 @@ BrandT.prototype = {
 
                     for (entityIri in entitiesOfType) {
                         if (entitiesOfType.hasOwnProperty(entityIri)) {
-                            CONFIG.resultOntology.entities[entityType][entityIri] =
+                            resultOntology.entities[entityType][entityIri] =
                                 entitiesOfType[entityIri];
                         }
                     }
@@ -930,9 +936,9 @@ BrandT.prototype = {
          * @return Object representing the entity created.
          */
         function createEntity(type) {
-            var newIri = CONFIG.resultOntology.createUniqueIRI(type);
+            var newIri = resultOntology.createUniqueIRI(type);
 
-            CONFIG.resultOntology.registerEntity(type, newIri, false);
+            resultOntology.registerEntity(type, newIri, false);
 
             return {
                 'type': type,
@@ -954,7 +960,7 @@ BrandT.prototype = {
             newClass = instanceClasses[individualIri];
 
             if (!newClass) {
-                newClass = createEntity(CONFIG.owl.ExpressionTypes.ET_CLASS);
+                newClass = createEntity(JswOWL.ExpressionTypes.ET_CLASS);
                 instanceClasses[individualIri] = newClass;
             }
 
@@ -972,8 +978,8 @@ BrandT.prototype = {
             var args, argIndex1, argIndex2, firstArg, intersectType, nothing,
                 resultAxiomType;
 
-            resultAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
-            intersectType = CONFIG.owl.ExpressionTypes.CE_INTERSECT;
+            resultAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+            intersectType = JswOWL.ExpressionTypes.CE_INTERSECT;
             nothing = nothingClass;
             args = statement.args;
 
@@ -1034,10 +1040,10 @@ BrandT.prototype = {
             var oprop = axiom.objectProperty;
 
             queue.enqueue({
-                'type': CONFIG.owl.ExpressionTypes.AXIOM_OPROP_SUB,
+                'type': JswOWL.ExpressionTypes.AXIOM_OPROP_SUB,
                 'args': [
                     {
-                        'type': CONFIG.owl.ExpressionTypes.OPE_CHAIN,
+                        'type': JswOWL.ExpressionTypes.OPE_CHAIN,
                         'args': [oprop, oprop]
                     },
                     oprop
@@ -1060,11 +1066,11 @@ BrandT.prototype = {
             newClass = getIndividualClass(individual);
 
             queue.enqueue({
-                'type': CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB,
+                'type': JswOWL.ExpressionTypes.AXIOM_CLASS_SUB,
                 'args': [newClass, statement.classExpr]
             });
             queue.enqueue({
-                'type': CONFIG.owl.ExpressionTypes.FACT_CLASS,
+                'type': JswOWL.ExpressionTypes.FACT_CLASS,
                 'individual': individual,
                 'classExpr': newClass
             });
@@ -1081,9 +1087,9 @@ BrandT.prototype = {
         function replaceObjectPropertyAssertion(statement, queue) {
             queue.enqueue(statement);
             queue.enqueue({
-                'type': CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB,
+                'type': JswOWL.ExpressionTypes.AXIOM_CLASS_SUB,
                 'args': [getIndividualClass(statement.leftIndividual), {
-                    'type': CONFIG.owl.ExpressionTypes.CE_OBJ_VALUES_FROM,
+                    'type': JswOWL.ExpressionTypes.CE_OBJ_VALUES_FROM,
                     'opropExpr': statement.objectProperty,
                     'classExpr': getIndividualClass(statement.rightIndividual)
                 }]
@@ -1098,14 +1104,14 @@ BrandT.prototype = {
                 equivalentObjectProperties, objectPropertyAssertion, queue, subClassOf,
                 subObjPropertyOf, transitiveObjectProperty;
 
-            disjointClasses = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_DISJOINT;
-            equivalentClasses = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_EQ;
-            equivalentObjectProperties = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_EQ;
-            subObjPropertyOf = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_SUB;
-            subClassOf = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
-            transitiveObjectProperty = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_TRAN;
-            classAssertion = CONFIG.owl.ExpressionTypes.FACT_CLASS;
-            objectPropertyAssertion = CONFIG.owl.ExpressionTypes.FACT_OPROP;
+            disjointClasses = JswOWL.ExpressionTypes.AXIOM_CLASS_DISJOINT;
+            equivalentClasses = JswOWL.ExpressionTypes.AXIOM_CLASS_EQ;
+            equivalentObjectProperties = JswOWL.ExpressionTypes.AXIOM_OPROP_EQ;
+            subObjPropertyOf = JswOWL.ExpressionTypes.AXIOM_OPROP_SUB;
+            subClassOf = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+            transitiveObjectProperty = JswOWL.ExpressionTypes.AXIOM_OPROP_TRAN;
+            classAssertion = JswOWL.ExpressionTypes.FACT_CLASS;
+            objectPropertyAssertion = JswOWL.ExpressionTypes.FACT_OPROP;
             queue = new Queue.queue();
             axioms = ontology.axioms;
 
@@ -1141,8 +1147,8 @@ BrandT.prototype = {
 
         instanceClasses = {};
         nothingClass = {
-            'type': CONFIG.owl.ExpressionTypes.ET_CLASS,
-            'IRI': CONFIG.owl.IRIs.NOTHING
+            'type': JswOWL.ExpressionTypes.ET_CLASS,
+            'IRI': JswOWL.IRIs.NOTHING
         };
 
         rules = [
@@ -1166,15 +1172,15 @@ BrandT.prototype = {
                 var lastOpropIndex, newOprop, normalized, opropChainType, opropIndex, opropType,
                     prevOprop, reqAxiomType, srcChain;
 
-                opropChainType = CONFIG.owl.ExpressionTypes.OPE_CHAIN;
-                reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_OPROP_SUB;
+                opropChainType = JswOWL.ExpressionTypes.OPE_CHAIN;
+                reqAxiomType = JswOWL.ExpressionTypes.AXIOM_OPROP_SUB;
 
                 if (axiom.type !== reqAxiomType || axiom.args[0].type !== opropChainType ||
                     axiom.args[0].args.length <= 2) {
                     return null;
                 }
 
-                opropType = CONFIG.owl.ExpressionTypes.ET_OPROP;
+                opropType = JswOWL.ExpressionTypes.ET_OPROP;
                 prevOprop = createEntity(opropType);
                 srcChain = axiom.args[0].args;
 
@@ -1241,9 +1247,9 @@ BrandT.prototype = {
                 function (axiom) {
                 var exprs, exprIndex, firstArg, normalized, reqAxiomType;
 
-                reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
+                reqAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
 
-                if (axiom.type !== reqAxiomType || axiom.args[1].type !== CONFIG.owl.ExpressionTypes.CE_INTERSECT) {
+                if (axiom.type !== reqAxiomType || axiom.args[1].type !== JswOWL.ExpressionTypes.CE_INTERSECT) {
                     return null;
                 }
 
@@ -1278,8 +1284,8 @@ BrandT.prototype = {
                 function (axiom) {
                 var classType, newClassExpr, reqAxiomType;
 
-                classType = CONFIG.owl.ExpressionTypes.ET_CLASS;
-                reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
+                classType = JswOWL.ExpressionTypes.ET_CLASS;
+                reqAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
 
                 if (axiom.type !== reqAxiomType || axiom.args[0].type === classType ||
                     axiom.args[1].type === classType) {
@@ -1320,9 +1326,9 @@ BrandT.prototype = {
                 var args, argIndex, classExpr, classType, newClassExpr, newIntersectArgs,
                     normalized, reqAxiomType, reqExprType, ruleApplied;
 
-                reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
-                reqExprType = CONFIG.owl.ExpressionTypes.CE_INTERSECT;
-                classType = CONFIG.owl.ExpressionTypes.ET_CLASS;
+                reqAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+                reqExprType = JswOWL.ExpressionTypes.CE_INTERSECT;
+                classType = JswOWL.ExpressionTypes.ET_CLASS;
 
                 if (axiom.type !== reqAxiomType || axiom.args[0].type !== reqExprType) {
                     return null;
@@ -1384,9 +1390,9 @@ BrandT.prototype = {
                 var firstArg, classType, newClassExpr, newObjSomeValuesExpr, reqAxiomType,
                     reqExprType;
 
-                classType = CONFIG.owl.ExpressionTypes.ET_CLASS;
-                reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
-                reqExprType = CONFIG.owl.ExpressionTypes.CE_OBJ_VALUES_FROM;
+                classType = JswOWL.ExpressionTypes.ET_CLASS;
+                reqAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+                reqExprType = JswOWL.ExpressionTypes.CE_OBJ_VALUES_FROM;
 
                 if (axiom.type !== reqAxiomType || axiom.args[0].type !== reqExprType ||
                     axiom.args[0].classExpr.type === classType) {
@@ -1427,9 +1433,9 @@ BrandT.prototype = {
                 function (axiom) {
                 var classType, newClassExpr, reqAxiomType, reqExprType, secondArg;
 
-                classType = CONFIG.owl.ExpressionTypes.ET_CLASS;
-                reqAxiomType = CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB;
-                reqExprType = CONFIG.owl.ExpressionTypes.CE_OBJ_VALUES_FROM;
+                classType = JswOWL.ExpressionTypes.ET_CLASS;
+                reqAxiomType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+                reqExprType = JswOWL.ExpressionTypes.CE_OBJ_VALUES_FROM;
 
                 if (axiom.type !== reqAxiomType || axiom.args[1].type !== reqExprType ||
                     axiom.args[1].classExpr.type === classType) {
@@ -1467,13 +1473,13 @@ BrandT.prototype = {
                 function (statement) {
                 var firstArg;
 
-                if (statement.type !== CONFIG.owl.ExpressionTypes.AXIOM_CLASS_SUB) {
+                if (statement.type !== JswOWL.ExpressionTypes.AXIOM_CLASS_SUB) {
                     return null;
                 }
 
                 firstArg = statement.args[0];
 
-                if (firstArg.type === CONFIG.owl.ExpressionTypes.ET_CLASS && firstArg.IRI === CONFIG.owl.IRIs.NOTHING) {
+                if (firstArg.type === JswOWL.ExpressionTypes.ET_CLASS && firstArg.IRI === JswOWL.IRIs.NOTHING) {
                     return [];
                 }
 
@@ -1509,11 +1515,11 @@ BrandT.prototype = {
             if (ruleIndex < 0) {
             // If nothing can be done to the axiom, it is returned unchanged by all rule
             // functions and the axiom is in one of the normal forms already.
-                CONFIG.resultOntology.axioms.push(axiom);
+                this.resultOntology.axioms.push(axiom);
             }
         }
 
-        return CONFIG.resultOntology;
+        return this.resultOntology;
     }
 };
 

@@ -3,7 +3,7 @@
  */
 
 /** Represents a queue implementing FIFO mechanism. */
-var Queue = function () {
+Queue = function () {
     this.queue = [];
     this.emptyElements = 0;
 };
@@ -59,8 +59,6 @@ Queue.prototype = {
 };
 
 module.exports = {
-    queue: function() {
-        return new Queue();
-    }
+    queue: Queue
 };
 

@@ -2,9 +2,9 @@
  * Created by Spadon on 14/10/2014.
  */
 
-var DOMParser = require('xmldom').DOMParser;
+DOMParser = require('xmldom').DOMParser;
 
-module.exports = {
+JswUtils = {
 
     /**
      * Parses string into the XML DOM object in a browser-independent way.
@@ -50,3 +50,5 @@ module.exports = {
         return str.replace(/^\s*/, '').replace(/\s*$/, '');
     }
 };
+
+module.exports = JswUtils;

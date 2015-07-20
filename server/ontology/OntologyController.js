@@ -7,11 +7,7 @@ var fs = require('fs'),
     path = require('path'),
 
     JswParser = require('./jsw/JswParser'),
-    JswOWL = require('./jsw/JswOWL'),
-    JswRDF = require('./jsw/JswRDF'),
-    JswOntology = require('./jsw/JswOntology'),
     JswBrandT = require('./jsw/JswBrandT'),
-    Exporter = require('./jsw/Exporter'),
     JswSPARQL = require('./jsw/JswSPARQL'),
 
     ClassificationData = null,
@@ -62,19 +58,13 @@ module.exports = {
     },
 
     generateReasoner: function(req, res, next) {
-        var data = {
-                ontology: req.ontology,
-                resultOntology: new JswOntology.ontology(),
-                owl: JswOWL,
-                rdf: JswRDF
-            },
+        var ontology = req.ontology,
             initialTime = new Date().getTime();
 
-        var reasoner = new JswBrandT.reasoner(data);
+        var reasoner = new JswBrandT.reasoner(ontology);
 
         req.processingDelay  = new Date().getTime() - initialTime;
         req.classificationData = {
-            ontology: data.resultOntology,
             reasoner: reasoner
         };
 
@@ -103,7 +93,7 @@ module.exports = {
                 'ontology: ' + JSON.stringify(ClassificationData.ontology) +
             '}'
         );
-        
+
         res.status(200).send({
             data : {
                 reasoner: stringifiedReasoner,
@@ -132,21 +122,6 @@ module.exports = {
         });
     },
 
-    /**
-     * Exports need JS files containing
-     * prototypes for use on client
-     */
-    saveExportsToClient: function() {
-        Exporter.getJsExports().then(function(content) {
-            fs.writeFile("./app/workers/owlreasoner_common.js", content, function(err) {
-                if(err) {
-                    console.log(err);
-                }
-            });
-            return;
-        });
-    },
-
     processSPARQL: function(req, res) {
         var initialTime = req.param('time'),
             receivedReqTime = new Date().getTime(),
@@ -162,7 +137,7 @@ module.exports = {
                 time: processedTime
             });
         } else {
-            var sparql = new JswSPARQL.sparql(),
+            var sparql = JswSPARQL.sparql,
                 query = sparql.parse(req.param('query')),
                 results = ClassificationData.reasoner.aBox.answerQuery(query);
 

@@ -2,7 +2,7 @@
  * Created by Spadon on 17/10/2014.
  */
 
-module.exports = {
+JswRDF = {
 
     ExpressionTypes: {
         VAR: 0,
@@ -19,3 +19,5 @@ module.exports = {
         SUBCLASS: 'http://www.w3.org/2002/07/owl#SubClassOf'
     }
 };
+
+module.exports = JswRDF;

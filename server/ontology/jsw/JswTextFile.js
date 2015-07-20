@@ -2,14 +2,14 @@
  * Created by Spadon on 14/10/2014.
  */
 
-var JswUtils = require('./JswUtils');
+JswUtils = require('./JswUtils');
 
 /**
  * TextFile objects allow loading the text content of the file specified by the url.
  *
  * @param url URL of the text file.
  */
-var TextFile = function (url) {
+TextFile = function (url) {
     var newUrl = JswUtils.trim(url);
 
     if (!JswUtils.trim(newUrl)) {

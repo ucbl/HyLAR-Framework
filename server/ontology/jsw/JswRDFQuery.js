@@ -1,7 +1,7 @@
 /**
  * Created by Spadon on 17/10/2014.
  */
-var RDFQuery = function() {
+RDFQuery = function() {
     /** Represents a query to the RDF data. */
     var rdfQuery = function () {
         /** IRI to serve as a base of all IRI references in the query. */

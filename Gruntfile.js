@@ -100,7 +100,7 @@ module.exports = function (grunt) {
       options: {
         port: 9000,
         // Change this to '0.0.0.0' to access the server from outside.
-        hostname: 'localhost',
+        hostname: 'localhost'
 	    //livereload: 35729
       },
       livereload: {
@@ -383,7 +383,19 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
+    },
+
+    browserify: {
+      dist: {
+        files: {
+          'app/scripts/reasoning/jsw.js': ['server/ontology/jsw/*.js']
+        },
+        options: {
+          external: ['lodash']
+        }
+      }
     }
+
   });
 
 
@@ -392,8 +404,11 @@ module.exports = function (grunt) {
       return grunt.task.run(['build', 'connect:dist:keepalive']);
     }
 
+    grunt.loadNpmTasks('grunt-browserify');
+
     grunt.task.run([
       /* DEV ENV */
+      'browserify',
       'ngconstant:development',
       'clean:server',
       'wiredep',
@@ -406,7 +421,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('serve-prod', 'Compile then start a connect web server', function (target) {
         if (target === 'dist') {
-            return grunt.task.run(['build', 'connect:dist:keepalive']);
+            return grunt.task.run(['browserify', 'build', 'connect:dist:keepalive']);
         }
 
         grunt.task.run([
@@ -417,7 +432,7 @@ module.exports = function (grunt) {
             'concurrent:server',
             'autoprefixer',
 	    'connect:livereload',
-	    'watch'	     
+	    'watch'
         ]);
     });
 

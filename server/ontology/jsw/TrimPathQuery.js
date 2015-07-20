@@ -16,12 +16,151 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 if (typeof(TrimPath) == 'undefined')
-    TrimPath = {};
+  TrimPath = {};
+  QueryLang = function(){};
 
 (function() { // Using a closure to keep global namespace clean.
     var theEval   = eval;
     var theString = String;
     var theArray  = Array;
+
+    QueryLang.prototype.parseSQL = function(sqlQueryIn, paramsArr) { // From sql to tql.
+        var sqlQuery = sqlQueryIn.replace(/\n/g, ' ').replace(/\r/g, '');
+
+        if (paramsArr != null) { // Convert " ?" to args from optional paramsArr.
+          if (paramsArr instanceof theArray == false)
+            paramsArr = [ paramsArr ];
+
+          var sqlParts = sqlQuery.split(' ?');
+          for (var i = 0; i < sqlParts.length - 1; i++)
+            sqlParts[i] = sqlParts[i] + ' ' + cleanString(paramsArr[i], true);
+          sqlQuery = sqlParts.join('');
+        }
+
+        sqlQuery = sqlQuery.replace(/ AS ([_a-zA-z0-9]+)/g, ".AS('$1')");
+
+        var err = function(errMsg) {
+          throw ("[ERROR: " + errMsg + " in query: " + sqlQueryIn + "]");
+        };
+
+        var query_type = sqlQuery.split(/\s+/)[0];
+        if (query_type == 'DELETE')
+          query_type = 'DESTROY';
+
+        if (!arrayInclude(['SELECT', 'DESTROY', 'UPDATE', 'INSERT'], query_type))
+          err("not a valid query type");
+
+        var strip_whitespace = function(str) {
+          return str.replace(/\s+/g, '');
+        }
+
+        if (query_type == 'SELECT' || query_type == 'DESTROY') {
+
+          var fromSplit = sqlQuery.substring(7).split(" FROM ");
+          if (fromSplit.length != 2)
+            err("missing a FROM clause");
+
+          //SELECT Invoice.*, Customer.* FROM Invoice, Customer
+          //SELECT * FROM Invoice, Customer
+          //DELETE things, relationships FROM relationships LEFT OUTER JOIN things ON things.relationship_id = relationships.id WHERE relationships.id = 2
+          //SELECT * FROM relationships LEFT OUTER JOIN users ON relationships.created_by = users.id AND relationships.updated_by = users.id LEFT OUTER JOIN things ON things.relatedrelationship_id = relationships.id  ORDER BY relationships.updated_at DESC LIMIT 0, 20
+          var columnsClause = fromSplit[0].replace(/\.\*/g, ".ALL");
+          var remaining     = fromSplit[1];
+          var fromClause    = findClause(remaining, /\sWHERE\s|\sGROUP BY\s|\sHAVING\s|\sORDER BY\s|\sLIMIT/);
+          var fromTableClause = findClause(fromClause, /\sLEFT OUTER JOIN\s/);
+          var fromTables = strip_whitespace(fromTableClause).split(',');
+          remaining = remaining.substring(fromClause.length);
+
+          var fromClauseSplit = fromClause.split(" LEFT OUTER JOIN ");
+          var fromClauseParts = [fromClauseSplit[0]];
+          var leftJoinComponents;
+          for (var i = 1; i < fromClauseSplit.length; i++) {
+            leftJoinComponents = /(\w+)\sON\s(.+)/.exec(fromClauseSplit[i]);
+            fromTables.push(leftJoinComponents[1]);
+            fromClauseParts.push( '('+leftJoinComponents[1]+')'+'.ON(WHERE_SQL("'+leftJoinComponents[2]+'"))' );
+          }
+          fromClause = fromClauseParts.join(", LEFT_OUTER_JOIN");
+
+          if(strip_whitespace(columnsClause) == '*') {
+            var new_columns = [];
+            for(var i=0; i<fromTables.length; i++) {
+              new_columns.push(fromTables[i]+'.ALL')
+            }
+            columnsClause = columnsClause.replace(/\*/, new_columns.join(', '))
+          }
+          var whereClause   = findClause(remaining, /\sGROUP BY\s|\sHAVING\s|\sORDER BY\s|\sLIMIT/);
+          remaining = remaining.substring(whereClause.length);
+          var groupByClause = findClause(remaining, /\sHAVING\s|\sORDER BY\s|\sLIMIT /);
+          remaining = remaining.substring(groupByClause.length);
+          var havingClause  = findClause(remaining, /\sORDER BY\s|\sLIMIT /);
+          remaining = remaining.substring(havingClause.length);
+          var orderByClause = findClause(remaining, /\sLIMIT /).replace(/\sASC/g, ".ASC").replace(/\sDESC/g, ".DESC");
+          remaining = remaining.substring(orderByClause.length);
+          var limitClause   = remaining;
+
+          var tql = [ 'SELECT(FROM(', fromClause, '), ', columnsClause];
+          if (whereClause.length > 0)
+            tql.push(', WHERE_SQL("' + whereClause.substring(7) + '")');
+          if (groupByClause.length > 0)
+            tql.push(', GROUP_BY(' + groupByClause.substring(10) + ')');
+          if (havingClause.length > 0)
+            tql.push(', HAVING_SQL("' + havingClause.substring(8) + '")');
+          if (orderByClause.length > 0)
+            tql.push(', ORDER_BY(' + orderByClause.substring(10) + ')');
+          if (limitClause.length > 0)
+            tql.push(', LIMIT(' + limitClause.substring(7) + ')');
+          tql.push(')');
+        }
+        else if (query_type == "INSERT") {
+          // accepts sql of the format: INSERT INTO things (field1, field2) VALUES ('value1', 'value2')
+          var intoSplit = sqlQuery.substring(6).split(" INTO ");
+          if (intoSplit.length != 2)
+            err("missing an INTO clause");
+          var insertion_regex = /^\s*(\w+)\s*\((.+)\)\s+VALUES\s+\((.+)\)/
+          var parsed_sql = intoSplit[1].match(insertion_regex);
+          var table_name = parsed_sql[1];
+          var fields = strip_whitespace(parsed_sql[2]).split(',');
+          var values = parsed_sql[3].split(',');
+          if (fields.length != values.length)
+            err("values and fields must have same number of elements");
+
+          tql = ['INSERT(', table_name, ',', simpleJson(fields, values), ')'];
+        }
+        else if (query_type == "UPDATE") {
+          // UPDATE things SET relatedrelationship_id=2, name="poop" WHERE things.relatedrelationship_id=1
+          //var tql = ['UPDATE(FROM(things ), {"relatedrelationship_id": "2"}, WHERE_SQL("things.relatedrelationship_id = 1"))'];
+          var setSplit = sqlQuery.substring(7).split(" SET ");
+          if (setSplit.length != 2)
+            err("missing a SET clause");
+          var fromClause = setSplit[0];
+          var remaining  = setSplit[1];
+          var assignmentClause   = findClause(remaining, /\sWHERE\s/);
+          remaining = remaining.substring(assignmentClause.length);
+          var whereClause = remaining;
+          var assignmentArray = assignmentClause.split(',');
+          var fields = [];
+          var values = [];
+          for (var i=0; i<assignmentArray.length; i++) {
+            var components = assignmentArray[i].split('=');
+            fields.push(strip(components[0]));
+            values.push(strip(components[1]));
+          }
+          var update_regex = /^UPDATE\s+(\w+)\s+SET\s+(\w+\s*=\s*\w+)/
+          var update_regex = /^UPDATE\s+(\w+)\s+SET\s+(\w+\s*=\s*\w+)/
+          var parsed_sql = sqlQuery.match(update_regex);
+
+          var tql = ['UPDATE(FROM(', fromClause, '), ', simpleJson(fields, values)];
+          tql.push(', WHERE_SQL("' + whereClause.substring(7) + '")');
+          tql.push(')');
+        }
+        if(query_type == 'DESTROY') {
+          tql.unshift('DESTROY(');
+          tql.push(')');
+        }
+        with (this) {
+          return eval(tql.join(''));
+        }
+    };
 
     TrimPath.TEST = TrimPath.TEST || {}; // For exposing to testing only.
 
@@ -97,8 +236,6 @@ if (typeof(TrimPath) == 'undefined')
 
     var TODO  = function() { throw "currently unsupported"; };
     var USAGE = function() { throw "incorrect keyword usage"; };
-
-    var QueryLang = function() {};
 
     TrimPath.makeQueryLang = function(tableInfos, etc) {
         if (etc == null)
@@ -851,150 +988,9 @@ if (typeof(TrimPath) == 'undefined')
         return str.substring(0, clauseEnd);
     }
 
-    QueryLang.prototype.parseSQL = function(sqlQueryIn, paramsArr) { // From sql to tql.
-        var sqlQuery = sqlQueryIn.replace(/\n/g, ' ').replace(/\r/g, '');
-
-        if (paramsArr != null) { // Convert " ?" to args from optional paramsArr.
-            if (paramsArr instanceof theArray == false)
-                paramsArr = [ paramsArr ];
-
-            var sqlParts = sqlQuery.split(' ?');
-            for (var i = 0; i < sqlParts.length - 1; i++)
-                sqlParts[i] = sqlParts[i] + ' ' + cleanString(paramsArr[i], true);
-            sqlQuery = sqlParts.join('');
-        }
-
-        sqlQuery = sqlQuery.replace(/ AS ([_a-zA-z0-9]+)/g, ".AS('$1')");
-
-        var err = function(errMsg) {
-            throw ("[ERROR: " + errMsg + " in query: " + sqlQueryIn + "]");
-        };
-
-        var query_type = sqlQuery.split(/\s+/)[0];
-        if (query_type == 'DELETE')
-            query_type = 'DESTROY';
-
-        if (!arrayInclude(['SELECT', 'DESTROY', 'UPDATE', 'INSERT'], query_type))
-            err("not a valid query type");
-
-        var strip_whitespace = function(str) {
-            return str.replace(/\s+/g, '');
-        }
-
-        if (query_type == 'SELECT' || query_type == 'DESTROY') {
-
-            var fromSplit = sqlQuery.substring(7).split(" FROM ");
-            if (fromSplit.length != 2)
-                err("missing a FROM clause");
-
-            //SELECT Invoice.*, Customer.* FROM Invoice, Customer
-            //SELECT * FROM Invoice, Customer
-            //DELETE things, relationships FROM relationships LEFT OUTER JOIN things ON things.relationship_id = relationships.id WHERE relationships.id = 2
-            //SELECT * FROM relationships LEFT OUTER JOIN users ON relationships.created_by = users.id AND relationships.updated_by = users.id LEFT OUTER JOIN things ON things.relatedrelationship_id = relationships.id  ORDER BY relationships.updated_at DESC LIMIT 0, 20
-            var columnsClause = fromSplit[0].replace(/\.\*/g, ".ALL");
-            var remaining     = fromSplit[1];
-            var fromClause    = findClause(remaining, /\sWHERE\s|\sGROUP BY\s|\sHAVING\s|\sORDER BY\s|\sLIMIT/);
-            var fromTableClause = findClause(fromClause, /\sLEFT OUTER JOIN\s/);
-            var fromTables = strip_whitespace(fromTableClause).split(',');
-            remaining = remaining.substring(fromClause.length);
-
-            var fromClauseSplit = fromClause.split(" LEFT OUTER JOIN ");
-            var fromClauseParts = [fromClauseSplit[0]];
-            var leftJoinComponents;
-            for (var i = 1; i < fromClauseSplit.length; i++) {
-                leftJoinComponents = /(\w+)\sON\s(.+)/.exec(fromClauseSplit[i]);
-                fromTables.push(leftJoinComponents[1]);
-                fromClauseParts.push( '('+leftJoinComponents[1]+')'+'.ON(WHERE_SQL("'+leftJoinComponents[2]+'"))' );
-            }
-            fromClause = fromClauseParts.join(", LEFT_OUTER_JOIN");
-
-            if(strip_whitespace(columnsClause) == '*') {
-                var new_columns = [];
-                for(var i=0; i<fromTables.length; i++) {
-                    new_columns.push(fromTables[i]+'.ALL')
-                }
-                columnsClause = columnsClause.replace(/\*/, new_columns.join(', '))
-            }
-            var whereClause   = findClause(remaining, /\sGROUP BY\s|\sHAVING\s|\sORDER BY\s|\sLIMIT/);
-            remaining = remaining.substring(whereClause.length);
-            var groupByClause = findClause(remaining, /\sHAVING\s|\sORDER BY\s|\sLIMIT /);
-            remaining = remaining.substring(groupByClause.length);
-            var havingClause  = findClause(remaining, /\sORDER BY\s|\sLIMIT /);
-            remaining = remaining.substring(havingClause.length);
-            var orderByClause = findClause(remaining, /\sLIMIT /).replace(/\sASC/g, ".ASC").replace(/\sDESC/g, ".DESC");
-            remaining = remaining.substring(orderByClause.length);
-            var limitClause   = remaining;
-
-            var tql = [ 'SELECT(FROM(', fromClause, '), ', columnsClause];
-            if (whereClause.length > 0)
-                tql.push(', WHERE_SQL("' + whereClause.substring(7) + '")');
-            if (groupByClause.length > 0)
-                tql.push(', GROUP_BY(' + groupByClause.substring(10) + ')');
-            if (havingClause.length > 0)
-                tql.push(', HAVING_SQL("' + havingClause.substring(8) + '")');
-            if (orderByClause.length > 0)
-                tql.push(', ORDER_BY(' + orderByClause.substring(10) + ')');
-            if (limitClause.length > 0)
-                tql.push(', LIMIT(' + limitClause.substring(7) + ')');
-            tql.push(')');
-        }
-        else if (query_type == "INSERT") {
-            // accepts sql of the format: INSERT INTO things (field1, field2) VALUES ('value1', 'value2')
-            var intoSplit = sqlQuery.substring(6).split(" INTO ");
-            if (intoSplit.length != 2)
-                err("missing an INTO clause");
-            var insertion_regex = /^\s*(\w+)\s*\((.+)\)\s+VALUES\s+\((.+)\)/
-            var parsed_sql = intoSplit[1].match(insertion_regex);
-            var table_name = parsed_sql[1];
-            var fields = strip_whitespace(parsed_sql[2]).split(',');
-            var values = parsed_sql[3].split(',');
-            if (fields.length != values.length)
-                err("values and fields must have same number of elements");
-
-            tql = ['INSERT(', table_name, ',', simpleJson(fields, values), ')'];
-        }
-        else if (query_type == "UPDATE") {
-            // UPDATE things SET relatedrelationship_id=2, name="poop" WHERE things.relatedrelationship_id=1
-            //var tql = ['UPDATE(FROM(things ), {"relatedrelationship_id": "2"}, WHERE_SQL("things.relatedrelationship_id = 1"))'];
-            var setSplit = sqlQuery.substring(7).split(" SET ");
-            if (setSplit.length != 2)
-                err("missing a SET clause");
-            var fromClause = setSplit[0];
-            var remaining  = setSplit[1];
-            var assignmentClause   = findClause(remaining, /\sWHERE\s/);
-            remaining = remaining.substring(assignmentClause.length);
-            var whereClause = remaining;
-            var assignmentArray = assignmentClause.split(',');
-            var fields = [];
-            var values = [];
-            for (var i=0; i<assignmentArray.length; i++) {
-                var components = assignmentArray[i].split('=');
-                fields.push(strip(components[0]));
-                values.push(strip(components[1]));
-            }
-            var update_regex = /^UPDATE\s+(\w+)\s+SET\s+(\w+\s*=\s*\w+)/
-            var parsed_sql = sqlQuery.match(update_regex);
-
-            var tql = ['UPDATE(FROM(', fromClause, '), ', simpleJson(fields, values)];
-            tql.push(', WHERE_SQL("' + whereClause.substring(7) + '")');
-            tql.push(')');
-        }
-        if(query_type == 'DESTROY') {
-            tql.unshift('DESTROY(');
-            tql.push(')');
-        }
-        with (this) {
-            return eval(tql.join(''));
-        }
-    }
 }) ();
 
 module.exports = {
-    makeQueryLang: function (tableInfos, etc) {
-        return TrimPath.makeQueryLang(tableInfos, etc);
-    },
-
-    toString: function () {
-        return TrimPath.toString();
-    }
-}
+    makeQueryLang: TrimPath.makeQueryLang,
+    QueryLang: QueryLang
+};
