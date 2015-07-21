@@ -36,6 +36,10 @@ app.post('/ontology', OntologyController.upload)
 //Ontology listing
 app.get('/ontology', OntologyController.list);
 
+//External full step reasoning, no caching
+app.get('/sparql',  OntologyController.getExternalOntology, OntologyController.parseString, OntologyController.generateReasoner,
+                    OntologyController.processSPARQL);
+
 //Time
 
 // Launching server

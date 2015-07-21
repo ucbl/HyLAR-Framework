@@ -5,6 +5,7 @@
 var fs = require('fs'),
     _ = require('lodash'),
     path = require('path'),
+    request = require('request'),
 
     JswParser = require('./jsw/JswParser'),
     JswBrandT = require('./jsw/JswBrandT'),
@@ -128,6 +129,10 @@ module.exports = {
             requestDelay =  receivedReqTime - initialTime,
             processedTime;
 
+        if(req.classificationData) {
+          ClassificationData = req.classificationData;
+        }
+
         if(!ClassificationData) {
             processedTime = new Date().getTime();
             res.status(500).send({
@@ -170,5 +175,26 @@ module.exports = {
 
     list: function(req, res) {
         res.send(fs.readdirSync(ontoDir));
+    },
+
+    /**
+     * External OWL File content to text
+     * @param req
+     * @param res
+     * @param next
+     */
+    getExternalOntology: function(req, res, next) {
+      var initialTime = 0,
+        receivedReqTime = new Date().getTime();
+
+      req.requestDelay =  receivedReqTime - initialTime;
+      var url = req.param('url');
+
+      request.get(url, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          req.owl = body.toString().replace(/(&)([a-z0-9]+)(;)/gi, '$2:');
+          next();
+        }
+      });
     }
 };
