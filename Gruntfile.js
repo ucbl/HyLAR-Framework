@@ -426,13 +426,14 @@ module.exports = function (grunt) {
 
         grunt.task.run([
             /* PROD ENV */
+            'browserify',
             'ngconstant:production',
             'clean:server',
             'wiredep',
             'concurrent:server',
             'autoprefixer',
-	    'connect:livereload',
-	    'watch'
+            'connect:livereload',
+            'watch'
         ]);
     });
 
