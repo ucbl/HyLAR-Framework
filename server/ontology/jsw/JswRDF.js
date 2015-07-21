@@ -16,7 +16,7 @@ JswRDF = {
 
         //AJOUT Lionel
         /** IRI of the OWL class subsumption property */
-        SUBCLASS: 'http://www.w3.org/2002/07/owl#SubClassOf'
+        SUBCLASS: 'http://www.w3.org/2000/01/rdf-schema#subClassOf'
     }
 };
 

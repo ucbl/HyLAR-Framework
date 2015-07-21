@@ -103,6 +103,12 @@ TrimQueryABox.prototype = {
         leftclassName: { type: 'String' }},
       ObjectPropertyAssertion : { objectProperty : { type: 'String' },
         leftIndividual : { type: 'String' },
+        rightIndividual : { type: 'String' }},
+      ClassSubsumer : { class : { type: 'String' },
+        class : { type: 'String' },
+        classSubsumer : { type: 'String' }},
+      ObjectPropertySubsumer: { class : { type: 'String' },
+        leftIndividual : { type: 'String' },
         rightIndividual : { type: 'String' }}
     });
   },
@@ -114,7 +120,7 @@ TrimQueryABox.prototype = {
    * @return string representation of the given RDF query.
    */
   createSql: function (query) {
-    var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, /* AJOUT Lionel subClassOfIri, */
+    var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
       select, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount, varField, varFields, varIndex, where;
 
     from = '';
@@ -176,9 +182,9 @@ TrimQueryABox.prototype = {
           //AJOUT Lionel (pour le traitement des requêtes de subsomption de classes
 
         } else if (predicateValue === subClassOfIri) {
-           from += 'ClassAssertion AS ' + table + ', ';
-           subjectField = 'leftclassName';
-           objectField = 'rightclassName';
+           from += 'ClassSubsumer AS ' + table + ', ';
+           subjectField = 'class';
+           objectField = 'classSubsumer';
 
         } else {
           from += 'ObjectPropertyAssertion AS ' + table + ', ';
