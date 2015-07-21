@@ -9,7 +9,9 @@ TrimQueryABox = function () {
   /** The object storing ABox data. */
   this.database = {
     ClassAssertion: [],
-    ObjectPropertyAssertion: []
+    ObjectPropertyAssertion: [],
+    ClassSubsumer: [],
+    ObjectPropertySubsumer: []
   };
 
   /** The object which can be used to send queries against ABoxes. */
@@ -65,6 +67,30 @@ TrimQueryABox.prototype = {
   },
 
   /**
+   * @author Mehdi Terdjimi
+   * Adds a class subsumer to the database.
+   * (classIri subClassOf classSubsumerIri)
+   */
+  addClassSubsumer: function (classIri, classSubsumerIri) {
+    this.database.ClassSubsumer.push({
+      class: classIri,
+      classSubsumer: classSubsumerIri
+    });
+  },
+
+  /**
+   * @author Mehdi Terdjimi
+   * Adds a object property subsumer to the database.
+   * (objectPropertyIri subPropertyOf objectPropertySubsumerIri)
+   */
+  addObjectPropertySubsumer: function (objectPropertyIri, objectPropertySubsumerIri) {
+    this.database.ObjectPropertySubsumer.push({
+      objectProperty: objectPropertyIri,
+      objectPropertySubsumer: objectPropertySubsumerIri
+    });
+  },
+
+  /**
    * Creates an object which can be used for sending queries against the database.
    *
    * @return Object which can be used for sending queries against the database.
@@ -72,7 +98,9 @@ TrimQueryABox.prototype = {
   createQueryLang: function () {
     return TrimPath.makeQueryLang({
       ClassAssertion : { individual : { type: 'String' },
-        className : { type: 'String' }},
+        className : { type: 'String' },
+        rightclassName: { type: 'String' },
+        leftclassName: { type: 'String' }},
       ObjectPropertyAssertion : { objectProperty : { type: 'String' },
         leftIndividual : { type: 'String' },
         rightIndividual : { type: 'String' }}
@@ -92,8 +120,7 @@ TrimQueryABox.prototype = {
     from = '';
     where = '';
     rdfTypeIri = rdf.IRIs.TYPE;
-//AJOUT Lionel
-//subClassOfIri = jsw.rdf.IRIs.SUBCLASS;
+    subClassOfIri = rdf.IRIs.SUBCLASS;
 
     varFields = {};
 
@@ -146,13 +173,12 @@ TrimQueryABox.prototype = {
           subjectField = 'individual';
           objectField = 'className';
 
-//AJOUT Lionel (pour le traitement des requêtes de subsomption de classes
-          /*
-           } else if (predicateValue === subClassOfIri) {
+          //AJOUT Lionel (pour le traitement des requêtes de subsomption de classes
+
+        } else if (predicateValue === subClassOfIri) {
            from += 'ClassAssertion AS ' + table + ', ';
            subjectField = 'leftclassName';
            objectField = 'rightclassName';
-           */
 
         } else {
           from += 'ObjectPropertyAssertion AS ' + table + ', ';

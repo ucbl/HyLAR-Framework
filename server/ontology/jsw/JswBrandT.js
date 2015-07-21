@@ -831,8 +831,43 @@ BrandT.prototype = {
             }
         }
 
+      /**
+       * Puts class subsumers implied by the ontology into the database.
+       * @author Mehdi Terdjimi
+       * @return Array containing all class subsumers implied by the ontology.
+       */
+      function rewriteClassSubsumers() {
+        var classIri, classSubsumerIri, subsumerClasses, axiomIndex, axiom, axiomCount, axiomClassSubType;
+
+        subsumerClasses = new PairStorage.pairStorage();
+        axiomClassSubType = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
+        axiomCount = axioms.length;
+
+        for (axiomIndex = axiomCount; axiomIndex--;) {
+          axiom = axioms[axiomIndex];
+
+          if (axiom.type !== axiomClassSubType) {
+            continue;
+          }
+
+          classIri = axiom.args[0].IRI;
+
+          for (classSubsumerIri in classSubsumers.get(classIri)) {
+            if (originalOntology.containsClass(classSubsumerIri, JswOWL.IRIs)) {
+              subsumerClasses.add(classIri, classSubsumerIri);
+            }
+          }
+        }
+
+        // Put class subsumers into the database.
+        for (classSubsumerIri in subsumerClasses.get(null)) {
+          aBox.addClassSubsumer(classIri, classSubsumerIri);
+        }
+      }
+
         rewriteClassAssertions();
         rewriteObjectPropertyAssertions();
+        rewriteClassSubsumers();
 
         return aBox;
     },
