@@ -12,3 +12,5 @@ npm-debug.log
 app/scripts/config.js
 server/ontologies/*
 server/db/*
+app/lib/*
+app/scripts/reasoning/jsw.js

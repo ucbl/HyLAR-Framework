@@ -3,7 +3,6 @@
  */
 
 var fs = require('fs'),
-    _ = require('lodash'),
     path = require('path'),
     request = require('request'),
 

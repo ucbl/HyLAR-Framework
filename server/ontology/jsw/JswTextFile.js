@@ -9,7 +9,7 @@ JswUtils = require('./JswUtils');
  *
  * @param url URL of the text file.
  */
-TextFile = function (url) {
+var TextFile = function (url) {
     var newUrl = JswUtils.trim(url);
 
     if (!JswUtils.trim(newUrl)) {

@@ -7,7 +7,7 @@
  *
  * @return Object which can be used to hash 3-tuples by the values in them in some order.
  */
-TripleStorage = function () {
+var TripleStorage = function () {
     /**
      * Data structure holding all 3-tuples.
      */

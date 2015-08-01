@@ -3,7 +3,7 @@
  */
 
 /** Pair storage can be used to hash 2-tuples by the values in them in some order. */
-PairStorage = function () {
+var PairStorage = function () {
     /** Data structure holding all pairs. */
     this.storage = {};
 };

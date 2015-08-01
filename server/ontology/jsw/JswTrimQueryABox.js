@@ -5,7 +5,7 @@ TrimPath = require('./TrimPathQuery'),
 rdf = require('./JswRDF');
 
 /** Allows to work with SQL representation of queries against RDF data. */
-TrimQueryABox = function () {
+var TrimQueryABox = function () {
   /** The object storing ABox data. */
   this.database = {
     ClassAssertion: [],

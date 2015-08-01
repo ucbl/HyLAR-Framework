@@ -3,7 +3,7 @@
  */
 
 /** Represents a queue implementing FIFO mechanism. */
-Queue = function () {
+var Queue = function () {
     this.queue = [];
     this.emptyElements = 0;
 };

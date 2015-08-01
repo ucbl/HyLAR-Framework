@@ -9,14 +9,14 @@ TripleStorage = require('./JswTripleStorage');
 TrimQueryABox = require('./JswTrimQueryABox');
 JswOWL = require('./JswOWL');
 JswRDF = require('./JswRDF');
-JswOntology = require('./JswOntology'),
+JswOntology = require('./JswOntology');
 
 
 /**
  * BrandT is an OWL-EL reasoner. Currently, it has some limitations and does not allow
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
-  BrandT = function (ontology) {
+BrandT = function (ontology) {
     var clock, normalizedOntology;
 
     /** Stores information about how much time different steps of building a reasoner took. */

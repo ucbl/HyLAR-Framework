@@ -7,42 +7,42 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-        <script src="bower_components/es5-shim/es5-shim.js"></script>
-        <script src="bower_components/json3/lib/json3.js"></script>
-        <script src="bower_components/jquery/dist/jquery.js"></script>
-        <script src="bower_components/angular/angular.js"></script>
-        <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="bower_components/angular-resource/angular-resource.js"></script>
-        <script src="bower_components/angular-file-upload/angular-file-upload.js"></script>
-        <script src="bower_components/angularjs-scroll-glue/src/scrollglue.js"></script>
-        <script src="bower_components/lodash/lodash.js"></script>
+        <!-- inject:js -->
+        <script src="/lib/angular.js"></script>
+        <script src="/lib/jquery.js"></script>
+        <script src="/lib/angular-file-upload.js"></script>
+        <script src="/lib/angular-local-storage.js"></script>
+        <script src="/lib/angular-resource.js"></script>
+        <script src="/lib/bootstrap.js"></script>
+        <script src="/lib/es5-shim.js"></script>
+        <script src="/lib/json3.js"></script>
+        <script src="/lib/lodash.js"></script>
+        <script src="/lib/q.js"></script>
+        <script src="/lib/scrollglue.js"></script>
+        <script src="/scripts/app.js"></script>
+        <script src="/scripts/config.js"></script>
+        <script src="/scripts/controllers/about.js"></script>
+        <script src="/scripts/controllers/main.js"></script>
+        <script src="/scripts/filters/mainFilters.js"></script>
+        <script src="/scripts/reasoning/jsw.js"></script>
+        <script src="/scripts/reasoning/JswReasoner.js"></script>
+        <script src="/scripts/resources/HylarRemoteComponents.js"></script>
+        <script src="/scripts/resources/Utils.js"></script>
+        <script src="/scripts/services/Hylar.js"></script>
+        <script src="/scripts/services/HylarClient.js"></script>
+        <script src="/scripts/services/HylarClientComponents.js"></script>
+        <script src="/scripts/services/HylarRemote.js"></script>
+        <script src="/scripts/services/Logging.js"></script>
+        <!-- endinject -->
 
-        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="styles/main.css">
+        <!-- inject:css -->
+        <link rel="stylesheet" href="/lib/bootstrap.css">
+        <link rel="stylesheet" href="/styles/main.css">
+        <!-- endinject -->
+
     </head>
 
     <body ng-app="owlReasonerApp">
-
-        <script src="scripts/app.js"></script>
-        <script src="scripts/config.js"></script>
-        <script src="scripts/controllers/main.js"></script>
-        <script src="scripts/controllers/about.js"></script>
-
-        <script src="scripts/filters/mainFilters.js"></script>
-
-        <script src="scripts/resources/HylarRemoteComponents.js"></script>
-        <script src="scripts/resources/Utils.js"></script>
-
-        <script src="scripts/services/HylarClientComponents.js"></script>
-        <script src="scripts/services/HylarClient.js"></script>
-        <script src="scripts/services/HylarRemote.js"></script>
-        <script src="scripts/services/Hylar.js"></script>
-        <script src="scripts/services/Logging.js"></script>
-
-        <script src="scripts/reasoning/jsw.js"></script>
-        <script src="scripts/reasoning/JswReasoner.js"></script>
-
-        <script src="workers/ReasonerReceive.js"></script>
 
         <div class="container">
             <div class="header">
