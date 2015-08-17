@@ -149,6 +149,7 @@ JswParser = {
          * Parses XML element representing ObjectExactCardinality expression.
          * @param element XML element representing the ObjectExactCardinality expression.
          * @return Object representing the expression parsed.
+         * @author Mehdi Terdjimi
          */
         function parseObjExactCardExpr(element) {
             var node, card, oprop, classExpr;
@@ -186,8 +187,46 @@ JswParser = {
             }
         }
 
+        /**
+         * Parses XML element representing ObjectMinCardinality expression.
+         * @param element XML element representing the ObjectMinCardinality expression.
+         * @return Object representing the expression parsed.
+         * @author Mehdi Terdjimi
+         */
         function parseObjMinCardExpr(element) {
+            var node, card, oprop, classExpr;
 
+            node = element.firstChild;
+
+            for (var i=0; i<element.attributes.length; i++) {
+                if (element.attributes[i].nodeName === 'cardinality') {
+                    card = element.attributes[i].nodeValue;
+                }
+            }
+
+            while (node) {
+                if (node.nodeType !== 1) {
+                    node = node.nextSibling;
+                    continue;
+                }
+
+                if (!oprop) {
+                    oprop = parseEntity(exprTypes.ET_OPROP, 'ObjectProperty', node, false);
+                } else if (!classExpr) {
+                    classExpr = parseClassExpr(node);
+                } else {
+                    throw 'The format of ObjectMinCardinality expression is incorrect!';
+                }
+
+                node = node.nextSibling;
+            }
+
+            return {
+                'type': exprTypes.CE_OBJ_MIN_CARD,
+                'value': card,
+                'opropExpr': oprop,
+                'classExpr': classExpr
+            }
         }
 
         function parseDataMinCardExpr(element) {
