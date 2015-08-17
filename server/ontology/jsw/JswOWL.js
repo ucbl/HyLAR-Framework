@@ -37,7 +37,17 @@ ExpressionTypes = {
   /** DifferentIndividuals fact */
   FACT_DIFFERENT_INDIVIDUALS: 15,
   /** ObjectPropertyChain object property expression. */
-  OPE_CHAIN: 16
+  OPE_CHAIN: 16,
+  /** Annotations **/
+  ANNOTATION: 17,
+  /** Object Exact Cardinality **/
+  CE_OBJ_EXACT_CARD: 18,
+  /** Object Min Cardinality **/
+  CE_OBJ_MIN_CARD: 19,
+  /** Data Exact Cardinality **/
+  CE_DATA_EXACT_CARD: 18,
+  /** Data Min Cardinality **/
+  CE_DATA_MIN_CARD: 19
 };
 
 IRIs = {

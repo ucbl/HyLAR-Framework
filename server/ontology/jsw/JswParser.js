@@ -35,7 +35,7 @@ JswParser = {
             var abbrIri, colonPos, entity, iri;
 
             if (element.nodeName !== typeName) {
-                throw typeName + ' element expected, but not found!';
+                throw typeName + ' element expected, but not found! Found ' + element.nodeName;
             }
 
             abbrIri = element.getAttribute('abbreviatedIRI');
@@ -146,6 +146,55 @@ JswParser = {
         }
 
         /**
+         * Parses XML element representing ObjectExactCardinality expression.
+         * @param element XML element representing the ObjectExactCardinality expression.
+         * @return Object representing the expression parsed.
+         */
+        function parseObjExactCardExpr(element) {
+            var node, card, oprop, classExpr;
+
+            node = element.firstChild;
+
+            for (var i=0; i<element.attributes.length; i++) {
+                if (element.attributes[i].nodeName === 'cardinality') {
+                    card = element.attributes[i].nodeValue;
+                }
+            }
+
+            while (node) {
+                if (node.nodeType !== 1) {
+                    node = node.nextSibling;
+                    continue;
+                }
+
+                if (!oprop) {
+                    oprop = parseEntity(exprTypes.ET_OPROP, 'ObjectProperty', node, false);
+                } else if (!classExpr) {
+                    classExpr = parseClassExpr(node);
+                } else {
+                    throw 'The format of ObjectExactCardinality expression is incorrect!';
+                }
+
+                node = node.nextSibling;
+            }
+
+            return {
+                'type': exprTypes.CE_OBJ_EXACT_CARD,
+                'value': card,
+                'opropExpr': oprop,
+                'classExpr': classExpr
+            }
+        }
+
+        function parseObjMinCardExpr(element) {
+
+        }
+
+        function parseDataMinCardExpr(element) {
+
+        }
+
+        /**
          * Parses the given XML node into the class expression.
          * @param element XML node containing class expression to parse.
          * @return Object representing the class expression parsed.
@@ -156,6 +205,12 @@ JswParser = {
                     return parseObjIntersectExpr(element);
                 case 'ObjectSomeValuesFrom':
                     return parseSomeValuesFromExpr(element);
+                case 'ObjectExactCardinality':
+                    return parseObjExactCardExpr(element);
+                case 'ObjectMinCardinality':
+                    return parseObjMinCardExpr(element);
+                case 'DataMinCardinality':
+                    return parseDataMinCardExpr(element);
                 default:
                     return parseEntity(exprTypes.ET_CLASS, 'Class', element, false);
             }
@@ -492,6 +547,30 @@ JswParser = {
             ontology.addPrefix(prefixName, prefixIri);
         }
 
+        function parseAnnotation(node) {
+            return;
+        }
+
+        function parseObjectPropertyDomain(node) {
+
+        }
+
+        function parseObjectPropertyRange(node) {
+
+        }
+
+        function parseDataPropertyDomain(node) {
+
+        }
+
+        function parseDataPropertyRange(node) {
+
+        }
+
+        function parseAnnotationAssertion(node) {
+
+        }
+
         node = JswUtils.parseString(owlXml).documentElement.firstChild;
 
         // OWL/XML Prefix statements (if any) should be at the start of the document. We need them
@@ -555,6 +634,23 @@ JswParser = {
                         break;
                     case 'Prefix':
                         throw 'Prefix elements should be at the start of the document!';
+                        break;
+                    case 'Annotation':
+                        parseAnnotation(node);
+                        break;
+                    case 'ObjectPropertyDomain':
+                        parseObjectPropertyDomain(node);
+                    case 'ObjectPropertyRange':
+                        parseObjectPropertyRange(node);
+                        break;
+                    case 'DataPropertyDomain':
+                        parseDataPropertyDomain(node);
+                        break;
+                    case 'DataPropertyRange':
+                        parseDataPropertyRange(node);
+                        break;
+                    case 'AnnotationAssertion':
+                        parseAnnotationAssertion(node);
                 }
             } catch (ex) {
                 if (!onError || !onError(ex)) {
