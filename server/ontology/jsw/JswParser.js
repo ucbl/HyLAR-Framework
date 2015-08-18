@@ -229,8 +229,88 @@ JswParser = {
             }
         }
 
-        function parseDataMinCardExpr(element) {
+        /**
+         * Parses XML element representing DataExactCardinality expression.
+         * @param element XML element representing the DataExactCardinality expression.
+         * @return Object representing the expression parsed.
+         * @author Mehdi Terdjimi
+         */
+        function parseDataExactCardExpr(element) {
+            var node, card, dprop, classExpr;
 
+            node = element.firstChild;
+
+            for (var i=0; i<element.attributes.length; i++) {
+                if (element.attributes[i].nodeName === 'cardinality') {
+                    card = element.attributes[i].nodeValue;
+                }
+            }
+
+            while (node) {
+                if (node.nodeType !== 1) {
+                    node = node.nextSibling;
+                    continue;
+                }
+
+                if (!dprop) {
+                    dprop = parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, false);
+                } else if (!classExpr) {
+                    classExpr = parseClassExpr(node);
+                } else {
+                    throw 'The format of DataExactCardinality expression is incorrect!';
+                }
+
+                node = node.nextSibling;
+            }
+
+            return {
+                'type': exprTypes.CE_DATA_EXACT_CARD,
+                'value': card,
+                'dpropExpr': dprop,
+                'classExpr': classExpr
+            }
+        }
+
+        /**
+         * Parses XML element representing DataMinCardinality expression.
+         * @param element XML element representing the DataMinCardinality expression.
+         * @return Object representing the expression parsed.
+         * @author Mehdi Terdjimi
+         */
+        function parseDataMinCardExpr(element) {
+            var node, card, dprop, classExpr;
+
+            node = element.firstChild;
+
+            for (var i=0; i<element.attributes.length; i++) {
+                if (element.attributes[i].nodeName === 'cardinality') {
+                    card = element.attributes[i].nodeValue;
+                }
+            }
+
+            while (node) {
+                if (node.nodeType !== 1) {
+                    node = node.nextSibling;
+                    continue;
+                }
+
+                if (!dprop) {
+                    dprop = parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, false);
+                } else if (!classExpr) {
+                    classExpr = parseClassExpr(node);
+                } else {
+                    throw 'The format of DataMinCardinality expression is incorrect!';
+                }
+
+                node = node.nextSibling;
+            }
+
+            return {
+                'type': exprTypes.CE_DATA_MIN_CARD,
+                'value': card,
+                'dpropExpr': dprop,
+                'classExpr': classExpr
+            }
         }
 
         /**
@@ -445,6 +525,10 @@ JswParser = {
                             break;
                         case 'ObjectProperty':
                             parseEntity(exprTypes.ET_OPROP, 'ObjectProperty', node, true);
+                            found = true;
+                            break;
+                        case 'DataProperty':
+                            parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, true);
                             found = true;
                             break;
                         case 'NamedIndividual':

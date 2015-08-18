@@ -8,12 +8,14 @@ Ontology = function() {
     var exprTypes = JswOWL.ExpressionTypes,
         classType = exprTypes.ET_CLASS,
         individualType = exprTypes.ET_INDIVIDUAL,
-        opropType = exprTypes.ET_OPROP;
+        opropType = exprTypes.ET_OPROP,
+        dpropType = exprTypes.ET_DPROP;
 
     /** Sets of entity IRIs of different types found in the ontology. */
     this.entities = {};
     this.entities[opropType] = {};
     this.entities[classType] = {};
+    this.entities[dpropType] = {};
     this.entities[individualType] = {};
 
     /** Contains all axioms in the ontology. */
@@ -105,6 +107,10 @@ Ontology.prototype = {
             return;
         }
 
+        if(!this.entities[type]) {
+            1;
+        }
+
         if (!this.entities[type].hasOwnProperty(iri)) {
             this.entityCount[type] += 1;
             this.entities[type][iri] = (isDeclared);
@@ -137,6 +143,21 @@ Ontology.prototype = {
         return !!(iri === owlIris.TOP_OBJECT_PROPERTY ||
             iri === owlIris.BOTTOM_OBJECT_PROPERTY ||
             this.entities[this.exprTypes.ET_OPROP].hasOwnProperty(iri));
+    },
+
+    /**
+
+     * Checks if the ontology contains any references to the data property with the given IRI.
+     *
+     * @param iri IRI of the data property to check.
+     * @return boolean if the ontology has reverences to the data property, false otherwise.
+     * @param owlIris
+     * @author Mehdi Terdjimi
+     */
+    containsDataProperty: function (iri, owlIris) {
+        return !!(iri === owlIris.TOP_DATA_PROPERTY ||
+            iri === owlIris.BOTTOM_DATA_PROPERTY ||
+            this.entities[this.exprTypes.ET_DPROP].hasOwnProperty(iri));
     },
 
     /**
@@ -178,6 +199,15 @@ Ontology.prototype = {
      */
     getObjectProperties: function () {
         return this.entities[this.exprTypes.ET_OPROP];
+    },
+
+    /**
+     * Returns an 'associative array' of all data properties in the ontology.
+     * @author Mehdi Terdjimi
+     * @return (Array) 'Associative array' of all data properties in the ontology.
+     */
+    getDataProperties: function () {
+        return this.entities[this.exprTypes.ET_DPROP];
     },
 
     /**
