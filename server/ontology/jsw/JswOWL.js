@@ -49,7 +49,9 @@ ExpressionTypes = {
     /** Data Min Cardinality **/
     CE_DATA_MIN_CARD: 21,
     /** Data Property Entity **/
-    ET_DPROP: 22
+    ET_DPROP: 22,
+    /** DataPropertyAssertion fact **/
+    FACT_DPROP: 23
 };
 
 IRIs = {

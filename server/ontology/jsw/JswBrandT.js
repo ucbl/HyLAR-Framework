@@ -1132,12 +1132,22 @@ BrandT.prototype = {
         }
 
         /**
+         * @param statement DataPropertyAssertion statement.
+         * @param queue Queue to which the equivalent statements should be put.
+         * @author Mehdi Terdjimi
+         * @todo
+         */
+        function replaceDataPropertyAssertion(statement, queue) {
+            //
+        }
+
+        /**
          * Returns a queue with axioms which need to be normalized.
          */
         function createAxiomQueue() {
             var axiom, axioms, axiomIndex, classAssertion, disjointClasses, equivalentClasses,
                 equivalentObjectProperties, objectPropertyAssertion, queue, subClassOf,
-                subObjPropertyOf, transitiveObjectProperty;
+                subObjPropertyOf, transitiveObjectProperty, dataPropertyAssertion;
 
             disjointClasses = JswOWL.ExpressionTypes.AXIOM_CLASS_DISJOINT;
             equivalentClasses = JswOWL.ExpressionTypes.AXIOM_CLASS_EQ;
@@ -1146,6 +1156,7 @@ BrandT.prototype = {
             subClassOf = JswOWL.ExpressionTypes.AXIOM_CLASS_SUB;
             transitiveObjectProperty = JswOWL.ExpressionTypes.AXIOM_OPROP_TRAN;
             classAssertion = JswOWL.ExpressionTypes.FACT_CLASS;
+            dataPropertyAssertion = JswOWL.ExpressionTypes.FACT_DPROP;
             objectPropertyAssertion = JswOWL.ExpressionTypes.FACT_OPROP;
             queue = new Queue.queue();
             axioms = ontology.axioms;
@@ -1172,9 +1183,13 @@ BrandT.prototype = {
                     case objectPropertyAssertion:
                         replaceObjectPropertyAssertion(axiom, queue);
                         break;
+                    case dataPropertyAssertion:
+                        replaceDataPropertyAssertion(axiom, queue);
+                        break;
                     default:
                         queue.enqueue(axiom);
                 }
+                1;
             }
 
             return queue;

@@ -36,12 +36,14 @@ Ontology = function() {
     this.nextEntityNos = {};
     this.nextEntityNos[opropType] = 1;
     this.nextEntityNos[classType] = 1;
+    this.nextEntityNos[dpropType] = 1;
     this.nextEntityNos[individualType] = 1;
 
     // Contains number of entities of each type in the ontology.
     this.entityCount = {};
     this.entityCount[opropType] = 0;
     this.entityCount[classType] = 0;
+    this.entityCount[dpropType] = 0;
     this.entityCount[individualType] = 0;
 };
 
