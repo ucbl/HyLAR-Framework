@@ -7,6 +7,7 @@ Queue = require('./JswQueue');
 PairStorage = require('./JswPairStorage');
 TripleStorage = require('./JswTripleStorage');
 TrimQueryABox = require('./JswTrimQueryABox');
+TrimQueryTBox = require('./JswTrimQueryTBox');
 JswOWL = require('./JswOWL');
 JswRDF = require('./JswRDF');
 JswOntology = require('./JswOntology');
@@ -43,6 +44,10 @@ BrandT = function (ontology) {
     /** Rewritten A-Box of the ontology. */
     this.aBox = this.rewriteAbox(normalizedOntology);
     this.timeInfo.aBoxRewriting = clock.stop();
+
+    /** Rewritten T-Box of the ontology. */
+    this.tBox = this.rewriteTbox(normalizedOntology);
+
 
     // Remove entity IRIs introduced during normalization stage from the subsumer sets.
     this.removeIntroducedEntities(
@@ -860,9 +865,11 @@ BrandT.prototype = {
         }
 
         // Put class subsumers into the database.
+        /* todo - deplacer en tbox
         for (classSubsumerIri in subsumerClasses.get(null)) {
-          aBox.addClassSubsumer(classIri, classSubsumerIri);
+          tBox.addClassSubsumer(classIri, classSubsumerIri);
         }
+        */
       }
 
         rewriteClassAssertions();
@@ -871,6 +878,33 @@ BrandT.prototype = {
 
         return aBox;
     },
+
+    /**
+     * Rewrites an TBox of the ontology into the relational database to use it for conjunctive query
+     * answering.
+     *
+     * @param ontology Normalized ontology containing the TBox to rewrite.
+     * @return TrimQueryABox object containing the rewritten TBox.
+     */
+    rewriteTbox: function(ontology) {
+            var tBox = new TrimQueryTBox.trimQueryTBox(),
+            entities = ontology.entities;
+
+        for (var key in entities[9]) {
+            tBox.database.Class.push(key);
+        }
+
+        for (var key in entities[10]) {
+            tBox.database.ObjectProperty.push(key);
+        }
+
+        for (var key in entities[22]) {
+            tBox.database.DataProperty.push(key);
+        }
+
+        return tBox;
+    },
+
 
     /**
      * Answers the given user query.

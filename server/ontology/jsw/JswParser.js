@@ -278,7 +278,7 @@ JswParser = {
          * @author Mehdi Terdjimi
          */
         function parseDataMinCardExpr(element) {
-            var node, card, dprop, classExpr;
+            var node, card, dprop;
 
             node = element.firstChild;
 
@@ -296,8 +296,6 @@ JswParser = {
 
                 if (!dprop) {
                     dprop = parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, false);
-                } else if (!classExpr) {
-                    classExpr = parseClassExpr(node);
                 } else {
                     throw 'The format of DataMinCardinality expression is incorrect!';
                 }
@@ -308,8 +306,7 @@ JswParser = {
             return {
                 'type': exprTypes.CE_DATA_MIN_CARD,
                 'value': card,
-                'dpropExpr': dprop,
-                'classExpr': classExpr
+                'dpropExpr': dprop
             }
         }
 

@@ -41,8 +41,9 @@ describe('Ontology Classification', function () {
         reasoner.should.exist;
     });
 
-    it('should find some Classes and ObjectProperties', function() {
-       reasoner.aBox.database.ClassAssertion.should.be.above(0);
-       reasoner.aBox.database.ObjectPropertyAssertion.should.be.above(0);
+    it('should find some Classes, ObjectProperties and DataProperties', function() {
+       reasoner.tBox.database.Class.length.should.be.above(0);
+       reasoner.tBox.database.ObjectProperty.length.should.be.above(0);
+       reasoner.tBox.database.DataProperty.length.should.be.above(0);
     });
 });
