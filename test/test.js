@@ -8,6 +8,7 @@ var path = require('path');
 
 var JswParser = require('../server/ontology/jsw/JswParser');
 var JswBrandT = require('../server/ontology/jsw/JswBrandT');
+var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
 var owl, ontology, reasoner, fipa = '/../server/ontologies/fipa.owl';
 
@@ -45,5 +46,19 @@ describe('Ontology Classification', function () {
        reasoner.tBox.database.Class.length.should.be.above(0);
        reasoner.tBox.database.ObjectProperty.length.should.be.above(0);
        reasoner.tBox.database.DataProperty.length.should.be.above(0);
+    });
+});
+
+describe('INSERT query', function() {
+    var query;
+    it('should parse the INSERT statement', function() {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+                                       'INSERT DATA { <#Inspiron> rdf:type <#Device> }');
+        query.should.exist;
+    });
+
+    it('should insert a triple in the database', function() {
+       reasoner.answerQuery(query);
+       reasoner.aBox.database.ClassAssertion.length.should.be.above(0);
     });
 });

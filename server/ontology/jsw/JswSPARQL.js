@@ -197,11 +197,23 @@ SPARQL = {
             tokenIndex += 1;
         }
 
-// Parse SELECT clause.
+// Parse SELECT or INSERT clause.
         if (tokenIndex === tokenCount) {
             return query;
+        } else if (token.toUpperCase() == 'INSERT') {
+
+            tokenIndex++;
+            token = tokens[tokenIndex];
+
+            if(token != 'DATA')  throw 'Expected DATA after INSERT, having ' + token;
+
+            tokenIndex ++;
+            token = tokens[tokenIndex];
+
+            if(token != '{') throw 'Expected "{", having ' + token;
+
         } else if (token.toUpperCase() !== 'SELECT') {
-            throw 'SELECT statement expected, but "' + token + '" was found!';
+            throw 'SELECT or INSERT statement expected, but "' + token + '" was found!';
         }
 
         tokenIndex += 1;
