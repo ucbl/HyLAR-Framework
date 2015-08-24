@@ -49,6 +49,15 @@ describe('Ontology Classification', function () {
     });
 });
 
+/*describe('SELECT query', function() {
+    var query;
+    it('should parse the SELECT statement', function() {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+            'SELECT ?a { ?a rdf:type <#Device> }');
+        query.should.exist;
+    });
+});*/
+
 describe('INSERT query', function() {
     var query;
     it('should parse the INSERT statement', function() {

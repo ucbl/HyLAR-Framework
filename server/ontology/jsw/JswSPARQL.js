@@ -197,10 +197,11 @@ SPARQL = {
             tokenIndex += 1;
         }
 
-// Parse SELECT or INSERT clause.
+// Parse SELECT or INSERT DATA clause.
         if (tokenIndex === tokenCount) {
             return query;
         } else if (token.toUpperCase() == 'INSERT') {
+            //  INSERT DATA STATEMENT @author Mehdi Terdjimi
 
             tokenIndex++;
             token = tokens[tokenIndex];
@@ -212,228 +213,251 @@ SPARQL = {
 
             if(token != '{') throw 'Expected "{", having ' + token;
 
+            for(tokenIndex++; tokenIndex<tokens.length; tokenIndex++) {
+                token = tokens[tokenIndex];
+                if (!(token == '}' || token == '.')) {
+
+                    subject = this.parseVarOrTerm(token, query);
+
+                    tokenIndex++;
+                    token = tokens[tokenIndex];
+
+                    predicate = this.parseVarOrTerm(token, query);
+
+                    tokenIndex++;
+                    token = tokens[tokenIndex];
+
+                    object = this.parseVarOrTerm(token, query);
+                    query.addTriple(subject, predicate, object);
+
+                }
+            }
+            1;
+
         } else if (token.toUpperCase() !== 'SELECT') {
             throw 'SELECT or INSERT statement expected, but "' + token + '" was found!';
-        }
 
-        tokenIndex += 1;
-
-        if (tokenIndex === tokenCount) {
-            throw 'DISTINCT/REDUCED or variable declaration expected after "SELECT", but the end ' +
-                'of query text was found!';
-        }
-
-        token = tokens[tokenIndex].toUpperCase();
-
-        if (token === 'DISTINCT') {
-            query.distinctResults = true;
-            tokenIndex += 1;
-        } else if (token === 'REDUCED') {
-            query.reducedResults = true;
-            tokenIndex += 1;
-        }
-
-        if (tokenIndex === tokenCount) {
-            throw 'Variable declarations are expected after DISTINCT/REDUCED, but the end of ' +
-                'the query text was found!';
-        }
-
-        token = tokens[tokenIndex];
-
-        if (token === '*') {
-            tokenIndex += 1;
-
-            token = tokens[tokenIndex];
         } else {
-            vars = [];
-
-// Parse SELECT variables.
-            while (tokenIndex < tokenCount) {
-                token = tokens[tokenIndex];
-
-                if (token.toUpperCase() === 'WHERE' || token === '{') {
-                    break;
-                }
-
-                variable = this.parseVar(token);
-
-                if (variable) {
-                    vars.push(variable);
-                } else {
-                    throw 'The token "' + token + '" does not represent the valid variable!';
-                }
-
-                tokenIndex += 1;
-            }
-
-            if (vars.length === 0) {
-                throw 'No variable definitions found in the SELECT clause!';
-            }
-
-            query.variables = vars;
-        }
-
-        if (tokenIndex === tokenCount) {
-            return query;
-        } else if (token.toUpperCase() === 'WHERE') {
-            if (tokens[tokenIndex + 1] === '{') {
-                tokenIndex += 2; // Skip to the next token after '{'.
-            } else {
-                throw 'WHERE clause should be surrounded with "{}"!';
-            }
-        } else if (token === '{') {
-            tokenIndex += 1;
-        } else {
-            throw 'WHERE clause was expected, but "' + token + '" was found!';
-        }
-
-// Parsing WHERE clause.
-        valueToRead = 0;
-
-        while (tokenIndex < tokenCount) {
-// TODO: Add parsing filters.
-            token = tokens[tokenIndex];
-
-            if (token === '}') {
-                if (valueToRead === 0) {
-                    break;
-                } else {
-                    throw 'RDF triple is not complete but the end of WHERE clause was found!';
-                }
-            }
-
-            if (valueToRead === 0) {
-                subject = this.parseVarOrTerm(token, query);
-
-                if (subject === null) {
-                    throw 'Subject variable or term was expected but "' + token + '" was found!';
-                }
-
-                tokenIndex += 1;
-                valueToRead += 1;
-
-                if (tokenIndex === tokenCount) {
-                    throw 'Predicate of the RDF triple expected, reached the end of text instead!';
-                }
-            } else if (valueToRead === 1) {
-                predicate = this.parseVerb(token, query);
-
-                if (predicate === null) {
-                    throw 'Predicate verb was expected but "' + token + '" was found!';
-                }
-
-                tokenIndex += 1;
-                valueToRead += 1;
-
-                if (tokenIndex === tokenCount) {
-                    throw 'Object of the RDF triple expected, reached the end of text instead!';
-                }
-            } else if (valueToRead === 2) {
-                object = this.parseVarOrTerm(token, query);
-
-                if (object === null) {
-                    throw 'Object variable or term was expected but "' + token + '" was found!';
-                }
-
-                query.addTriple(subject, predicate, object);
-
-                valueToRead = 0;
-                tokenIndex += 1;
-
-                switch (tokens[tokenIndex]) {
-                    case '.':
-                        valueToRead = 0;
-                        tokenIndex += 1;
-                        break;
-                    case ';':
-                        valueToRead = 1;
-                        tokenIndex += 1;
-                        break;
-                    case ',':
-                        valueToRead = 2;
-                        tokenIndex += 1;
-                        break;
-                }
-            }
-        }
-
-        if (tokenIndex === tokenCount) {
-            throw '"}" expected but the end of query text found!';
-        }
-
-        tokenIndex += 1;
-
-        if (tokenIndex === tokenCount) {
-            return query;
-        }
-
-        if (tokens[tokenIndex].toUpperCase() === 'ORDER') {
-            tokenIndex += 1;
-
-            token = tokens[tokenIndex];
-
-
-            if (token.toUpperCase() !== 'BY') {
-                throw '"BY" expected after "ORDER", but "' + token + '" was found!';
-            }
 
             tokenIndex += 1;
 
-            while (tokenIndex < tokenCount) {
-                token = tokens[tokenIndex];
-
-                if (token.toUpperCase() === 'LIMIT' || token.toUpperCase() === 'OFFSET') {
-                    break;
-                }
-
-                variable = this.parseOrderByValue(token);
-
-                if (variable === null) {
-                    throw 'Unknown token "' + token + '" was found in the ORDER BY clause!';
-                }
-
-                query.orderBy.push(variable);
-                tokenIndex += 1;
+            if (tokenIndex === tokenCount) {
+                throw 'DISTINCT/REDUCED or variable declaration expected after "SELECT", but the end ' +
+                    'of query text was found!';
             }
-        }
 
-        while (tokenIndex < tokenCount) {
             token = tokens[tokenIndex].toUpperCase();
 
-// Parse LIMIT clause.
-            if (token === 'LIMIT') {
+            if (token === 'DISTINCT') {
+                query.distinctResults = true;
                 tokenIndex += 1;
+            } else if (token === 'REDUCED') {
+                query.reducedResults = true;
+                tokenIndex += 1;
+            }
 
-                if (tokenIndex === tokenCount) {
-                    throw 'Integer expected after "LIMIT", but the end of query text found!';
-                }
+            if (tokenIndex === tokenCount) {
+                throw 'Variable declarations are expected after DISTINCT/REDUCED, but the end of ' +
+                    'the query text was found!';
+            }
+
+            token = tokens[tokenIndex];
+
+            if (token === '*') {
+                tokenIndex += 1;
 
                 token = tokens[tokenIndex];
-                query.limit = parseInt(token, 10);
+            } else {
+                vars = [];
 
-                if (isNaN(query.limit)) {
-                    throw 'Integer expected after "LIMIT", but "' + token + '" found!';
+// Parse SELECT variables.
+                while (tokenIndex < tokenCount) {
+                    token = tokens[tokenIndex];
+
+                    if (token.toUpperCase() === 'WHERE' || token === '{') {
+                        break;
+                    }
+
+                    variable = this.parseVar(token);
+
+                    if (variable) {
+                        vars.push(variable);
+                    } else {
+                        throw 'The token "' + token + '" does not represent the valid variable!';
+                    }
+
+                    tokenIndex += 1;
                 }
 
-                tokenIndex += 1;
-            } else if (token === 'OFFSET') {
-// Parse OFFSET clause.
-                tokenIndex += 1;
-
-                if (tokenIndex === tokenCount) {
-                    throw 'Integer expected after "OFFSET", but the end of query text found!';
+                if (vars.length === 0) {
+                    throw 'No variable definitions found in the SELECT clause!';
                 }
 
-                token = tokens[tokenIndex];
-                query.offset = parseInt(token, 10);
+                query.variables = vars;
+            }
 
-                if (isNaN(query.offset)) {
-                    throw 'Integer expected after "OFFSET", but "' + token + '" found!';
+            if (tokenIndex === tokenCount) {
+                return query;
+            } else if (token.toUpperCase() === 'WHERE') {
+                if (tokens[tokenIndex + 1] === '{') {
+                    tokenIndex += 2; // Skip to the next token after '{'.
+                } else {
+                    throw 'WHERE clause should be surrounded with "{}"!';
                 }
-
+            } else if (token === '{') {
                 tokenIndex += 1;
             } else {
-                throw 'Unexpected token "' + token + '" found!';
+                throw 'WHERE clause was expected, but "' + token + '" was found!';
+            }
+
+// Parsing WHERE clause.
+            valueToRead = 0;
+
+            while (tokenIndex < tokenCount) {
+// TODO: Add parsing filters.
+                token = tokens[tokenIndex];
+
+                if (token === '}') {
+                    if (valueToRead === 0) {
+                        break;
+                    } else {
+                        throw 'RDF triple is not complete but the end of WHERE clause was found!';
+                    }
+                }
+
+                if (valueToRead === 0) {
+                    subject = this.parseVarOrTerm(token, query);
+
+                    if (subject === null) {
+                        throw 'Subject variable or term was expected but "' + token + '" was found!';
+                    }
+
+                    tokenIndex += 1;
+                    valueToRead += 1;
+
+                    if (tokenIndex === tokenCount) {
+                        throw 'Predicate of the RDF triple expected, reached the end of text instead!';
+                    }
+                } else if (valueToRead === 1) {
+                    predicate = this.parseVerb(token, query);
+
+                    if (predicate === null) {
+                        throw 'Predicate verb was expected but "' + token + '" was found!';
+                    }
+
+                    tokenIndex += 1;
+                    valueToRead += 1;
+
+                    if (tokenIndex === tokenCount) {
+                        throw 'Object of the RDF triple expected, reached the end of text instead!';
+                    }
+                } else if (valueToRead === 2) {
+                    object = this.parseVarOrTerm(token, query);
+
+                    if (object === null) {
+                        throw 'Object variable or term was expected but "' + token + '" was found!';
+                    }
+
+                    query.addTriple(subject, predicate, object);
+
+                    valueToRead = 0;
+                    tokenIndex += 1;
+
+                    switch (tokens[tokenIndex]) {
+                        case '.':
+                            valueToRead = 0;
+                            tokenIndex += 1;
+                            break;
+                        case ';':
+                            valueToRead = 1;
+                            tokenIndex += 1;
+                            break;
+                        case ',':
+                            valueToRead = 2;
+                            tokenIndex += 1;
+                            break;
+                    }
+                }
+            }
+
+            if (tokenIndex === tokenCount) {
+                throw '"}" expected but the end of query text found!';
+            }
+
+            tokenIndex += 1;
+
+            if (tokenIndex === tokenCount) {
+                return query;
+            }
+
+            if (tokens[tokenIndex].toUpperCase() === 'ORDER') {
+                tokenIndex += 1;
+
+                token = tokens[tokenIndex];
+
+
+                if (token.toUpperCase() !== 'BY') {
+                    throw '"BY" expected after "ORDER", but "' + token + '" was found!';
+                }
+
+                tokenIndex += 1;
+
+                while (tokenIndex < tokenCount) {
+                    token = tokens[tokenIndex];
+
+                    if (token.toUpperCase() === 'LIMIT' || token.toUpperCase() === 'OFFSET') {
+                        break;
+                    }
+
+                    variable = this.parseOrderByValue(token);
+
+                    if (variable === null) {
+                        throw 'Unknown token "' + token + '" was found in the ORDER BY clause!';
+                    }
+
+                    query.orderBy.push(variable);
+                    tokenIndex += 1;
+                }
+            }
+
+            while (tokenIndex < tokenCount) {
+                token = tokens[tokenIndex].toUpperCase();
+
+// Parse LIMIT clause.
+                if (token === 'LIMIT') {
+                    tokenIndex += 1;
+
+                    if (tokenIndex === tokenCount) {
+                        throw 'Integer expected after "LIMIT", but the end of query text found!';
+                    }
+
+                    token = tokens[tokenIndex];
+                    query.limit = parseInt(token, 10);
+
+                    if (isNaN(query.limit)) {
+                        throw 'Integer expected after "LIMIT", but "' + token + '" found!';
+                    }
+
+                    tokenIndex += 1;
+                } else if (token === 'OFFSET') {
+// Parse OFFSET clause.
+                    tokenIndex += 1;
+
+                    if (tokenIndex === tokenCount) {
+                        throw 'Integer expected after "OFFSET", but the end of query text found!';
+                    }
+
+                    token = tokens[tokenIndex];
+                    query.offset = parseInt(token, 10);
+
+                    if (isNaN(query.offset)) {
+                        throw 'Integer expected after "OFFSET", but "' + token + '" found!';
+                    }
+
+                    tokenIndex += 1;
+                } else {
+                    throw 'Unexpected token "' + token + '" found!';
+                }
             }
         }
 
