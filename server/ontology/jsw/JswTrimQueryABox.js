@@ -10,9 +10,7 @@ var TrimQueryABox = function () {
     /** The object storing ABox data. */
     this.database = {
         ClassAssertion: [],
-        ObjectPropertyAssertion: [],
-        ClassSubsumer: [],
-        ObjectPropertySubsumer: []
+        ObjectPropertyAssertion: []
     };
 
     /** The object which can be used to send queries against ABoxes. */
@@ -21,6 +19,15 @@ var TrimQueryABox = function () {
 
 /** Prototype for all jsw.TrimQueryABox objects. */
 TrimQueryABox.prototype = {
+    processSql: function(queries, recreateQueryLang) {
+        var queryLang, responses = [];
+        recreateQueryLang ? queryLang = this.queryLang : this.createQueryLang();
+        for (var key in queries) {
+            var query = queries[key];
+            responses.push(queryLang.parseSQL(query).filter(this.database));
+        }
+        return responses;
+    },
     /**
      * Answers the given RDF query.
      *
@@ -28,13 +35,13 @@ TrimQueryABox.prototype = {
      * @return Data set containing the results matching the query.
      */
     answerQuery: function (query, ontology) {
-        var sql = this.createSql(query, ontology);
+        var sql = this.createSql(query, ontology), sqlQueries = sql.split(';').slice(0,-1);
 
         try {
-            return this.queryLang.parseSQL(sql).filter(this.database);
+            return this.processSql(sqlQueries, false);
         } catch (ex) {
             /* Recreate the query language object, since the previous object can not be used now.*/
-            return this.createQueryLang().parseSQL(sql).filter(this.database);
+            return this.processSql(sqlQueries, true);
             throw ex;
         }
     },
@@ -118,9 +125,12 @@ TrimQueryABox.prototype = {
                     statement = insert + into + table + values +
                         " ('" + triple.subject.value + "', '" + triple.object.value + "');";
                     statements.push(statement);
+                    statement = insert + into + table + values +
+                        " ('" + triple.object.value + "', '" + owl.IRIs.THING + "');";
+                    statements.push(statement);
                 }
             }
-            return statements.join(' ');
+            return statements.join('');
 
         } else if (query.statementType == 'SELECT') {
             from = '';
@@ -283,7 +293,7 @@ TrimQueryABox.prototype = {
             limit = ' LIMIT ' + query.offset + ', ALL';
         }
 
-        return select + from + where + orderBy + limit;
+        return select + from + where + orderBy + limit + ';';
     }
 };
 

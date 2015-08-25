@@ -60,9 +60,9 @@ describe('INSERT query', function () {
         query.should.exist;
     });
 
-    it('should insert 4 triples in the database', function () {
-        reasoner.answerQuery(query, ontology);
-        reasoner.aBox.database.ClassAssertion.length.should.equal(2);
+    it('should insert 3 triples in the database', function () {
+        var results = reasoner.answerQuery(query, ontology);
+        reasoner.aBox.database.ClassAssertion.length.should.equal(4);
         reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(1);
         //todo test dataProperty
     });
@@ -75,10 +75,12 @@ describe('SELECT query', function () {
             'SELECT ?a { ?a rdf:type <#Device> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
+        results[0][0]['a'].should.equal('#Inspiron');
 
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-            'SELECT ?b { ?b rdf:type <#ConnectionDescription> . }');
+            'SELECT ?a { ?a rdf:type <#ConnectionDescription> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
+        results[0][0]['a'].should.equal('#Wifi');
     });
 });
