@@ -8,21 +8,21 @@ rdfQuery = new JswRDFQuery.rdfQuery();
 
 SPARQL = {
 // ============================= SPARQL namespace =============================
-/**
- * An object which can be used to work with SPARQL queries.
- *
- * The features currently not supported by the parser:
- * - Proper relative IRI resolution;
- * - Blank Nodes;
- * - Comments;
- * - Nested Graph Patterns;
- * - FILTER expressions;
- * - ORDER BY: expressions other than variables;
- * - RDF Collections;
- * - OPTIONAL patterns;
- * - UNION of patterns;
- * - FROM clause (and, hence, GRAPH clause and named graphs).
- */
+    /**
+     * An object which can be used to work with SPARQL queries.
+     *
+     * The features currently not supported by the parser:
+     * - Proper relative IRI resolution;
+     * - Blank Nodes;
+     * - Comments;
+     * - Nested Graph Patterns;
+     * - FILTER expressions;
+     * - ORDER BY: expressions other than variables;
+     * - RDF Collections;
+     * - OPTIONAL patterns;
+     * - UNION of patterns;
+     * - FROM clause (and, hence, GRAPH clause and named graphs).
+     */
     /** Defines data types of literals which can be parsed */
     DataTypes: xsd.DataTypes,
     /** Defines types of expressions which can be parsed */
@@ -206,14 +206,14 @@ SPARQL = {
             tokenIndex++;
             token = tokens[tokenIndex];
 
-            if(token != 'DATA')  throw 'Expected DATA after INSERT, having ' + token;
+            if (token != 'DATA')  throw 'Expected DATA after INSERT, having ' + token;
 
-            tokenIndex ++;
+            tokenIndex++;
             token = tokens[tokenIndex];
 
-            if(token != '{') throw 'Expected "{", having ' + token;
+            if (token != '{') throw 'Expected "{", having ' + token;
 
-            for(tokenIndex++; tokenIndex<tokens.length; tokenIndex++) {
+            for (tokenIndex++; tokenIndex < tokens.length; tokenIndex++) {
                 token = tokens[tokenIndex];
                 if (!(token == '}' || token == '.')) {
 
@@ -236,9 +236,8 @@ SPARQL = {
 
         } else if (token.toUpperCase() !== 'SELECT') {
             throw 'SELECT or INSERT statement expected, but "' + token + '" was found!';
-
         } else {
-
+            query.statementType = 'SELECT';
             tokenIndex += 1;
 
             if (tokenIndex === tokenCount) {
@@ -460,7 +459,7 @@ SPARQL = {
                 }
             }
 
-            query.statementType = 'SELECT';
+
         }
 
         return query;
@@ -620,11 +619,11 @@ SPARQL = {
      * Parses the given string into the object representing some value found in the order by clause.
      *
      * @param token String to parse.
-     * @return Object representing the order by value parsed or null if token does not reperesent
+     * @return Object representing the order by value parsed or null if token does not represent
      * a valid order by value.
      */
     parseOrderByValue: function (token) {
-// TODO: support not only variables in ORDER BY.
+        // TODO: support not only variables in ORDER BY.
         var match, prefix;
 
         if (!this.orderByValueRegExp) {
@@ -665,8 +664,8 @@ SPARQL = {
     parsePrefixedName: function (token, query) {
         var match, cleaned;
 
-//CHANGEMENTS Lionel
-//Conservait les caractères < et > dans le découpage du prefixed name...
+        //CHANGEMENTS Lionel
+        //Conservait les caractères < et > dans le découpage du prefixed name...
         if (this.iriRegExp.test(token)) {
             cleaned = token.substring(1, token.length - 1);
         } else {

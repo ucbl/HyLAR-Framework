@@ -93,22 +93,34 @@ TrimQueryABox.prototype = {
     createSql: function (query, ontology) {
         var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
-            varField, varFields, varIndex, statement;
+            varField, varFields, varIndex, statement, statements = [];
 
         if (query.statementType == 'INSERT') {
-            insert = 'INSERT ';
-            into = 'INTO ';
-            values = 'VALUES';
-            1;
+            insert = 'INSERT';
+            into = ' INTO ';
+            values = ' VALUES';
 
-            // Pre-looking at tBox
-            //todo revoir algo
-            table = 'ClassAssertion';
-            for (var key in ontology.entities[owl.ExpressionTypes.ET_CLASS]) {
-                for (tripleKey in query.triples) {
-
+            for (var tripleKey in query.triples) {
+                var triple = query.triples[tripleKey];
+                // If it is an assertion...
+                if (triple.predicate.value == rdf.IRIs.TYPE) {
+                    // ...of class
+                    if (triple.object.value in ontology.entities[owl.ExpressionTypes.ET_CLASS]) {
+                        table = "ClassAssertion ('individual', 'className')";
+                    }
+                    // ...of objectProperty
+                    else if (triple.object.value in ontology.entities[owl.ExpressionTypes.ET_OPROP]) {
+                        table = "ObjectPropertyAssertion ('individual', 'objectPropertyName')";
+                    } else {
+                        throw 'Unrecognized assertion type.';
+                    }
+                    //TODO subsumption, objectProperty debug, dataProperty support
+                    statement = insert + into + table + values +
+                        " ('" + triple.subject.value + "', '" + triple.object.value + "');";
+                    statements.push(statement);
                 }
             }
+            return statements.join(' ');
 
         } else if (query.statementType == 'SELECT') {
             from = '';

@@ -27,7 +27,7 @@ describe('File reading', function () {
     });
 });
 
-describe('Ontology parsing', function () {
+describe('Ontology Parsing', function () {
     it('should parse the ontology', function () {
         ontology = JswParser.parse(owl, function (err) {
             console.err(err);
@@ -42,34 +42,43 @@ describe('Ontology Classification', function () {
         reasoner.should.exist;
     });
 
-    it('should find some Classes, ObjectProperties and DataProperties', function() {
-       reasoner.tBox.database.Class.length.should.be.above(0);
-       reasoner.tBox.database.ObjectProperty.length.should.be.above(0);
-       reasoner.tBox.database.DataProperty.length.should.be.above(0);
+    it('should find some Classes, ObjectProperties and DataProperties', function () {
+        reasoner.tBox.database.Class.length.should.be.above(0);
+        reasoner.tBox.database.ObjectProperty.length.should.be.above(0);
+        reasoner.tBox.database.DataProperty.length.should.be.above(0);
     });
 });
 
-describe('SELECT query', function() {
-    var query, results;
-    it('should parse the SELECT statement', function() {
+describe('INSERT query', function () {
+    var query;
+    it('should parse the INSERT statement', function () {
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-            'SELECT ?a { ?a rdf:type <#Device> }');
+            'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
+            '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+            //'<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
+            '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        query.should.exist;
+    });
+
+    it('should insert 4 triples in the database', function () {
+        reasoner.answerQuery(query, ontology);
+        reasoner.aBox.database.ClassAssertion.length.should.equal(2);
+        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(1);
+        //todo test dataProperty
+    });
+});
+
+describe('SELECT query', function () {
+    var query, results;
+    it('should parse and execute the SELECT statements', function () {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+            'SELECT ?a { ?a rdf:type <#Device> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        1;
-    });
-});
 
-describe('INSERT query', function() {
-    var query;
-    it('should parse the INSERT statement', function() {
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-                                       'INSERT DATA { <#Inspiron> rdf:type <#Device> }');
+            'SELECT ?b { ?b rdf:type <#ConnectionDescription> . }');
         query.should.exist;
-    });
-
-    it('should insert a triple in the database', function() {
-       reasoner.answerQuery(query, ontology);
-       reasoner.aBox.database.ClassAssertion.length.should.be.above(0);
+        results = reasoner.answerQuery(query);
     });
 });
