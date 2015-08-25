@@ -232,7 +232,7 @@ SPARQL = {
 
                 }
             }
-            1;
+            query.statementType = 'INSERT';
 
         } else if (token.toUpperCase() !== 'SELECT') {
             throw 'SELECT or INSERT statement expected, but "' + token + '" was found!';
@@ -459,6 +459,8 @@ SPARQL = {
                     throw 'Unexpected token "' + token + '" found!';
                 }
             }
+
+            query.statementType = 'SELECT';
         }
 
         return query;

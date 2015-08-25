@@ -49,14 +49,16 @@ describe('Ontology Classification', function () {
     });
 });
 
-/*describe('SELECT query', function() {
-    var query;
+describe('SELECT query', function() {
+    var query, results;
     it('should parse the SELECT statement', function() {
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
             'SELECT ?a { ?a rdf:type <#Device> }');
         query.should.exist;
+        results = reasoner.answerQuery(query);
+        1;
     });
-});*/
+});
 
 describe('INSERT query', function() {
     var query;
@@ -67,7 +69,7 @@ describe('INSERT query', function() {
     });
 
     it('should insert a triple in the database', function() {
-       reasoner.answerQuery(query);
+       reasoner.answerQuery(query, ontology);
        reasoner.aBox.database.ClassAssertion.length.should.be.above(0);
     });
 });

@@ -911,57 +911,60 @@ BrandT.prototype = {
      *
      * @param query An object representing a query to be answered.
      */
-    answerQuery: function (query) {
+    answerQuery: function (query, ontology) {
         if (!query) {
 
             throw 'The query is not specified!';
         }
 
-        //AJOUT Lionel
-        //To separate SPARQL queries dedicated to ABoxes from class definitions
-        if (query.triples.length !== 1) {
-            throw 'Only one triple is currently allowed in sparql requests...';
-        }
+        if(query.statementType === 'SELECT') {
 
-        //If the query is about class subsumption
-        if (query.triples[0].predicate.value == JswRDF.IRIs.SUBCLASS) {
-            var subject, object, subsumee, subsumer, result;
-
-            result = [];
-            subject = query.triples[0].subject.value;
-            object = query.triples[0].object.value;
-
-            //Find the variables in the subject and object
-            for (var i = 0; i < query.variables.length; i++) {
-                var variable = query.variables[i];
-                if (variable.value == subject) {
-                    subject = "*";
-                }
-                if (variable.value == object) {
-                    object = "*";
-                }
+            //AJOUT Lionel
+            //To separate SPARQL queries dedicated to ABoxes from class definitions
+            if (query.triples.length !== 1) {
+                throw 'Only one triple is currently allowed in sparql requests...';
             }
 
-            //Find the correct pairs in the classSubsumers Pairstorage...
-            if (subject != "*") {
-            //Looking for subsumers of the query subject
-                for (subsumer in this.classSubsumers.storage[subject]) {
-                    result.push({"subject": query.triples[0].subject.value, "object": subsumer});
+            //If the query is about class subsumption
+            if (query.triples[0].predicate.value == JswRDF.IRIs.SUBCLASS) {
+                var subject, object, subsumee, subsumer, result;
+
+                result = [];
+                subject = query.triples[0].subject.value;
+                object = query.triples[0].object.value;
+
+                //Find the variables in the subject and object
+                for (var i = 0; i < query.variables.length; i++) {
+                    var variable = query.variables[i];
+                    if (variable.value == subject) {
+                        subject = "*";
+                    }
+                    if (variable.value == object) {
+                        object = "*";
+                    }
                 }
-            } else {
-            //Looking for subsumees
-                for (subsumee in this.classSubsumers.storage) {
-                    for (subsumer in this.classSubsumers.storage[subsumee]) {
-                        if (object == "*" || object == subsumer) {
-                            result.push({"subject": subsumee, "object": subsumer});
+
+                //Find the correct pairs in the classSubsumers Pairstorage...
+                if (subject != "*") {
+                    //Looking for subsumers of the query subject
+                    for (subsumer in this.classSubsumers.storage[subject]) {
+                        result.push({"subject": query.triples[0].subject.value, "object": subsumer});
+                    }
+                } else {
+                    //Looking for subsumees
+                    for (subsumee in this.classSubsumers.storage) {
+                        for (subsumer in this.classSubsumers.storage[subsumee]) {
+                            if (object == "*" || object == subsumer) {
+                                result.push({"subject": subsumee, "object": subsumer});
+                            }
                         }
                     }
                 }
+                return result;
             }
-            return result;
         }
 
-        return this.aBox.answerQuery(query);
+        return this.aBox.answerQuery(query, ontology);
     },
 
     /**

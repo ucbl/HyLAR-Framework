@@ -2,7 +2,8 @@
  * Created by Spadon on 17/10/2014.
  */
 TrimPath = require('./TrimPathQuery'),
-    rdf = require('./JswRDF');
+    rdf = require('./JswRDF'),
+    owl = require('./JswOWL');
 
 /** Allows to work with SQL representation of queries against RDF data. */
 var TrimQueryABox = function () {
@@ -26,8 +27,8 @@ TrimQueryABox.prototype = {
      * @param query RDF query to answer.
      * @return Data set containing the results matching the query.
      */
-    answerQuery: function (query) {
-        var sql = this.createSql(query);
+    answerQuery: function (query, ontology) {
+        var sql = this.createSql(query, ontology);
 
         try {
             return this.queryLang.parseSQL(sql).filter(this.database);
@@ -89,17 +90,36 @@ TrimQueryABox.prototype = {
      * @param query jsw.rdf.Query to return the SQL representation for.
      * @return string representation of the given RDF query.
      */
-    createSql: function (query) {
+    createSql: function (query, ontology) {
         var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
-            select, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount, varField, varFields, varIndex, where;
+            select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
+            varField, varFields, varIndex, statement;
 
-        from = '';
-        where = '';
-        rdfTypeIri = rdf.IRIs.TYPE;
-        subClassOfIri = rdf.IRIs.SUBCLASS;
+        if (query.statementType == 'INSERT') {
+            insert = 'INSERT ';
+            into = 'INTO ';
+            values = 'VALUES';
+            1;
 
-        varFields = {};
+            // Pre-looking at tBox
+            //todo revoir algo
+            table = 'ClassAssertion';
+            for (var key in ontology.entities[owl.ExpressionTypes.ET_CLASS]) {
+                for (tripleKey in query.triples) {
 
+                }
+            }
+
+        } else if (query.statementType == 'SELECT') {
+            from = '';
+            where = '';
+            rdfTypeIri = rdf.IRIs.TYPE;
+            subClassOfIri = rdf.IRIs.SUBCLASS;
+            varFields = {};
+
+        } else {
+            throw 'Statement type unrecognized.';
+        }
         /** Appends a condition to the where clause based on the given expression.
          *
 
