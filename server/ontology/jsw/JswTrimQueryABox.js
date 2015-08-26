@@ -82,9 +82,7 @@ TrimQueryABox.prototype = {
     createQueryLang: function () {
         return TrimPath.makeQueryLang({
             ClassAssertion: { individual: { type: 'String' },
-                className: { type: 'String' },
-                rightclassName: { type: 'String' },
-                leftclassName: { type: 'String' }},
+                className: { type: 'String' }},
             ObjectPropertyAssertion: { objectProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
                 rightIndividual: { type: 'String' }}
@@ -100,7 +98,7 @@ TrimQueryABox.prototype = {
     createSql: function (query, ontology) {
         var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
-            varField, varFields, varIndex, statement, statements = [];
+            varField, varFields, varIndex, tuples, statement, statements = [];
 
         if (query.statementType == 'INSERT') {
             insert = 'INSERT';
@@ -111,24 +109,23 @@ TrimQueryABox.prototype = {
                 var triple = query.triples[tripleKey];
                 // If it is an assertion...
                 if (triple.predicate.value == rdf.IRIs.TYPE) {
-                    // ...of class
-                    if (triple.object.value in ontology.entities[owl.ExpressionTypes.ET_CLASS]) {
-                        table = "ClassAssertion ('individual', 'className')";
-                    }
-                    // ...of objectProperty
-                    else if (triple.object.value in ontology.entities[owl.ExpressionTypes.ET_OPROP]) {
-                        table = "ObjectPropertyAssertion ('individual', 'objectPropertyName')";
-                    } else {
-                        throw 'Unrecognized assertion type.';
-                    }
-                    //TODO subsumption, objectProperty debug, dataProperty support
-                    statement = insert + into + table + values +
-                        " ('" + triple.subject.value + "', '" + triple.object.value + "');";
-                    statements.push(statement);
-                    statement = insert + into + table + values +
-                        " ('" + triple.object.value + "', '" + owl.IRIs.THING + "');";
-                    statements.push(statement);
+                    table = "ClassAssertion ('individual', 'className')";
+                    tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "')";
+                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
+                    table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
+                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                    1;
+                } else {
+                    throw 'Unrecognized assertion type.';
                 }
+                //TODO subsumption, objectProperty debug, dataProperty support
+                statement = insert + into + table + values + tuples + ";";
+                statements.push(statement);
+
+                /*statement = insert + into + table + values +
+                    " ('" + triple.object.value + "', '" + owl.IRIs.THING + "');";
+                statements.push(statement);*/
+
             }
             return statements.join('');
 
