@@ -49,44 +49,86 @@ describe('Ontology Classification', function () {
     });
 });
 
-describe('INSERT query', function () {
-    var query;
+describe('INSERT query with subsumption', function () {
+    var query, results;
     it('should parse the INSERT statement', function () {
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
             'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
             '<#Inspiron> <#hasConnection> <#Wifi> . ' +
-            //'<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
+            '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
+            '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
             '<#Wifi> rdf:type <#ConnectionDescription> . }');
         query.should.exist;
+        results = reasoner.answerQuery(query);
     });
 
-    it('should insert 3 triples in the database', function () {
-        var results = reasoner.answerQuery(query, ontology);
-        reasoner.aBox.database.ClassAssertion.length.should.equal(2);
-        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(1);
-        //todo test dataProperty
+    it('should have inserted 2 ClassAssertions and a subsumption', function () {
+        reasoner.aBox.database.ClassAssertion.length.should.be.above(3);
     });
+    it('should have inserted 1 ObjectProperty', function () {
+        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(1);
+    });
+    it('should have inserted 1 DataProperty', function () {
+        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(1);
+    });
+
 });
 
-describe('SELECT query', function () {
+describe('SELECT query with subsumption', function () {
     var query, results;
-    it('should parse and execute the SELECT statements', function () {
+    it('should find a class assertion', function () {
+        // ClassAssertion Test
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-            'SELECT ?a { ?a rdf:type <#Device> . }');
+        'SELECT ?a { ?a rdf:type <#Device> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
         results[0][0]['a'].should.equal('#Inspiron');
+    });
 
+    it('should find another class assertion', function () {
+        // Multiple ClassAssertion Test
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-            'SELECT ?a { ?a rdf:type <#ConnectionDescription> . }');
+        'SELECT ?a { ?a rdf:type <#ConnectionDescription> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
         results[0][0]['a'].should.equal('#Wifi');
+    });
 
+    it('should find an objectProperty assertion', function () {
+        // ObjectProperty Test
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
         'SELECT ?a { ?a <#hasConnection> <#Wifi> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
         results[0][0]['a'].should.equal('#Inspiron');
     });
+
+    it('should find a dataProperty assertion', function () {
+        // DataProperty Test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a { <#Inspiron> <#hasName> ?a . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        results[0][0]['a'].should.equal('"Dell Inspiron 15R"');
+    });
+
+    it('should find a subsumed class assertion', function () {
+        // Subsumption test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a { ?a rdf:type <#Function> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        results[0][0]['a'].should.equal('#Request1');
+    });
+
+    it('should find a dataProperty with two variables', function () {
+        // DataProperty with two variables test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+            'SELECT ?a ?b { ?a <#hasName> ?b . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        results[0][0]['a'].should.exist;
+        results[0][0]['b'].should.exist;
+    });
+
 });

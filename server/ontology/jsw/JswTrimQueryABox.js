@@ -10,7 +10,8 @@ var TrimQueryABox = function () {
     /** The object storing ABox data. */
     this.database = {
         ClassAssertion: [],
-        ObjectPropertyAssertion: []
+        ObjectPropertyAssertion: [],
+        DataPropertyAssertion: []
     };
 
     /** The object which can be used to send queries against ABoxes. */
@@ -75,6 +76,21 @@ TrimQueryABox.prototype = {
     },
 
     /**
+     * Adds data property assertion to the database.
+     * @author Mehdi Terdjimi
+     * @param dataPropertyIri IRI of the data property in the assertion.
+     * @param leftIndIri IRI of the left individual in the assertion.
+     * @param rightValue value of the data.
+     */
+    addDataPropertyAssertion: function (dataPropertyIri, leftIndIri, rightValue) {
+        this.database.ObjectPropertyAssertion.push({
+            objectProperty: dataPropertyIri,
+            leftIndividual: leftIndIri,
+            rightIndividual: rightValue
+        });
+    },
+
+    /**
      * Creates an object which can be used for sending queries against the database.
      *
      * @return Object which can be used for sending queries against the database.
@@ -85,7 +101,10 @@ TrimQueryABox.prototype = {
                 className: { type: 'String' }},
             ObjectPropertyAssertion: { objectProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
-                rightIndividual: { type: 'String' }}
+                rightIndividual: { type: 'String' }},
+            DataPropertyAssertion: { dataProperty: { type: 'String' },
+                leftIndividual: { type: 'String' },
+                rightValue: { type: 'String' }}
         });
     },
 
@@ -95,7 +114,7 @@ TrimQueryABox.prototype = {
      * @param query jsw.rdf.Query to return the SQL representation for.
      * @return string representation of the given RDF query.
      */
-    createSql: function (query, ontology) {
+    createSql: function (query) {
         var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
             varField, varFields, varIndex, tuples, statement, statements = [];
@@ -114,11 +133,13 @@ TrimQueryABox.prototype = {
                 } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
                     table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
                     tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
-                    1;
+                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
+                    table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue')";
+                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
                 } else {
                     throw 'Unrecognized assertion type.';
                 }
-                //TODO subsumption, objectProperty debug, dataProperty support
+                //TODO subsumption
                 statement = insert + into + table + values + tuples + ";";
                 statements.push(statement);
 

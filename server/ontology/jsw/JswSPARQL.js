@@ -124,7 +124,7 @@ SPARQL = {
             '$', "i");
         this.prefixRegExp = new RegExp("^" + pnNameNs + "$");
         this.prefixedNameRegExp = new RegExp("^" + prefixedName + "$");
-        this.rdfLiteralRegExp = new RegExp('^(?:' + string + ')(?:@([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)|' +
+        this.rdfLiteralRegExp = new RegExp('^(?:' + ''/*string */+ '.*)(?:@([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)|' +
             '\\^\\^(' + iriRef + ')|\\^\\^' + prefixedName + ')?$');
         this.varRegExp = new RegExp('^' + varRegExp + '$');
     },
@@ -144,7 +144,7 @@ SPARQL = {
         }
 
         query = new rdfQuery();
-        tokens = queryTxt.split(/\s+/);
+        tokens = queryTxt.match(/[^\s"']+|"([^"]*)"|'([^']*)'/g);
         tokenCount = tokens.length;
         tokenIndex = 0;
 
@@ -543,7 +543,7 @@ SPARQL = {
      */
     parseLiteral: function (token, query) {
         var dataTypeIri, localName, matches, matchIndex, prefix, value;
-
+        //token = token.match(/(?:")(.+)(?:")/)[1];
         if (!this.rdfLiteralRegExp) {
             this.init();
         }
@@ -551,7 +551,9 @@ SPARQL = {
         matches = token.match(this.rdfLiteralRegExp);
 
         if (matches) {
-            for (matchIndex = 1; matchIndex <= 4; matchIndex += 1) {
+            for (matchIndex = 0; matchIndex <= 4; matchIndex += 1) {
+            //ancien code
+            //for (matchIndex = 1; matchIndex <= 4; matchIndex += 1) {
                 value = matches[matchIndex];
 
                 if (value) {
