@@ -12,7 +12,7 @@ Ontology = function() {
         dpropType = exprTypes.ET_DPROP;
 
     /** Sets of entity IRIs of different types found in the ontology. */
-    this.entities = {};
+    this.entities = [];
     this.entities[opropType] = {};
     this.entities[classType] = {};
     this.entities[dpropType] = {};
@@ -40,7 +40,7 @@ Ontology = function() {
     this.nextEntityNos[individualType] = 1;
 
     // Contains number of entities of each type in the ontology.
-    this.entityCount = {};
+    this.entityCount = [];
     this.entityCount[opropType] = 0;
     this.entityCount[classType] = 0;
     this.entityCount[dpropType] = 0;
@@ -107,10 +107,6 @@ Ontology.prototype = {
         if (type === this.exprTypes.ET_OPROP &&
             (iri === iris.TOP_OBJECT_PROPERTY || iri === iris.BOTTOM_OBJECT_PROPERTY)) {
             return;
-        }
-
-        if(!this.entities[type]) {
-            1;
         }
 
         if (!this.entities[type].hasOwnProperty(iri)) {

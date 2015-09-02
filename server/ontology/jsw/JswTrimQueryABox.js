@@ -10,6 +10,7 @@ var TrimQueryABox = function () {
     /** The object storing ABox data. */
     this.database = {
         ClassAssertion: [],
+        ClassSubsumer: [],
         ObjectPropertyAssertion: [],
         DataPropertyAssertion: []
     };
@@ -35,8 +36,8 @@ TrimQueryABox.prototype = {
      * @param query RDF query to answer.
      * @return Data set containing the results matching the query.
      */
-    answerQuery: function (query, ontology) {
-        var sql = this.createSql(query, ontology), sqlQueries = sql.split(';').slice(0,-1);
+    answerQuery: function (query) {
+        var sql = this.createSql(query), sqlQueries = sql.split(';').slice(0,-1);
 
         try {
             return this.processSql(sqlQueries, false);
@@ -90,6 +91,13 @@ TrimQueryABox.prototype = {
         });
     },
 
+    addClassSubsumer: function() {
+        this.database.ClassSubsumer.push({
+            class: classIri,
+            classSubsumer: classSubsumerIri
+        });
+    },
+
     /**
      * Creates an object which can be used for sending queries against the database.
      *
@@ -106,6 +114,14 @@ TrimQueryABox.prototype = {
                 leftIndividual: { type: 'String' },
                 rightValue: { type: 'String' }}
         });
+    },
+
+    /**
+     * ABox recalculation after INSERT or DELETE DATA.
+     * @author Mehdi Terdjimi
+     */
+    recalculateABox: function() {
+        return;
     },
 
     /**
@@ -142,10 +158,6 @@ TrimQueryABox.prototype = {
                 //TODO subsumption
                 statement = insert + into + table + values + tuples + ";";
                 statements.push(statement);
-
-                /*statement = insert + into + table + values +
-                    " ('" + triple.object.value + "', '" + owl.IRIs.THING + "');";
-                statements.push(statement);*/
 
             }
             return statements.join('');

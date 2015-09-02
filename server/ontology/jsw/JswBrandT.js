@@ -2,12 +2,10 @@
 * Created by Spadon on 17/10/2014.
 */
 
-StopWatch = require('./JswStopWatch');
 Queue = require('./JswQueue');
 PairStorage = require('./JswPairStorage');
 TripleStorage = require('./JswTripleStorage');
 TrimQueryABox = require('./JswTrimQueryABox');
-TrimQueryTBox = require('./JswTrimQueryTBox');
 JswOWL = require('./JswOWL');
 JswRDF = require('./JswRDF');
 JswOntology = require('./JswOntology');
@@ -18,36 +16,18 @@ JswOntology = require('./JswOntology');
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
 BrandT = function (ontology) {
-    var clock, normalizedOntology;
+    var normalizedOntology;
 
-    /** Stores information about how much time different steps of building a reasoner took. */
-    this.timeInfo = {};
     /** Original ontology from which the reasoner was built. */
     this.originalOntology = ontology;
     this.resultOntology = new JswOntology.ontology();
 
-    clock = new StopWatch.stopWatch();
-
-    clock.start();
     normalizedOntology = this.normalizeOntology();
-    this.timeInfo.normalization = clock.stop();
 
-    clock.start();
     this.objectPropertySubsumers = this.buildObjectPropertySubsumerSets(normalizedOntology);
-    this.timeInfo.objectPropertySubsumption = clock.stop();
-
-    clock.start();
     this.classSubsumers = this.buildClassSubsumerSets(normalizedOntology);
-    this.timeInfo.classification = clock.stop();
-
-    clock.start();
     /** Rewritten A-Box of the ontology. */
     this.aBox = this.rewriteAbox(normalizedOntology);
-    this.timeInfo.aBoxRewriting = clock.stop();
-
-    /** Rewritten T-Box of the ontology. */
-    this.tBox = this.rewriteTbox(normalizedOntology);
-
 
     // Remove entity IRIs introduced during normalization stage from the subsumer sets.
     this.removeIntroducedEntities(
@@ -60,12 +40,6 @@ BrandT = function (ontology) {
         this.originalOntology.getObjectProperties(),
         [JswOWL.IRIs.TOP_OBJECT_PROPERTY, JswOWL.IRIs.BOTTOM_OBJECT_PROPERTY]
     );
-
-    clock.start();
-    this.timeInfo.classHierarchy = clock.stop();
-
-    clock.start();
-    this.timeInfo.objectPropertyHierarchy = clock.stop();
 };
 
 /** Prototype for all BrandT objects. */
@@ -880,38 +854,11 @@ BrandT.prototype = {
     },
 
     /**
-     * Rewrites an TBox of the ontology into the relational database to use it for conjunctive query
-     * answering.
-     *
-     * @param ontology Normalized ontology containing the TBox to rewrite.
-     * @return TrimQueryABox object containing the rewritten TBox.
-     */
-    rewriteTbox: function(ontology) {
-            var tBox = new TrimQueryTBox.trimQueryTBox(),
-            entities = ontology.entities;
-
-        for (var key in entities[9]) {
-            tBox.database.Class.push(key);
-        }
-
-        for (var key in entities[10]) {
-            tBox.database.ObjectProperty.push(key);
-        }
-
-        for (var key in entities[22]) {
-            tBox.database.DataProperty.push(key);
-        }
-
-        return tBox;
-    },
-
-
-    /**
      * Answers the given user query.
      *
      * @param query An object representing a query to be answered.
      */
-    answerQuery: function (query, ontology) {
+    answerQuery: function (query) {
         if (!query) {
 
             throw 'The query is not specified!';
@@ -964,7 +911,7 @@ BrandT.prototype = {
             }
         }
 
-        return this.aBox.answerQuery(query, ontology);
+        return this.aBox.answerQuery(query);
     },
 
     /**

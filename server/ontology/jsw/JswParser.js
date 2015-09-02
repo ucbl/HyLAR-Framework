@@ -506,7 +506,6 @@ JswParser = {
                 node = element.firstChild,
                 nodeName;
 
-            // This will not detect (and report) declarations of other entity types. On purpose.
             while (node) {
                 if (node.nodeType === 1) {
                     nodeName = node.nodeName;
@@ -517,19 +516,19 @@ JswParser = {
 
                     switch (nodeName) {
                         case 'Class':
-                            parseEntity(exprTypes.ET_CLASS, 'Class', node, true);
+                            parseEntity(exprTypes.ET_CLASS, 'Class', node, false);
                             found = true;
                             break;
                         case 'ObjectProperty':
-                            parseEntity(exprTypes.ET_OPROP, 'ObjectProperty', node, true);
+                            parseEntity(exprTypes.ET_OPROP, 'ObjectProperty', node, false);
                             found = true;
                             break;
                         case 'DataProperty':
-                            parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, true);
+                            parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, false);
                             found = true;
                             break;
                         case 'NamedIndividual':
-                            parseEntity(exprTypes.ET_INDIVIDUAL, 'NamedIndividual', node, true);
+                            parseEntity(exprTypes.ET_INDIVIDUAL, 'NamedIndividual', node, false);
                             found = true;
                             break;
                     }
