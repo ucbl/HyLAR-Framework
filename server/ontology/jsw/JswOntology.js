@@ -94,20 +94,43 @@ Ontology.prototype = {
      * @param iri IRI of the entity.
      * @param isDeclared (optional) Indicates whether the entity has just been declared in the ontology and
      * not used in axioms yet. False by default.
+     * todo axiom/fact separation?
      */
-    registerEntity: function (type, iri, isDeclared) {
-        var iris = JswOWL.IRIs;
+    registerEntityAddAxiom: function (type, iri, isDeclared) {
+        var iris = JswOWL.IRIs, entityType, axiom;
 
         // We don't want to register default entity IRIs.
-        if (type === this.exprTypes.ET_CLASS &&
-            (iri === iris.THING || iri === iris.NOTHING)) {
-            return;
+        if (type === this.exprTypes.ET_CLASS) {
+            if (iri === iris.THING || iri === iris.NOTHING) {
+                return;
+            }
+            entityType = this.exprTypes.ET_CLASS;
+            iriType = JswOWL.IRIs.CLASS
+
+        } else if (type === this.exprTypes.ET_OPROP) {
+            if (iri === iris.TOP_OBJECT_PROPERTY || iri === iris.BOTTOM_OBJECT_PROPERTY) {
+                return;
+            }
+            entityType = this.exprTypes.ET_OPROP;
+            iriType = JswOWL.IRIs.OPROP;
+
+        } else if (type === this.exprTypes.ET_DPROP) {
+            if (iri === iris.TOP_DATA_PROPERTY || iri === iris.BOTTOM_DATA_PROPERTY) {
+                return;
+            }
+            entityType = this.exprTypes.ET_DPROP;
+            iriType = JswOWL.IRIs.DPROP;
         }
 
-        if (type === this.exprTypes.ET_OPROP &&
-            (iri === iris.TOP_OBJECT_PROPERTY || iri === iris.BOTTOM_OBJECT_PROPERTY)) {
-            return;
-        }
+        axiom = {
+            type: entityType,
+            args: new Array({
+                IRI: iri,
+                type: entityType
+            })
+        };
+
+        if(!(axiom in this.axioms)) this.axioms.push(axiom);
 
         if (!this.entities[type].hasOwnProperty(iri)) {
             this.entityCount[type] += 1;

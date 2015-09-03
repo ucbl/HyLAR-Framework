@@ -79,7 +79,7 @@ JswParser = {
                 };
             }
 
-            ontology.registerEntity(type, iri, isDeclared);
+            ontology.registerEntityAddAxiom(type, iri, isDeclared);
             return entity;
         }
 

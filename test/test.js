@@ -41,11 +41,6 @@ describe('Ontology Classification', function () {
         reasoner = JswBrandT.reasoner(ontology);
         reasoner.should.exist;
     });
-
-    it('should find some assertions of Classes and ClassSubsumers', function () {
-        reasoner.aBox.database.ClassAssertion.length.should.be.above(0);
-        reasoner.aBox.database.ClassSubsumer.length.should.be.above(0);
-    });
 });
 
 describe('INSERT query with subsumption', function () {
@@ -61,13 +56,13 @@ describe('INSERT query with subsumption', function () {
         results = reasoner.answerQuery(query);
     });
 
-    it('should have inserted 2 ClassAssertions and a subsumption', function () {
-        reasoner.aBox.database.ClassAssertion.length.should.be.above(3);
+    it('should have inserted 3 ClassAssertions and a subsumption', function () {
+        reasoner.aBox.database.ClassAssertion.length.should.equal(6);
     });
-    it('should have inserted 1 ObjectProperty', function () {
-        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(1);
+    it('should have inserted 1 ObjectPropertyAssertion and two subsumptions', function () {
+        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(3);
     });
-    it('should have inserted 1 DataProperty', function () {
+    it('should have inserted 1 DataPropertyAssertion', function () {
         reasoner.aBox.database.DataPropertyAssertion.length.should.equal(1);
     });
 
@@ -126,8 +121,8 @@ describe('SELECT query with subsumption', function () {
             'SELECT ?a ?b { ?a <#hasName> ?b . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.exist;
-        results[0][0]['b'].should.exist;
+        results[0][0]['a'].should.equal('#Inspiron');
+        results[0][0]['b'].should.equal('"Dell Inspiron 15R"');
     });
 
 });

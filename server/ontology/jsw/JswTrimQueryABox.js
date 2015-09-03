@@ -10,7 +10,6 @@ var TrimQueryABox = function () {
     /** The object storing ABox data. */
     this.database = {
         ClassAssertion: [],
-        ClassSubsumer: [],
         ObjectPropertyAssertion: [],
         DataPropertyAssertion: []
     };
@@ -91,13 +90,6 @@ TrimQueryABox.prototype = {
         });
     },
 
-    addClassSubsumer: function() {
-        this.database.ClassSubsumer.push({
-            class: classIri,
-            classSubsumer: classSubsumerIri
-        });
-    },
-
     /**
      * Creates an object which can be used for sending queries against the database.
      *
@@ -114,14 +106,6 @@ TrimQueryABox.prototype = {
                 leftIndividual: { type: 'String' },
                 rightValue: { type: 'String' }}
         });
-    },
-
-    /**
-     * ABox recalculation after INSERT or DELETE DATA.
-     * @author Mehdi Terdjimi
-     */
-    recalculateABox: function() {
-        return;
     },
 
     /**

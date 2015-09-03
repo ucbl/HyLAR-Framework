@@ -25,6 +25,7 @@ BrandT = function (ontology) {
     normalizedOntology = this.normalizeOntology();
 
     this.objectPropertySubsumers = this.buildObjectPropertySubsumerSets(normalizedOntology);
+    this.dataPropertySubsumers = this.buildDataPropertySubsumerSets(normalizedOntology);
     this.classSubsumers = this.buildClassSubsumerSets(normalizedOntology);
     /** Rewritten A-Box of the ontology. */
     this.aBox = this.rewriteAbox(normalizedOntology);
@@ -44,6 +45,78 @@ BrandT = function (ontology) {
 
 /** Prototype for all BrandT objects. */
 BrandT.prototype = {
+    /**
+     * Builds a data property subsumption relation implied by the ontology.
+     *
+     * @param ontology Normalized ontology to be use for building the subsumption relation.
+     * @return PairStorage storage hashing the object property subsumption relation implied by the
+     * ontology.
+     */
+    buildDataPropertySubsumerSets: function (ontology) {
+        var args, axiom, axioms, axiomIndex, dataProperties, dataProperty,
+            dataPropertySubsumers, dpropType, reqAxiomType, queue, subsumer, subsumers,
+            topDataProperty;
+
+        topDataProperty = JswOWL.IRIs.TOP_DATA_PROPERTY;
+        dataPropertySubsumers = new PairStorage.pairStorage();
+        dataPropertySubsumers.add(topDataProperty, topDataProperty);
+        dataProperties = ontology.getDataProperties();
+
+        for (dataProperty in dataProperties) {
+            if (dataProperties.hasOwnProperty(dataProperty)) {
+                dataPropertySubsumers.add(dataProperty, dataProperty);
+                dataPropertySubsumers.add(dataProperty, topDataProperty);
+            }
+        }
+
+        axioms = ontology.axioms;
+        dpropType = JswOWL.ExpressionTypes.ET_DPROP;
+        reqAxiomType = JswOWL.ExpressionTypes.AXIOM_OPROP_SUB; //todo verifier
+
+        // Add object property subsumptions explicitly mentioned in the ontology.
+        for (axiomIndex = axioms.length; axiomIndex--;) {
+            axiom = axioms[axiomIndex];
+            args = axiom.args;
+
+            if (axiom.type !== reqAxiomType || args[0].type !== dpropType) {
+                continue;
+            }
+
+            dataPropertySubsumers.add(args[0].IRI, args[1].IRI);
+        }
+
+        queue = new Queue.queue();
+
+        for (dataProperty in dataProperties) {
+            if (!dataProperties.hasOwnProperty(dataProperty)) {
+                continue;
+            }
+
+            subsumers = dataPropertySubsumers.get(dataProperty);
+
+            for (subsumer in subsumers) {
+                if (subsumers.hasOwnProperty(subsumer)) {
+                    queue.enqueue(subsumer);
+                }
+            }
+
+            while (!queue.isEmpty()) {
+                subsumers = dataPropertySubsumers.get(queue.dequeue());
+
+                for (subsumer in subsumers) {
+                    if (subsumers.hasOwnProperty(subsumer)) {
+                        if (!dataPropertySubsumers.exists(dataProperty, subsumer)) {
+                            dataPropertySubsumers.add(dataProperty, subsumer);
+                            queue.enqueue(subsumer);
+                        }
+                    }
+                }
+            }
+        }
+
+        return dataPropertySubsumers;
+    },
+
     /**
      * Builds an object property subsumption relation implied by the ontology.
      *
@@ -911,7 +984,50 @@ BrandT.prototype = {
             }
         }
 
-        return this.aBox.answerQuery(query);
+        var results = this.aBox.answerQuery(query);
+        this.recalculateABox();
+        return results;
+    },
+
+    /**
+     * ABox recalculation after INSERT or DELETE DATA.
+     * @author Mehdi Terdjimi
+     */
+    recalculateABox: function() {
+        for(var classAssertionKey in this.aBox.database.ClassAssertion) {
+            var assertion = this.aBox.database.ClassAssertion[classAssertionKey],
+                className = assertion.className,
+                individual = assertion.individual,
+                classSubsumer = this.classSubsumers.getSecond(className);
+
+            if (classSubsumer) {
+                this.aBox.addClassAssertion(individual, classSubsumer);
+            }
+        }
+
+        for(var objectPropertyAssertionKey in this.aBox.database.ObjectPropertyAssertion) {
+            var assertion = this.aBox.database.ObjectPropertyAssertion[objectPropertyAssertionKey],
+                objectProperty = assertion.objectProperty,
+                leftIndividual = assertion.leftIndividual,
+                rightIndividual = assertion.rightIndividual,
+                objectPropertySubsumer = this.objectPropertySubsumers.getSecond(objectProperty);
+
+            if (objectPropertySubsumer) {
+                this.aBox.addObjectPropertyAssertion(objectProperty, leftIndividual, rightIndividual);
+            }
+        }
+
+        for(var dataPropertyAssertionKey in this.aBox.database.DataPropertyAssertion) {
+            var assertion = this.aBox.database.DataPropertyAssertion[dataPropertyAssertionKey],
+                dataProperty = assertion.dataProperty,
+                leftIndividual = assertion.leftIndividual,
+                rightValue = assertion.rightValue,
+                dataPropertySubsumer = this.dataPropertySubsumers.getSecond(dataProperty);
+
+            if (dataPropertySubsumer) {
+                this.aBox.addDataPropertyAssertion(dataProperty, leftIndividual, rightValue);
+            }
+        }
     },
 
     /**

@@ -107,6 +107,14 @@ PairStorage.prototype = {
         }
 
         return this.storage[first] || {};
+    },
+
+    getSecond: function(first) {
+        var second = first;
+        for (var key in this.storage[first]) {
+            if (key != first) second = key;
+        }
+        return second;
     }
 };
 

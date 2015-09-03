@@ -59,6 +59,12 @@ IRIs = {
     THING: 'http://www.w3.org/2002/07/owl#Thing',
     /** Bottom concept. */
     NOTHING: 'http://www.w3.org/2002/07/owl#Nothing',
+    /** Class */
+    CLASS: 'http://www.w3.org/2002/07/owl#Class',
+    /** Class */
+    OPROP: 'http://www.w3.org/2002/07/owl#ObjectProperty',
+    /** Class */
+    DPROP: 'http://www.w3.org/2002/07/owl#DataProperty',
     /** Top object property. */
     TOP_OBJECT_PROPERTY: 'http://www.w3.org/2002/07/owl#topObjectProperty',
     /** Bottom object property. */
