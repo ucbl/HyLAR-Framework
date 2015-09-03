@@ -56,14 +56,14 @@ describe('INSERT query with subsumption', function () {
         results = reasoner.answerQuery(query);
     });
 
-    it('should have inserted 3 ClassAssertions and a subsumption', function () {
-        reasoner.aBox.database.ClassAssertion.length.should.equal(6);
+    it('should have inserted 7 ClassAssertions including 4 subsumptions', function () {
+        reasoner.aBox.database.ClassAssertion.length.should.equal(7);
     });
-    it('should have inserted 1 ObjectPropertyAssertion and two subsumptions', function () {
-        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(3);
+    it('should have inserted 2 ObjectPropertyAssertions including a subsumption', function () {
+        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(2);
     });
-    it('should have inserted 1 DataPropertyAssertion', function () {
-        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(1);
+    it('should have inserted 2 DataPropertyAssertion including a subsumption', function () {
+        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(2);
     });
 
 });
@@ -126,3 +126,26 @@ describe('SELECT query with subsumption', function () {
     });
 
 });
+
+/*describe('DELETE query with subsumption', function () {
+    var query, results;
+    it('should DELETE with subsumptions', function () {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'DELETE DATA { <#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
+        '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+    });
+
+    it('should remain 2', function () {
+        reasoner.aBox.database.ClassAssertion.length.should.equal(6);
+    });
+    it('should have inserted 1 ObjectPropertyAssertion and two subsumptions', function () {
+        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(3);
+    });
+    it('should have inserted 1 DataPropertyAssertion', function () {
+        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(1);
+    });
+
+});*/

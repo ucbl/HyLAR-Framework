@@ -984,7 +984,7 @@ BrandT.prototype = {
             }
         }
 
-        var results = this.aBox.answerQuery(query);
+        var results = this.aBox.answerQuery(query, this.resultOntology.entities);
         this.recalculateABox();
         return results;
     },
@@ -998,11 +998,11 @@ BrandT.prototype = {
             var assertion = this.aBox.database.ClassAssertion[classAssertionKey],
                 className = assertion.className,
                 individual = assertion.individual,
-                classSubsumer = this.classSubsumers.getSecond(className);
+                classSubsumers = this.classSubsumers.getAllBut(className);
 
-            if (classSubsumer) {
-                this.aBox.addClassAssertion(individual, classSubsumer);
-            }
+           for (var key in classSubsumers) {
+                this.aBox.addClassAssertion(individual, classSubsumers[key]);
+           }
         }
 
         for(var objectPropertyAssertionKey in this.aBox.database.ObjectPropertyAssertion) {
@@ -1010,10 +1010,10 @@ BrandT.prototype = {
                 objectProperty = assertion.objectProperty,
                 leftIndividual = assertion.leftIndividual,
                 rightIndividual = assertion.rightIndividual,
-                objectPropertySubsumer = this.objectPropertySubsumers.getSecond(objectProperty);
+                objectPropertySubsumers = this.objectPropertySubsumers.getAllBut(objectProperty);
 
-            if (objectPropertySubsumer) {
-                this.aBox.addObjectPropertyAssertion(objectProperty, leftIndividual, rightIndividual);
+            for (var key in objectPropertySubsumers) {
+                this.aBox.addObjectPropertyAssertion(objectPropertySubsumers[key], leftIndividual, rightIndividual);
             }
         }
 
@@ -1022,10 +1022,10 @@ BrandT.prototype = {
                 dataProperty = assertion.dataProperty,
                 leftIndividual = assertion.leftIndividual,
                 rightValue = assertion.rightValue,
-                dataPropertySubsumer = this.dataPropertySubsumers.getSecond(dataProperty);
+                dataPropertySubsumers = this.dataPropertySubsumers.getAllBut(dataProperty);
 
-            if (dataPropertySubsumer) {
-                this.aBox.addDataPropertyAssertion(dataProperty, leftIndividual, rightValue);
+            for (var key in dataPropertySubsumers) {
+                this.aBox.addDataPropertyAssertion(dataPropertySubsumers[key], leftIndividual, rightValue);
             }
         }
     },

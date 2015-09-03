@@ -35,8 +35,8 @@ TrimQueryABox.prototype = {
      * @param query RDF query to answer.
      * @return Data set containing the results matching the query.
      */
-    answerQuery: function (query) {
-        var sql = this.createSql(query), sqlQueries = sql.split(';').slice(0,-1);
+    answerQuery: function (query, entities) {
+        var sql = this.createSql(query, entities), sqlQueries = sql.split(';').slice(0,-1);
 
         try {
             return this.processSql(sqlQueries, false);
@@ -54,10 +54,14 @@ TrimQueryABox.prototype = {
      * @param classIri IRI of the class in the assertion.
      */
     addClassAssertion: function (individualIri, classIri) {
-        this.database.ClassAssertion.push({
+        var data = {
             individual: individualIri,
             className: classIri
-        });
+        };
+
+        if (JSON.stringify(this.database.ClassAssertion).indexOf(JSON.stringify(data)) === -1) {
+            this.database.ClassAssertion.push(data);
+        }
     },
 
     /**
@@ -68,11 +72,15 @@ TrimQueryABox.prototype = {
      * @param rightIndIri IRI of the right individual in the assertion.
      */
     addObjectPropertyAssertion: function (objectPropertyIri, leftIndIri, rightIndIri) {
-        this.database.ObjectPropertyAssertion.push({
+        var data = {
             objectProperty: objectPropertyIri,
             leftIndividual: leftIndIri,
             rightIndividual: rightIndIri
-        });
+        };
+
+        if (JSON.stringify(this.database.ObjectPropertyAssertion).indexOf(JSON.stringify(data)) === -1) {
+            this.database.ObjectPropertyAssertion.push(data);
+        }
     },
 
     /**
@@ -83,11 +91,15 @@ TrimQueryABox.prototype = {
      * @param rightValue value of the data.
      */
     addDataPropertyAssertion: function (dataPropertyIri, leftIndIri, rightValue) {
-        this.database.ObjectPropertyAssertion.push({
-            objectProperty: dataPropertyIri,
+        var data = {
+            dataProperty: dataPropertyIri,
             leftIndividual: leftIndIri,
-            rightIndividual: rightValue
-        });
+            rightValue: rightValue
+        };
+
+        if (JSON.stringify(this.database.DataPropertyAssertion).indexOf(JSON.stringify(data)) === -1) {
+            this.database.DataPropertyAssertion.push(data);
+        }
     },
 
     /**
@@ -114,8 +126,8 @@ TrimQueryABox.prototype = {
      * @param query jsw.rdf.Query to return the SQL representation for.
      * @return string representation of the given RDF query.
      */
-    createSql: function (query) {
-        var from, limit, objectField, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
+    createSql: function (query, entities) {
+        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
             varField, varFields, varIndex, tuples, statement, statements = [];
 
@@ -139,7 +151,7 @@ TrimQueryABox.prototype = {
                 } else {
                     throw 'Unrecognized assertion type.';
                 }
-                //TODO subsumption
+
                 statement = insert + into + table + values + tuples + ";";
                 statements.push(statement);
 
@@ -192,20 +204,23 @@ TrimQueryABox.prototype = {
             triple = triples[tripleIndex];
 
             predicate = triple.predicate;
+            object = triple.object;
             predicateType = predicate.type;
             predicateValue = predicate.value;
+            objectType = object.type;
             subjectField = 'leftIndividual';
             objectField = 'rightIndividual';
             table = 't' + tripleIndex;
 
 
-            if (predicateType === rdf.ExpressionTypes.IRI_REF) {
+            if (predicateValue === rdf.IRIs.TYPE) {
                 if (predicateValue === rdfTypeIri) {
                     from += 'ClassAssertion AS ' + table + ', ';
                     subjectField = 'individual';
                     objectField = 'className';
 
                     //AJOUT Lionel (pour le traitement des requêtes de subsomption de classes
+                    //todo garder ou pas?
 
                 } else if (predicateValue === subClassOfIri) {
                     from += 'ClassSubsumer AS ' + table + ', ';
@@ -216,7 +231,19 @@ TrimQueryABox.prototype = {
                     from += 'ObjectPropertyAssertion AS ' + table + ', ';
                     where += table + ".objectProperty=='" + predicateValue + "' AND ";
                 }
-            } else if (predicateType === rdf.ExpressionTypes.VAR) {
+
+            } else if (predicateValue in entities[owl.ExpressionTypes.ET_DPROP]) {
+                objectField = 'rightValue';
+                from += 'DataPropertyAssertion AS ' + table + ', ';
+                varField = varFields[predicateValue];
+
+                if (varField) {
+                    where += table + '.dataProperty==' + varField + ' AND ';
+                } else {
+                    varFields[predicateValue] = table + '.dataProperty';
+                }
+
+            }  else if (predicateValue in entities[owl.ExpressionTypes.ET_OPROP]) {
                 from += 'ObjectPropertyAssertion AS ' + table + ', ';
                 varField = varFields[predicateValue];
 
@@ -225,7 +252,8 @@ TrimQueryABox.prototype = {
                 } else {
                     varFields[predicateValue] = table + '.objectProperty';
                 }
-            } else {
+            }
+            else {
                 throw 'Unknown type of a predicate expression: ' + predicateType + '!';
             }
 
