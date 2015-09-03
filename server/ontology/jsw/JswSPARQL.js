@@ -197,9 +197,43 @@ SPARQL = {
             tokenIndex += 1;
         }
 
-// Parse SELECT or INSERT DATA clause.
+// Parse SELECT, INSERT DATA or DELETE DATA clauses.
         if (tokenIndex === tokenCount) {
             return query;
+        } else if (token.toUpperCase() == 'DELETE') {
+            //  DELETE DATA STATEMENT @author Mehdi Terdjimi
+
+            tokenIndex++;
+            token = tokens[tokenIndex];
+
+            if (token != 'DATA')  throw 'Expected DATA after DELETE, having ' + token;
+
+            tokenIndex++;
+            token = tokens[tokenIndex];
+
+            if (token != '{') throw 'Expected "{", having ' + token;
+
+            for (tokenIndex++; tokenIndex < tokens.length; tokenIndex++) {
+                token = tokens[tokenIndex];
+                if (!(token == '}' || token == '.')) {
+
+                    subject = this.parseVarOrTerm(token, query);
+
+                    tokenIndex++;
+                    token = tokens[tokenIndex];
+
+                    predicate = this.parseVarOrTerm(token, query);
+
+                    tokenIndex++;
+                    token = tokens[tokenIndex];
+
+                    object = this.parseVarOrTerm(token, query);
+                    query.addTriple(subject, predicate, object);
+
+                }
+            }
+            query.statementType = 'DELETE';
+
         } else if (token.toUpperCase() == 'INSERT') {
             //  INSERT DATA STATEMENT @author Mehdi Terdjimi
 

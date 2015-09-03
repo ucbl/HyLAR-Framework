@@ -127,7 +127,7 @@ describe('SELECT query with subsumption', function () {
 
 });
 
-/*describe('DELETE query with subsumption', function () {
+describe('DELETE query with subsumption', function () {
     var query, results;
     it('should DELETE with subsumptions', function () {
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
@@ -138,14 +138,14 @@ describe('SELECT query with subsumption', function () {
         results = reasoner.answerQuery(query);
     });
 
-    it('should remain 2', function () {
-        reasoner.aBox.database.ClassAssertion.length.should.equal(6);
+    it('should remain 2 ClassAssertions', function () {
+        reasoner.aBox.database.ClassAssertion.length.should.equal(2);
     });
-    it('should have inserted 1 ObjectPropertyAssertion and two subsumptions', function () {
-        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(3);
+    it('should remain the exact same number of ObjectPropertieAssertions', function () {
+        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(2);
     });
-    it('should have inserted 1 DataPropertyAssertion', function () {
-        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(1);
+    it('should not remain any DataPropertyAssertion', function () {
+        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(0);
     });
 
-});*/
+});

@@ -127,11 +127,38 @@ TrimQueryABox.prototype = {
      * @return string representation of the given RDF query.
      */
     createSql: function (query, entities) {
-        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
+        var from, where, limit, object, objectField, objectType, orderBy, delet, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
             varField, varFields, varIndex, tuples, statement, statements = [];
 
-        if (query.statementType == 'INSERT') {
+        if (query.statementType == 'DELETE') {
+            delet = 'DELETE';
+            from = 'FROM';
+            where = 'WHERE'
+
+            /*for (var tripleKey in query.triples) {
+                var triple = query.triples[tripleKey];
+                // If it is an assertion...
+                if (triple.predicate.value == rdf.IRIs.TYPE) {
+                    table = "ClassAssertion ('individual', 'className')";
+                    tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "')";
+                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
+                    table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
+                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
+                    table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue')";
+                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                } else {
+                    throw 'Unrecognized assertion type.';
+                }
+
+                statement = delet + from + table + values + tuples + ";";
+                statements.push(statement);
+
+            }
+            */return statements.join('');
+
+        } else if (query.statementType == 'INSERT') {
             insert = 'INSERT';
             into = ' INTO ';
             values = ' VALUES';
