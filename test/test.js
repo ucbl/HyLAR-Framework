@@ -7,7 +7,7 @@ var fs = require('fs');
 var path = require('path');
 
 var JswParser = require('../server/ontology/jsw/JswParser');
-var JswBrandT = require('../server/ontology/jsw/JswBrandT');
+var Reasoner = require('../server/ontology/jsw/Reasoner');
 var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
 var owl, ontology, reasoner, fipa = '/../server/ontologies/fipa.owl';
@@ -38,7 +38,7 @@ describe('Ontology Parsing', function () {
 
 describe('Ontology Classification', function () {
     it('should classify the ontology', function () {
-        reasoner = JswBrandT.reasoner(ontology);
+        reasoner = Reasoner.create(ontology);
         reasoner.should.exist;
     });
 });
@@ -141,7 +141,7 @@ describe('DELETE query with subsumption', function () {
     it('should remain 2 ClassAssertions', function () {
         reasoner.aBox.database.ClassAssertion.length.should.equal(2);
     });
-    it('should remain the exact same number of ObjectPropertieAssertions', function () {
+    it('should remain the exact same number of ObjectPropertyAssertions', function () {
         reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(2);
     });
     it('should not remain any DataPropertyAssertion', function () {

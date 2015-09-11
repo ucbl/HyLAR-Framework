@@ -36,12 +36,12 @@
             </td>
             <td>
                 <ul class="list-group-small">
-                    <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
-                        {{ config.reasoner | displayReasonerStatus }}
-                        <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
+                    <li ng-class="(config.create) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
+                        {{ config.create | displayReasonerStatus }}
+                        <a href="" ng-show="config.create" ng-click="removeReasoner()">(remove)</a>
                     </li>
-                    <!--<li ng-class="(frontReasoner.reasoner.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
-                        <span ng-repeat="classifiedOntology in frontReasoner.reasoner" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
+                    <!--<li ng-class="(frontReasoner.create.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
+                        <span ng-repeat="classifiedOntology in frontReasoner.create" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
                     </li>-->
                 </ul>
             </td>

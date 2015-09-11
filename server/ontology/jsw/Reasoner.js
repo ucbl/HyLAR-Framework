@@ -12,13 +12,13 @@ JswOntology = require('./JswOntology');
 
 
 /**
- * BrandT is an OWL-EL reasoner. Currently, it has some limitations and does not allow
+ * Reasoner is an OWL-EL create. Currently, it has some limitations and does not allow
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
-BrandT = function (ontology) {
+Reasoner = function (ontology) {
     var normalizedOntology;
 
-    /** Original ontology from which the reasoner was built. */
+    /** Original ontology from which the create was built. */
     this.originalOntology = ontology;
     this.resultOntology = new JswOntology.ontology();
 
@@ -43,8 +43,8 @@ BrandT = function (ontology) {
     );
 };
 
-/** Prototype for all BrandT objects. */
-BrandT.prototype = {
+/** Prototype for all Reasoner objects. */
+Reasoner.prototype = {
     /**
      * Builds a data property subsumption relation implied by the ontology.
      *
@@ -1674,7 +1674,7 @@ BrandT.prototype = {
 };
 
 module.exports = {
-    reasoner: function(data) {
-        return new BrandT(data);
+    create: function(data) {
+        return new Reasoner(data);
     }
 }

@@ -7,7 +7,7 @@ var fs = require('fs'),
     request = require('request'),
 
     JswParser = require('./jsw/JswParser'),
-    JswBrandT = require('./jsw/JswBrandT'),
+    Reasoner = require('./jsw/Reasoner'),
     JswSPARQL = require('./jsw/JswSPARQL'),
 
     ClassificationData = null,
@@ -61,11 +61,11 @@ module.exports = {
         var ontology = req.ontology,
             initialTime = new Date().getTime();
 
-        var reasoner = new JswBrandT.reasoner(ontology);
+        var reasoner = new Reasoner.create(ontology);
 
         req.processingDelay  = new Date().getTime() - initialTime;
         req.classificationData = {
-            reasoner: reasoner
+            create: reasoner
         };
 
         next();
@@ -74,7 +74,7 @@ module.exports = {
     sendClassificationData: function(req, res) {
         var seen = [];
         ClassificationData = req.classificationData;
-        stringifiedReasoner = JSON.stringify(ClassificationData.reasoner, function(key, val) {
+        stringifiedReasoner = JSON.stringify(ClassificationData.create, function(key, val) {
             if (val != null && typeof val == "object") {
                 if (seen.indexOf(val) >= 0)
                     return;
@@ -89,14 +89,14 @@ module.exports = {
 
         fs.writeFileSync(dbDir + req.param('filename') + '.json',
             '{' +
-                'reasoner: ' + stringifiedReasoner + ',' +
+                'create: ' + stringifiedReasoner + ',' +
                 'ontology: ' + JSON.stringify(ClassificationData.ontology) +
             '}'
         );
 
         res.status(200).send({
             data : {
-                reasoner: stringifiedReasoner,
+                create: stringifiedReasoner,
                 ontology: ClassificationData.ontology,
                 requestDelay: req.requestDelay,
                 processingDelay: req.processingDelay,
@@ -143,7 +143,7 @@ module.exports = {
         } else {
             var sparql = JswSPARQL.sparql,
                 query = sparql.parse(req.param('query')),
-                results = ClassificationData.reasoner.aBox.answerQuery(query);
+                results = ClassificationData.create.aBox.answerQuery(query);
 
             processedTime = new Date().getTime();
             res.status(200).send({

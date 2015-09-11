@@ -19,8 +19,8 @@ app.factory('OntologyParser',
                 defer = $q.defer();
 
             ReasonerWorker.addEventListener('message', function(message) {
-                if(message.data.reasoner) {
-                    localStorage.setItem('reasoner', message.data.reasoner);
+                if(message.data.create) {
+                    localStorage.setItem('create', message.data.create);
                 }
                 defer.resolve(message.data);
 
@@ -32,10 +32,10 @@ app.factory('OntologyParser',
 
                     // if the ontology is not yet parsed
                     // (done outside the worker in order to use DOMParser)
-                    if(!data.reasoner) {
+                    if(!data.create) {
                         data.ontology = OntologyParser.parse(data.ontology);
                     } else {
-                        data.reasoner = JSON.parse(data.reasoner);
+                        data.create = JSON.parse(data.create);
                     }
 
                     if(data.inWorker) {
@@ -46,8 +46,8 @@ app.factory('OntologyParser',
                             data: JSON.stringify(data)
                         });
 
-                        if(received.reasoner) {
-                            localStorage.setItem('reasoner',received.reasoner);
+                        if(received.create) {
+                            localStorage.setItem('create',received.create);
                         }
                         defer.resolve(received);
                     }

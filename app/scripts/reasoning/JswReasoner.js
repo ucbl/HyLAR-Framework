@@ -10,20 +10,20 @@ var CONFIG = {};
 function startReasoner(data) {
 
     /**
-     * Creating a reasoner object for the given ontology
+     * Creating a create object for the given ontology
      */
     try {
         var reasoner, stringifiedReasoner, endMsg, errMsg,
             seen = [];
 
-        // If the reasoner has been already initialized
-        if(data.reasoner) {
-            reasoner = data.reasoner;
+        // If the create has been already initialized
+        if(data.create) {
+            reasoner = data.create;
         // If the classification is done client side
         } else {
           // Recover ontology proto due to its loss during the JSON serialization
           data.ontology.__proto__ = new JswOntology.ontology().__proto__;
-          reasoner = new BrandT(data.ontology);
+          reasoner = new Reasoner(data.ontology);
         }
 
         stringifiedReasoner = JSON.stringify(reasoner, function(key, val) {
@@ -87,7 +87,7 @@ function queryReasoner(queryString, reasoner, inWorker) {
 
 
     /**
-     * Querying the reasoner
+     * Querying the create
      */
 
     try {

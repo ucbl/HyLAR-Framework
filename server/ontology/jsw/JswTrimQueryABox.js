@@ -120,6 +120,39 @@ TrimQueryABox.prototype = {
         });
     },
 
+    /** Appends a condition to the where clause based on the given expression.
+     *
+
+     * @param expr Expression to use for constructing a condition.
+     * @param table Name of the table corresponding to the expression.
+     * @param field Name of the field corresponding to the expression.
+     */
+    writeExprCondition: function(expr, table, field, where, varFields) {
+        var type = expr.type,
+            value = expr.value,
+            varField;
+
+        if (type === rdf.ExpressionTypes.IRI_REF || type === rdf.ExpressionTypes.LITERAL) {
+            if (type === rdf.ExpressionTypes.LITERAL) value = value.replace(/"/g, '\\"');
+            where += table + '.' + field + "=='" + value + "' AND ";
+        } else if (type === rdf.ExpressionTypes.VAR) {
+            varField = varFields[value];
+
+            if (varField) {
+                where += table + '.' + field + '==' + varField + ' AND ';
+            } else {
+                varFields[value] = table + '.' + field;
+            }
+        } else {
+            throw 'Unknown type of expression found in the RDF query: ' + type + '!';
+        }
+
+        return {
+            where: where,
+            varFields: varFields
+        };
+    },
+
     /**
      * Returns an SQL representation of the given RDF query.
      *
@@ -129,34 +162,43 @@ TrimQueryABox.prototype = {
     createSql: function (query, entities) {
         var from, where, limit, object, objectField, objectType, orderBy, delet, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
-            varField, varFields, varIndex, tuples, statement, statements = [];
+            varField, varFields, varIndex, tuples, cond, entity, statement, statements = [];
 
         if (query.statementType == 'DELETE') {
-            delet = 'DELETE';
-            from = 'FROM';
-            where = 'WHERE'
+            delet = 'DELETE *';
+            from = ' FROM ';
 
-            /*for (var tripleKey in query.triples) {
+            for (var tripleKey in query.triples) {
                 var triple = query.triples[tripleKey];
+                where = '';
                 // If it is an assertion...
                 if (triple.predicate.value == rdf.IRIs.TYPE) {
-                    table = "ClassAssertion ('individual', 'className')";
-                    tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "')";
+                    table = "ClassAssertion";
+                    where = this.writeExprCondition(triple.subject, table, 'individual', where, varFields).where;
+                    where = this.writeExprCondition(triple.object, table, 'className', where, varFields).where;
                 } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
-                    table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
-                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                    table = "ObjectPropertyAssertion";
+                    where = this.writeExprCondition(triple.subject, table, 'leftIndividual', where, varFields).where;
+                    where = this.writeExprCondition(triple.predicate, table, 'objectProperty', where, varFields).where;
+                    where = this.writeExprCondition(triple.object, table, 'rightIndividual', where, varFields).where;
                 } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
-                    table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue')";
-                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                    table = "DataPropertyAssertion";
+                    where = this.writeExprCondition(triple.subject, table, 'leftIndividual', where, varFields).where;
+                    where = this.writeExprCondition(triple.predicate, table, 'dataProperty', where, varFields).where;
+                    where = this.writeExprCondition(triple.object, table, 'rightValue', where, varFields).where;
                 } else {
                     throw 'Unrecognized assertion type.';
                 }
 
-                statement = delet + from + table + values + tuples + ";";
+                if (where.length > 0) {
+                    where = ' WHERE ' + where.substring(0, where.length - 5);
+                }
+
+                statement = delet + from + table + where + ";";
                 statements.push(statement);
 
             }
-            */return statements.join('');
+            return statements.join('');
 
         } else if (query.statementType == 'INSERT') {
             insert = 'INSERT';
@@ -194,34 +236,6 @@ TrimQueryABox.prototype = {
 
         } else {
             throw 'Statement type unrecognized.';
-        }
-        /** Appends a condition to the where clause based on the given expression.
-         *
-
-         * @param expr Expression to use for constructing a condition.
-         * @param table Name of the table corresponding to the expression.
-         * @param field Name of the field corresponding to the expression.
-         */
-        function writeExprCondition(expr, table, field) {
-            var type = expr.type,
-                value = expr.value,
-                varField;
-
-            if (type === rdf.ExpressionTypes.IRI_REF) {
-                where += table + '.' + field + "=='" + value + "' AND ";
-            } else if (type === rdf.ExpressionTypes.VAR) {
-                varField = varFields[value];
-
-                if (varField) {
-                    where += table + '.' + field + '==' + varField + ' AND ';
-                } else {
-                    varFields[value] = table + '.' + field;
-                }
-            } else if (type === rdf.ExpressionTypes.LITERAL) {
-                throw 'Literal expressions in RDF queries are not supported by the library yet!';
-            } else {
-                throw 'Unknown type of expression found in the RDF query: ' + type + '!';
-            }
         }
 
         triples = query.triples;
@@ -284,8 +298,13 @@ TrimQueryABox.prototype = {
                 throw 'Unknown type of a predicate expression: ' + predicateType + '!';
             }
 
-            writeExprCondition(triple.subject, table, subjectField);
-            writeExprCondition(triple.object, table, objectField);
+            var subjectCond = this.writeExprCondition(triple.subject, table, subjectField, where, varFields);
+            where = subjectCond.where;
+            varFields = subjectCond.varFields;
+
+            var objectCond = this.writeExprCondition(triple.object, table, objectField, where, varFields);
+            where = objectCond.where;
+            varFields = objectCond.varFields;
         }
 
         if (tripleCount > 0) {
