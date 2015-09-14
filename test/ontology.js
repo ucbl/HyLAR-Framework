@@ -10,6 +10,8 @@ var JswParser = require('../server/ontology/jsw/JswParser');
 var Reasoner = require('../server/ontology/jsw/Reasoner');
 var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
+var Logic = require('../server/ontology/jsw/Logic');
+
 var owl, ontology, reasoner, fipa = '/../server/ontologies/fipa.owl';
 
 describe('File access', function () {
@@ -40,6 +42,21 @@ describe('Ontology Classification', function () {
     it('should classify the ontology', function () {
         reasoner = Reasoner.create(ontology);
         reasoner.should.exist;
+    });
+
+    it('should convert axioms', function () {
+        var formalAxioms = reasoner.resultOntology.convertAxioms();
+        formalAxioms.length.should.be.above(0);
+    });
+});
+
+describe('Rule creation', function () {
+    it('should create a rule', function () {
+        var axiom1 = new Logic.axiom('subClassOf', 'a', 'b'),
+            axiom2 = new Logic.axiom('subClassOf', 'b', 'c'),
+            axiom3 = new Logic.axiom('subClassOf', 'a', 'c');
+        var rule = new Logic.rule([axiom1, axiom2], axiom3);
+        rule.should.exist;
     });
 });
 

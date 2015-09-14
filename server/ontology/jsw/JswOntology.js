@@ -2,7 +2,10 @@
  * Created by Spadon on 14/10/2014.
  */
 
-JswOWL = require('./JswOWL');
+var JswOWL = require('./JswOWL'),
+    JswRDF = require('./JswRDF'),
+    Logic = require('./Logic');
+
 /** Ontology represents a set of statements about some domain of interest. */
 Ontology = function() {
     var exprTypes = JswOWL.ExpressionTypes,
@@ -254,6 +257,36 @@ Ontology.prototype = {
         }
 
         return this.prefixes[prefixName] + otherPart;
+    },
+
+    /**
+     * Convert JSW axioms into formal Logic.js axioms
+     * @author Mehdi Terdjimi
+     */
+    convertAxioms: function() {
+        var subClassOf = JswRDF.IRIs.SUBCLASS,
+            type = JswRDF.IRIs.TYPE,
+            axiomName, leftPart, rightPart,
+            newAxioms = [];
+
+        for(var key in this.axioms) {
+            var axiom = this.axioms[key];
+            switch(axiom.type) {
+                case 0:
+                    axiomName = subClassOf;
+                    var left = axiom.args[0],
+                        right = axiom.args[1];
+                    if(left.type == right.type) {
+                        leftPart = left.IRI;
+                        rightPart = right.IRI;
+                        newAxioms.push(new Logic.axiom(axiomName, leftPart, rightPart));
+                    }
+                default:
+                    break;
+            }
+        }
+
+        return newAxioms;
     }
 };
 
