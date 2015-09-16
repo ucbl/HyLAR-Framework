@@ -7,12 +7,14 @@ var fs = require('fs');
 var path = require('path');
 
 var JswParser = require('../server/ontology/jsw/JswParser');
+var JswOWL = require('../server/ontology/jsw/JswOWL');
+var JswRDF = require('../server/ontology/jsw/JswRDF');
 var Reasoner = require('../server/ontology/jsw/Reasoner');
 var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
-var Logic = require('../server/ontology/jsw/Logic');
+var Logics = require('../server/ontology/jsw/Logics');
 
-var owl, ontology, reasoner, fipa = '/../server/ontologies/fipa.owl';
+var owl, ontology, reasoner, rule, fipa = '/../server/ontologies/fipa.owl';
 
 describe('File access', function () {
     it('should access the file', function () {
@@ -52,10 +54,10 @@ describe('Ontology Classification', function () {
 
 describe('Rule creation', function () {
     it('should create a rule', function () {
-        var axiom1 = new Logic.axiom('subClassOf', 'a', 'b'),
-            axiom2 = new Logic.axiom('subClassOf', 'b', 'c'),
-            axiom3 = new Logic.axiom('subClassOf', 'a', 'c');
-        var rule = new Logic.rule([axiom1, axiom2], axiom3);
+        var axiom1 = new Logics.axiom(JswRDF.IRIs.SUBCLASS, 'a', 'b'),
+            axiom2 = new Logics.axiom(JswRDF.IRIs.SUBCLASS, 'b', 'c'),
+            axiom3 = new Logics.axiom(JswRDF.IRIs.SUBCLASS, 'a', 'c');
+        rule = new Logics.rule([axiom1, axiom2], axiom3);
         rule.should.exist;
     });
 });

@@ -4,7 +4,7 @@
 
 var JswOWL = require('./JswOWL'),
     JswRDF = require('./JswRDF'),
-    Logic = require('./Logic');
+    Logics = require('./Logics');
 
 /** Ontology represents a set of statements about some domain of interest. */
 Ontology = function() {
@@ -260,7 +260,7 @@ Ontology.prototype = {
     },
 
     /**
-     * Convert JSW axioms into formal Logic.js axioms
+     * Convert JSW axioms into formal Logics.js axioms
      * @author Mehdi Terdjimi
      */
     convertAxioms: function() {
@@ -279,7 +279,7 @@ Ontology.prototype = {
                     if(left.type == right.type) {
                         leftPart = left.IRI;
                         rightPart = right.IRI;
-                        newAxioms.push(new Logic.axiom(axiomName, leftPart, rightPart));
+                        newAxioms.push(new Logics.axiom(axiomName, leftPart, rightPart));
                     }
                 default:
                     break;
