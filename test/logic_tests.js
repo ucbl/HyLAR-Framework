@@ -20,9 +20,10 @@ describe('Rule creation', function () {
             new Logics.axiom('subClassOf', '#2', '#3'),
             new Logics.axiom('subClassOf', '#1', '#2'),
             new Logics.axiom('subClassOf', '#4', '#6'),
-            new Logics.axiom('subClassOf', '#5', '#1')
+            new Logics.axiom('subClassOf', '#5', '#1'),
+            new Logics.axiom('subClassOf', '#7', '#5')
         ];
         var consequences = rule1.consequences(axioms);
-        consequences.length.should.equal(3);
+        consequences.length.should.equal(6);
     });
 });

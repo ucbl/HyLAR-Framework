@@ -8,7 +8,7 @@ var bodyParser = require('body-parser'),
     busboy  = require('connect-busboy');
 
 var OntologyController = require('./ontology/OntologyController'),
-    Utils = require('./utils/Utils');
+    Utils = require('./ontology/jsw/Utils');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))

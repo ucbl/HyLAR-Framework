@@ -84,6 +84,9 @@ describe('INSERT query with subsumption', function () {
     it('should have inserted 2 DataPropertyAssertion including a subsumption', function () {
         reasoner.aBox.database.DataPropertyAssertion.length.should.equal(2);
     });
+    it('should convert assertions', function () {
+        reasoner.aBox.convertAssertions().length.should.equal(11);
+    });
 
 });
 

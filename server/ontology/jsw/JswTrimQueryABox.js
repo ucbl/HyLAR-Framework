@@ -1,6 +1,8 @@
 /**
  * Created by Spadon on 17/10/2014.
  */
+var Logics = require('./Logics');
+
 TrimPath = require('./TrimPathQuery'),
     rdf = require('./JswRDF'),
     owl = require('./JswOWL');
@@ -382,7 +384,65 @@ TrimQueryABox.prototype = {
         }
 
         return select + from + where + orderBy + limit + ';';
+    },
+
+    /**
+     * Convert JSW assertion facts into formal Logics.js facts
+     * @author Mehdi Terdjimi
+     */
+    convertAssertions: function() {
+        var assertion,
+            triples = [],
+            rdfType = rdf.IRIs.TYPE;
+
+        for(var key in this.database.ClassAssertion) {
+            assertion = this.database.ClassAssertion[key];
+            triples.push({
+                subject: { value: assertion.individual },
+                predicate: { value: rdfType },
+                object: { value: assertion.className }
+            });
+        }
+
+        for(var key in this.database.ObjectPropertyAssertion) {
+            assertion = this.database.ObjectPropertyAssertion[key];
+            triples.push({
+                subject: { value: assertion.leftIndividual },
+                predicate: { value: assertion.objectProperty },
+                object: { value: assertion.rightIndividual }
+            });
+        }
+
+        for(var key in this.database.DataPropertyAssertion) {
+            assertion = this.database.DataPropertyAssertion[key];
+            triples.push({
+                subject: { value: assertion.leftIndividual },
+                predicate: { value: assertion.dataProperty },
+                object: { value: assertion.rightValue }
+            });
+        }
+
+        return this.convertTriples(triples);
+    },
+
+    /**
+     * Convert JSW triples into formal Logics.js facts
+     * @author Mehdi Terdjimi
+     */
+    convertTriples: function(triples) {
+        var sub, pred, obj,
+            newFacts = [];
+        for(var key in triples) {
+            var triple = triples[key];
+            sub = triple.subject;
+            pred = triple.predicate;
+            obj = triple.object;
+            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value));
+        }
+
+        return newFacts;
     }
+
 };
 
 

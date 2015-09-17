@@ -4,36 +4,8 @@
  */
 
 var UNKNOWN = 'unknown';
-var Combinatorics = require('js-combinatorics');
-
-var subsetOf = function(arr1, arr2) {
-    for (var key in arr2) {
-        if (JSON.stringify(arr1).indexOf(JSON.stringify(arr2[key]) === -1)) return false;
-    }
-    return true;
-};
-var diff = function(arr1, arr2) {
-    return arr1.filter(function(i) {return arr2.indexOf(i) < 0;});
-};
-
-var uniqConcat = function(arr1, arr2) {
-    var bigger, lower;
-
-    if(arr1.length > arr2.length) {
-        bigger = arr1;
-        lower = arr2;
-    } else {
-        bigger = arr2;
-        lower = arr1;
-    }
-
-    for(var key in lower) {
-        if(JSON.stringify(bigger).indexOf(JSON.stringify(lower[key])) === -1) {
-            bigger.push(lower[key]);
-        }
-    }
-    return bigger;
-};
+var Combinatorics = require('js-combinatorics'),
+    Utils = require('./Utils');
 
 /**
  * Rule in the form subClassOf(a, b) ^ subClassOf(b, c) -> subClassOf(a, c)
@@ -72,7 +44,7 @@ Rule.prototype = {
     consequences: function(originalAxioms, allAxioms, previousConsequences) {
 
         if(!allAxioms) allAxioms = originalAxioms.slice(0);
-        if(previousConsequences) uniqConcat(allAxioms, previousConsequences);
+        if(previousConsequences) Utils.uniqConcat(allAxioms, previousConsequences);
 
         var thisRule = this.patternize().rule,
             possibleConjunctions,
@@ -93,7 +65,7 @@ Rule.prototype = {
             }
         }
         if(JSON.stringify(consequences) === JSON.stringify(previousConsequences)) {
-            return diff(allAxioms, originalAxioms);
+            return Utils.diff(allAxioms, originalAxioms);
         }
         return this.consequences(originalAxioms, allAxioms, consequences);
     },
@@ -194,6 +166,8 @@ Axiom.prototype = {
     }
 };
 
+Fact = Axiom;
+
 module.exports = {
     rule: function(sla, sra) {
         return new Rule(sla, sra);
@@ -201,5 +175,9 @@ module.exports = {
 
     axiom: function(name, li, ri) {
         return new Axiom(name, li, ri);
+    },
+
+    fact: function(name, li, ri) {
+        return new Fact(name, li, ri);
     }
 };
