@@ -46,7 +46,9 @@ Rule.prototype = {
         if(!allAxioms) allAxioms = originalAxioms.slice(0);
         if(previousConsequences) Utils.uniqConcat(allAxioms, previousConsequences);
 
-        var thisRule = this.patternize().rule,
+        var thisPatternized = this.patternize(),
+            thisRule = thisPatternized.rule,
+            initialMap = thisPatternized.map,
             possibleConjunctions,
             consequences = [];
 
@@ -60,7 +62,7 @@ Rule.prototype = {
                 map = patternized.map;
 
             if(shadowRule.leftAxiomsToString() === thisRule.leftAxiomsToString()) {
-                var reattr = thisRule.rightAxiom.reattribute(map);
+                var reattr = thisRule.rightAxiom.reattribute(Utils.completeMap(map,initialMap));
                 if (JSON.stringify(consequences).indexOf(JSON.stringify(reattr)) === -1) consequences.push(reattr);
             }
         }
@@ -166,6 +168,11 @@ Axiom.prototype = {
     }
 };
 
+/**
+ * Fact has the same prototype as Axiom,
+ * for ease of representation purpose
+ * @author Mehdi Terdjimi
+ */
 Fact = Axiom;
 
 module.exports = {

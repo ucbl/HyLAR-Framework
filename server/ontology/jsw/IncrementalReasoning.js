@@ -2,9 +2,6 @@
  * Created by Spadon on 11/09/2015.
  */
 
-var Axiom = require('./Axiom');
-var Rule = require('./Rule');
-
 module.exports = {
     /**
      * Runs the incremental reasoning

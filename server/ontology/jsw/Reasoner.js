@@ -9,6 +9,7 @@ TrimQueryABox = require('./JswTrimQueryABox');
 JswOWL = require('./JswOWL');
 JswRDF = require('./JswRDF');
 JswOntology = require('./JswOntology');
+OWL2RL = require('./OWL2RL');
 
 
 /**
@@ -41,6 +42,8 @@ Reasoner = function (ontology) {
         this.originalOntology.getObjectProperties(),
         [JswOWL.IRIs.TOP_OBJECT_PROPERTY, JswOWL.IRIs.BOTTOM_OBJECT_PROPERTY]
     );
+
+    this.rules = OWL2RL.rules;
 };
 
 /** Prototype for all Reasoner objects. */
@@ -984,14 +987,14 @@ Reasoner.prototype = {
             }
         }
 
-        var results = this.aBox.answerQuery(query, this.resultOntology.entities);
-        this.recalculateABox();
+        var results = this.aBox.answerQuery(query, this.resultOntology, this.rules);
         return results;
     },
 
     /**
-     * ABox recalculation after INSERT or DELETE DATA.
+     * ABox recalculation after INSERT or DELETE DATA (DEPRECATED)
      * @author Mehdi Terdjimi
+     * @deprecated
      */
     recalculateABox: function() {
         for(var classAssertionKey in this.aBox.database.ClassAssertion) {
@@ -1677,4 +1680,4 @@ module.exports = {
     create: function(data) {
         return new Reasoner(data);
     }
-}
+};

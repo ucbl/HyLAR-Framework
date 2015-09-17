@@ -1,7 +1,9 @@
 /**
  * Created by Spadon on 17/10/2014.
  */
-var Logics = require('./Logics');
+var Logics = require('./Logics'),
+    IncrementalReasoner = require('./IncrementalReasoning'),
+    Utils = require('./Utils');
 
 TrimPath = require('./TrimPathQuery'),
     rdf = require('./JswRDF'),
@@ -37,8 +39,8 @@ TrimQueryABox.prototype = {
      * @param query RDF query to answer.
      * @return Data set containing the results matching the query.
      */
-    answerQuery: function (query, entities) {
-        var sql = this.createSql(query, entities), sqlQueries = sql.split(';').slice(0,-1);
+    answerQuery: function (query, ontology, rules) {
+        var sql = this.createSql(query, ontology, rules), sqlQueries = sql.split(';').slice(0,-1);
 
         try {
             return this.processSql(sqlQueries, false);
@@ -161,7 +163,7 @@ TrimQueryABox.prototype = {
      * @param query jsw.rdf.Query to return the SQL representation for.
      * @return string representation of the given RDF query.
      */
-    createSql: function (query, entities) {
+    createSql: function (query, ontology, R) {
         var from, where, limit, object, objectField, objectType, orderBy, delet, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
             select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
             varField, varFields, varIndex, tuples, cond, entity, statement, statements = [];
@@ -169,6 +171,9 @@ TrimQueryABox.prototype = {
         if (query.statementType == 'DELETE') {
             delet = 'DELETE *';
             from = ' FROM ';
+
+            query.triples = this.consequencesToTriples(
+                                this.naiveReasoning(new Array(), query.triples, ontology, R));
 
             for (var tripleKey in query.triples) {
                 var triple = query.triples[tripleKey];
@@ -206,6 +211,9 @@ TrimQueryABox.prototype = {
             insert = 'INSERT';
             into = ' INTO ';
             values = ' VALUES';
+
+            query.triples = this.consequencesToTriples(
+                                this.naiveReasoning(query.triples, new Array(), ontology, R));
 
             for (var tripleKey in query.triples) {
                 var triple = query.triples[tripleKey];
@@ -275,7 +283,7 @@ TrimQueryABox.prototype = {
                     where += table + ".objectProperty=='" + predicateValue + "' AND ";
                 }
 
-            } else if (predicateValue in entities[owl.ExpressionTypes.ET_DPROP]) {
+            } else if (predicateValue in ontology.entities[owl.ExpressionTypes.ET_DPROP]) {
                 objectField = 'rightValue';
                 from += 'DataPropertyAssertion AS ' + table + ', ';
                 varField = varFields[predicateValue];
@@ -286,7 +294,7 @@ TrimQueryABox.prototype = {
                     varFields[predicateValue] = table + '.dataProperty';
                 }
 
-            }  else if (predicateValue in entities[owl.ExpressionTypes.ET_OPROP]) {
+            }  else if (predicateValue in ontology.entities[owl.ExpressionTypes.ET_OPROP]) {
                 from += 'ObjectPropertyAssertion AS ' + table + ', ';
                 varField = varFields[predicateValue];
 
@@ -441,6 +449,74 @@ TrimQueryABox.prototype = {
         }
 
         return newFacts;
+    },
+
+    /**
+     * A naïve reasoner that recalculates the entire knwoledge base
+     * wtr. a set of triples to insert and a set of triples to delete.
+     * @param triplesIns
+     * @param triplesDel
+     * @param rules
+     * @returns {Array.<T>}
+     */
+    naiveReasoning: function(triplesIns, triplesDel, ontology, rules) {
+        var F = this.convertAssertions().concat(
+            ontology.convertAxioms().concat(
+                this.convertTriples(triplesIns).concat(
+                    ontology.convertEntities())));
+
+        F = Utils.diff(F, this.convertTriples(triplesDel));
+
+        var consequences = [];
+        for (var key in rules) {
+            consequences.concat(rules[key].consequences(F));
+        }
+
+        return consequences.concat(F);
+    },
+
+    /** Used to suit JSW requirements
+     *
+     * @param consequences
+     * @returns {Array}
+     */
+    consequencesToTriples: function(consequences) {
+        var triples = [];
+        for(var key in consequences) {
+            var fact = consequences[key];
+            if(fact.rightIndividual.match(/"[^"]*"/g)) {
+                triples.push({
+                    subject: {
+                        value: fact.leftIndividual,
+                        type: rdf.ExpressionTypes.IRI_REF
+                    },
+                    predicate : {
+                        value: fact.name,
+                        type: rdf.ExpressionTypes.IRI_REF
+                    },
+                    object: {
+                        value: fact.rightIndividual,
+                        type: rdf.ExpressionTypes.LITERAL
+                    }
+                });
+            } else {
+                triples.push({
+                    subject: {
+                        value: fact.leftIndividual,
+                        type: rdf.ExpressionTypes.IRI_REF
+                    },
+                    predicate : {
+                        value: fact.name,
+                        type: rdf.ExpressionTypes.IRI_REF
+                    },
+                    object: {
+                        value: fact.rightIndividual,
+                        type: rdf.ExpressionTypes.IRI_REF
+                    }
+                });
+            }
+        }
+        return triples;
     }
 
 };

@@ -4,6 +4,28 @@
 
 module.exports = {
 
+    getKeyByValue: function(obj, value) {
+        for(var prop in obj) {
+            if(obj.hasOwnProperty(prop) ) {
+                if(obj[prop] === value )
+                    return obj;
+            }
+        }
+        return false;
+    },
+
+    completeMap: function(mapToComplete, mapCompleter) {
+        var newMap = {}
+        for(var key in mapToComplete) {
+            newMap[key] = mapToComplete[key];
+        }
+        for(var key in mapCompleter) {
+            var candidate = mapCompleter[key];
+            if(!(this.getKeyByValue(newMap,candidate))) newMap[key] = mapCompleter[key];
+        }
+        return newMap;
+    },
+
     subsetOf: function(arr1, arr2) {
         for (var key in arr2) {
             if (JSON.stringify(arr1).indexOf(JSON.stringify(arr2[key]) === -1)) return false;

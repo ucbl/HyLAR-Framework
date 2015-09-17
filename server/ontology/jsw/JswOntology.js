@@ -287,6 +287,20 @@ Ontology.prototype = {
         }
 
         return newAxioms;
+    },
+
+    convertEntities: function() {
+        var newFacts = [];
+        for (var key in this.entities[JswOWL.ExpressionTypes.ET_CLASS]) {
+            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.CLASS));
+        }
+        for (var key in this.entities[JswOWL.ExpressionTypes.ET_OPROP]) {
+            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.OPROP));
+        }
+        for (var key in this.entities[JswOWL.ExpressionTypes.ET_DPROP]) {
+            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.DPROP));
+        }
+        return newFacts;
     }
 };
 

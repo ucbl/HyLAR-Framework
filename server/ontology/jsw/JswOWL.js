@@ -72,7 +72,9 @@ IRIs = {
     /** Top data property. */
     TOP_DATA_PROPERTY: 'http://www.w3.org/2002/07/owl#topDataProperty',
     /** Bottom data property. */
-    BOTTOM_DATA_PROPERTY: 'http://www.w3.org/2002/07/owl#bottomDataProperty'
+    BOTTOM_DATA_PROPERTY: 'http://www.w3.org/2002/07/owl#bottomDataProperty',
+    /** Equivalent Classes axiom */
+    EQUIVALENT_CLASS: 'http://www.w3.org/2002/07/owl#equivalentClass'
 };
 
 module.exports = {

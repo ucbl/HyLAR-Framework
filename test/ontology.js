@@ -74,20 +74,6 @@ describe('INSERT query with subsumption', function () {
         query.should.exist;
         results = reasoner.answerQuery(query);
     });
-
-    it('should have inserted 7 ClassAssertions including 4 subsumptions', function () {
-        reasoner.aBox.database.ClassAssertion.length.should.equal(7);
-    });
-    it('should have inserted 2 ObjectPropertyAssertions including a subsumption', function () {
-        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(2);
-    });
-    it('should have inserted 2 DataPropertyAssertion including a subsumption', function () {
-        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(2);
-    });
-    it('should convert assertions', function () {
-        reasoner.aBox.convertAssertions().length.should.equal(11);
-    });
-
 });
 
 describe('SELECT query with subsumption', function () {
