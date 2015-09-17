@@ -164,78 +164,21 @@ TrimQueryABox.prototype = {
      * @return string representation of the given RDF query.
      */
     createSql: function (query, ontology, R) {
-        var from, where, limit, object, objectField, objectType, orderBy, delet, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
-            select, insert, into, values, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
-            varField, varFields, varIndex, tuples, cond, entity, statement, statements = [];
+        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
+            select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
+            varField, varFields, varIndex;
 
         if (query.statementType == 'DELETE') {
-            delet = 'DELETE *';
-            from = ' FROM ';
-
             query.triples = this.consequencesToTriples(
                                 this.naiveReasoning(new Array(), query.triples, ontology, R));
-
-            for (var tripleKey in query.triples) {
-                var triple = query.triples[tripleKey];
-                where = '';
-                // If it is an assertion...
-                if (triple.predicate.value == rdf.IRIs.TYPE) {
-                    table = "ClassAssertion";
-                    where = this.writeExprCondition(triple.subject, table, 'individual', where, varFields).where;
-                    where = this.writeExprCondition(triple.object, table, 'className', where, varFields).where;
-                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
-                    table = "ObjectPropertyAssertion";
-                    where = this.writeExprCondition(triple.subject, table, 'leftIndividual', where, varFields).where;
-                    where = this.writeExprCondition(triple.predicate, table, 'objectProperty', where, varFields).where;
-                    where = this.writeExprCondition(triple.object, table, 'rightIndividual', where, varFields).where;
-                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
-                    table = "DataPropertyAssertion";
-                    where = this.writeExprCondition(triple.subject, table, 'leftIndividual', where, varFields).where;
-                    where = this.writeExprCondition(triple.predicate, table, 'dataProperty', where, varFields).where;
-                    where = this.writeExprCondition(triple.object, table, 'rightValue', where, varFields).where;
-                } else {
-                    throw 'Unrecognized assertion type.';
-                }
-
-                if (where.length > 0) {
-                    where = ' WHERE ' + where.substring(0, where.length - 5);
-                }
-
-                statement = delet + from + table + where + ";";
-                statements.push(statement);
-
-            }
-            return statements.join('');
+            this.purgeABox();
+            return this.createInsertStatement(query).join('');
 
         } else if (query.statementType == 'INSERT') {
-            insert = 'INSERT';
-            into = ' INTO ';
-            values = ' VALUES';
-
             query.triples = this.consequencesToTriples(
                                 this.naiveReasoning(query.triples, new Array(), ontology, R));
-
-            for (var tripleKey in query.triples) {
-                var triple = query.triples[tripleKey];
-                // If it is an assertion...
-                if (triple.predicate.value == rdf.IRIs.TYPE) {
-                    table = "ClassAssertion ('individual', 'className')";
-                    tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "')";
-                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
-                    table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
-                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
-                } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
-                    table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue')";
-                    tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
-                } else {
-                    throw 'Unrecognized assertion type.';
-                }
-
-                statement = insert + into + table + values + tuples + ";";
-                statements.push(statement);
-
-            }
-            return statements.join('');
+            this.purgeABox();
+            return this.createInsertStatement(query).join('');
 
         } else if (query.statementType == 'SELECT') {
             from = '';
@@ -517,6 +460,42 @@ TrimQueryABox.prototype = {
             }
         }
         return triples;
+    },
+
+    createInsertStatement: function(query) {
+        var tuples, statement,
+            insert = 'INSERT',
+            into = ' INTO ',
+            values = ' VALUES',
+            statements = [],
+            table;
+
+        for (var tripleKey in query.triples) {
+            var triple = query.triples[tripleKey];
+            // If it is an assertion...
+            if (triple.predicate.value == rdf.IRIs.TYPE) {
+                table = "ClassAssertion ('individual', 'className')";
+                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "')";
+            } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
+                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+            } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
+                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+            } else {
+                throw 'Unrecognized assertion type.';
+            }
+
+            statement = insert + into + table + values + tuples + ";";
+            statements.push(statement);
+        }
+        return statements;
+    },
+
+    purgeABox: function() {
+        this.database.ClassAssertion = [];
+        this.database.DataPropertyAssertion = [];
+        this.database.ObjectPropertyAssertion = [];
     }
 
 };
