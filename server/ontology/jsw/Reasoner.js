@@ -2,55 +2,45 @@
 * Created by Spadon on 17/10/2014.
 */
 
-Queue = require('./JswQueue');
-PairStorage = require('./JswPairStorage');
-TripleStorage = require('./JswTripleStorage');
-TrimQueryABox = require('./JswTrimQueryABox');
-JswOWL = require('./JswOWL');
-JswRDF = require('./JswRDF');
-JswOntology = require('./JswOntology');
-OWL2RL = require('./OWL2RL');
-
+var Queue = require('./JswQueue'),
+    PairStorage = require('./JswPairStorage'),
+    TripleStorage = require('./JswTripleStorage'),
+    TrimQueryABox = require('./JswTrimQueryABox'),
+    JswOWL = require('./JswOWL'),
+    JswRDF = require('./JswRDF'),
+    JswOntology = require('./JswOntology'),
+    OWL2RL = require('./OWL2RL'),
+    Utils = require('./Utils');
 
 /**
  * Reasoner is an OWL-EL create. Currently, it has some limitations and does not allow
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
 Reasoner = function (ontology) {
-    var normalizedOntology;
+    var normalizedOntology, preConsequences,
+        preTriples, preInsertStatement;
+
+    /** Including RL **/
+    this.rules = OWL2RL.rules;
 
     /** Original ontology from which the create was built. */
     this.originalOntology = ontology;
     this.resultOntology = new JswOntology.ontology();
+    this.normalizeOntology();
 
-    normalizedOntology = this.normalizeOntology();
-
-    this.objectPropertySubsumers = this.buildObjectPropertySubsumerSets(normalizedOntology);
-    this.dataPropertySubsumers = this.buildDataPropertySubsumerSets(normalizedOntology);
-    this.classSubsumers = this.buildClassSubsumerSets(normalizedOntology);
-    /** Rewritten A-Box of the ontology. */
-    this.aBox = this.rewriteAbox(normalizedOntology);
-
-    // Remove entity IRIs introduced during normalization stage from the subsumer sets.
-    this.removeIntroducedEntities(
-        this.classSubsumers,
-        this.originalOntology.getClasses(),
-        [JswOWL.IRIs.THING, JswOWL.IRIs.NOTHING]
-    );
-    this.removeIntroducedEntities(
-        this.objectPropertySubsumers,
-        this.originalOntology.getObjectProperties(),
-        [JswOWL.IRIs.TOP_OBJECT_PROPERTY, JswOWL.IRIs.BOTTOM_OBJECT_PROPERTY]
-    );
-
-    this.rules = OWL2RL.rules;
+    /** Preparing the aBox */
+    this.aBox = new TrimQueryABox.trimQueryABox();
+    preConsequences = this.aBox.naiveReasoning([], [], this.resultOntology, this.rules);
+    preTriples = this.aBox.consequencesToTriples(preConsequences);
+    preInsertStatement = this.aBox.createInsertStatement(preTriples);
+    this.aBox.processSql(preInsertStatement, this.aBox.createQueryLang());
 };
 
 /** Prototype for all Reasoner objects. */
 Reasoner.prototype = {
     /**
      * Builds a data property subsumption relation implied by the ontology.
-     *
+     * @deprecated
      * @param ontology Normalized ontology to be use for building the subsumption relation.
      * @return PairStorage storage hashing the object property subsumption relation implied by the
      * ontology.
@@ -122,7 +112,7 @@ Reasoner.prototype = {
 
     /**
      * Builds an object property subsumption relation implied by the ontology.
-     *
+     * @deprecated
      * @param ontology Normalized ontology to be use for building the subsumption relation.
      * @return PairStorage storage hashing the object property subsumption relation implied by the
      * ontology.
@@ -200,7 +190,7 @@ Reasoner.prototype = {
 
     /**
      * Builds a class subsumption relation implied by the ontology.
-     *
+     * @deprecated
      * @param ontology Ontology to use for building subsumer sets. The ontology has to be
      * normalized.
      * @return PairStorage storage containing the class subsumption relation implied by the ontology.
@@ -667,7 +657,7 @@ Reasoner.prototype = {
     /**
      * Removes from subsumer sets references to entities which have been introduced during
      * normalization stage.
-     *
+     * @deprecated
      * @param subsumerSets Subsumer sets to remove the introduced entities from.
      * @param originalEntities Object containing IRIs of original entities as properties.
      * @param allowedEntities Array containing names of entites which should not be removed if they
@@ -755,7 +745,7 @@ Reasoner.prototype = {
     /**
      * Rewrites an ABox of the ontology into the relational database to use it for conjunctive query
      * answering.
-     *
+     * @deprecated
      * @param ontology Normalized ontology containing the ABox to rewrite.
      * @return TrimQueryABox object containing the rewritten ABox.
      */
@@ -1292,7 +1282,6 @@ Reasoner.prototype = {
                     default:
                         queue.enqueue(axiom);
                 }
-                1;
             }
 
             return queue;

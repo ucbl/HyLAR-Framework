@@ -172,13 +172,13 @@ TrimQueryABox.prototype = {
             query.triples = this.consequencesToTriples(
                                 this.naiveReasoning(new Array(), query.triples, ontology, R));
             this.purgeABox();
-            return this.createInsertStatement(query).join('');
+            return this.createInsertStatement(query.triples).join('');
 
         } else if (query.statementType == 'INSERT') {
             query.triples = this.consequencesToTriples(
                                 this.naiveReasoning(query.triples, new Array(), ontology, R));
             this.purgeABox();
-            return this.createInsertStatement(query).join('');
+            return this.createInsertStatement(query.triples).join('');
 
         } else if (query.statementType == 'SELECT') {
             from = '';
@@ -395,7 +395,7 @@ TrimQueryABox.prototype = {
     },
 
     /**
-     * A naïve reasoner that recalculates the entire knwoledge base
+     * A naïve reasoner that recalculates the entire knowledge base
      * wtr. a set of triples to insert and a set of triples to delete.
      * @param triplesIns
      * @param triplesDel
@@ -403,16 +403,16 @@ TrimQueryABox.prototype = {
      * @returns {Array.<T>}
      */
     naiveReasoning: function(triplesIns, triplesDel, ontology, rules) {
-        var F = this.convertAssertions().concat(
-            ontology.convertAxioms().concat(
-                this.convertTriples(triplesIns).concat(
-                    ontology.convertEntities())));
+        //todo a "multiple" uniqConcat
+        var F = Utils.uniqConcat(
+                    Utils.uniqConcat(this.convertAssertions(), ontology.convertAxioms()),
+                    Utils.uniqConcat(this.convertTriples(triplesIns), ontology.convertEntities()));
 
-        F = Utils.diff(F, this.convertTriples(triplesDel));
+        if(triplesDel.length) F = Utils.diff(F, this.convertTriples(triplesDel));
 
         var consequences = [];
         for (var key in rules) {
-            consequences.concat(rules[key].consequences(F));
+            consequences = Utils.uniqConcat(consequences, rules[key].consequences(F));
         }
 
         return consequences.concat(F);
@@ -462,7 +462,7 @@ TrimQueryABox.prototype = {
         return triples;
     },
 
-    createInsertStatement: function(query) {
+    createInsertStatement: function(triples) {
         var tuples, statement,
             insert = 'INSERT',
             into = ' INTO ',
@@ -470,8 +470,8 @@ TrimQueryABox.prototype = {
             statements = [],
             table;
 
-        for (var tripleKey in query.triples) {
-            var triple = query.triples[tripleKey];
+        for (var tripleKey in triples) {
+            var triple = triples[tripleKey];
             // If it is an assertion...
             if (triple.predicate.value == rdf.IRIs.TYPE) {
                 table = "ClassAssertion ('individual', 'className')";

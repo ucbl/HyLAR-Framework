@@ -89,6 +89,9 @@ Rule.prototype = {
             patternized;
 
         for(var key in this.leftAxioms) {
+            if(!this.leftAxioms[key].patternize) {
+                1;
+            }
             patternized = this.leftAxioms[key].patternize(map);
             leftAxioms[key] = patternized.axiom;
             map = patternized.map;

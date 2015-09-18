@@ -2,6 +2,8 @@
  * Created by Spadon on 13/02/2015.
  */
 
+var _ = require('lodash');
+
 module.exports = {
 
     getKeyByValue: function(obj, value) {
@@ -34,7 +36,14 @@ module.exports = {
     },
 
     diff: function(arr1, arr2) {
-        return arr1.filter(function(i) {return arr2.indexOf(i) < 0;});
+        var result = [];
+        for (var key in arr1) {
+            var obj_arr1 = arr1[key];
+            if(!_.find(arr2, obj_arr1)) {
+                result.push(obj_arr1);
+            }
+        }
+        return result;
     },
 
     uniqConcat: function(arr1, arr2) {

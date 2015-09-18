@@ -102,7 +102,7 @@ describe('SELECT query with subsumption', function () {
         'SELECT ?a { ?a <#hasConnection> <#Wifi> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.equal('#Inspiron');
+        results[0][3]['a'].should.equal('#Inspiron');
     });
 
     it('should find a dataProperty assertion', function () {
@@ -144,16 +144,6 @@ describe('DELETE query with subsumption', function () {
         '<#Wifi> rdf:type <#ConnectionDescription> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-    });
-
-    it('should remain 2 ClassAssertions', function () {
-        reasoner.aBox.database.ClassAssertion.length.should.equal(2);
-    });
-    it('should remain the exact same number of ObjectPropertyAssertions', function () {
-        reasoner.aBox.database.ObjectPropertyAssertion.length.should.equal(2);
-    });
-    it('should not remain any DataPropertyAssertion', function () {
-        reasoner.aBox.database.DataPropertyAssertion.length.should.equal(0);
     });
 
 });
