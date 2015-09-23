@@ -12,13 +12,15 @@ Ontology = function() {
         classType = exprTypes.ET_CLASS,
         individualType = exprTypes.ET_INDIVIDUAL,
         opropType = exprTypes.ET_OPROP,
-        dpropType = exprTypes.ET_DPROP;
+        dpropType = exprTypes.ET_DPROP,
+        datatype = exprTypes.ET_DATATYPE;
 
     /** Sets of entity IRIs of different types found in the ontology. */
     this.entities = [];
     this.entities[opropType] = {};
     this.entities[classType] = {};
     this.entities[dpropType] = {};
+    this.entities[datatype] = {};
     this.entities[individualType] = {};
 
     /** Contains all axioms in the ontology. */
@@ -40,6 +42,7 @@ Ontology = function() {
     this.nextEntityNos[opropType] = 1;
     this.nextEntityNos[classType] = 1;
     this.nextEntityNos[dpropType] = 1;
+    this.nextEntityNos[datatype] = 1;
     this.nextEntityNos[individualType] = 1;
 
     // Contains number of entities of each type in the ontology.
@@ -47,6 +50,7 @@ Ontology = function() {
     this.entityCount[opropType] = 0;
     this.entityCount[classType] = 0;
     this.entityCount[dpropType] = 0;
+    this.entityCount[datatype] = 0;
     this.entityCount[individualType] = 0;
 };
 

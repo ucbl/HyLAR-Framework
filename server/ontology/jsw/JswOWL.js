@@ -51,7 +51,11 @@ ExpressionTypes = {
     /** Data Property Entity **/
     ET_DPROP: 22,
     /** DataPropertyAssertion fact **/
-    FACT_DPROP: 23
+    FACT_DPROP: 23,
+    /** DataSomeValuesFrom class expression. */
+    CE_DATA_VALUES_FROM: 24,
+    /** Datatype */
+    ET_DATATYPE: 25
 };
 
 IRIs = {

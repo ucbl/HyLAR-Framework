@@ -17,8 +17,8 @@ var Queue = require('./JswQueue'),
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
 Reasoner = function (ontology) {
-    var normalizedOntology, preConsequences,
-        preTriples, preInsertStatement;
+    var preConsequences, preTriplesImplicit,
+        preTriplesExplicit, preInsertStatement;
 
     /** Including RL **/
     this.rules = OWL2RL.rules;
@@ -31,8 +31,9 @@ Reasoner = function (ontology) {
     /** Preparing the aBox */
     this.aBox = new TrimQueryABox.trimQueryABox();
     preConsequences = this.aBox.naiveReasoning([], [], this.resultOntology, this.rules);
-    preTriples = this.aBox.consequencesToTriples(preConsequences);
-    preInsertStatement = this.aBox.createInsertStatement(preTriples);
+    preTriplesImplicit = this.aBox.consequencesToTriples(preConsequences.fi, false);
+    preTriplesExplicit = this.aBox.consequencesToTriples(preConsequences.fe, true);
+    preInsertStatement = this.aBox.createInsertStatement(preTriplesExplicit.concat(preTriplesImplicit));
     this.aBox.processSql(preInsertStatement, this.aBox.createQueryLang());
 };
 
@@ -1066,7 +1067,7 @@ Reasoner.prototype = {
         function createEntity(type) {
             var newIri = resultOntology.createUniqueIRI(type);
 
-            resultOntology.registerEntity(type, newIri, false);
+            resultOntology.registerEntityAddAxiom(type, newIri, false);
 
             return {
                 'type': type,

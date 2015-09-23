@@ -311,6 +311,46 @@ JswParser = {
         }
 
         /**
+         * Parses XML element representing DataSomeValuesFrom expression.
+         * @param element XML element representing the DataSomeValuesFrom expression.
+         * @return Object representing the expression parsed.
+         * @author Mehdi Terdjimi
+         */
+        function parseDataSomeValuesFrom(element) {
+            var dprop, datatypeExpr, node;
+
+            node = element.firstChild;
+
+            while (node) {
+                if (node.nodeType !== 1) {
+                    node = node.nextSibling;
+                    continue;
+                }
+
+                if (!dprop) {
+                    dprop = parseEntity(exprTypes.ET_DPROP, 'DataProperty', node, false);
+                } else if (!datatypeExpr) {
+                    datatypeExpr = parseEntity(exprTypes.ET_DATATYPE, 'Datatype', node, false);
+                } else {
+                    throw 'The format of DataSomeValuesFrom expression is incorrect!';
+                }
+
+                node = node.nextSibling;
+            }
+
+            if (!dprop || !datatypeExpr) {
+                throw 'The format of DataSomeValuesFrom expression is incorrect!';
+            }
+
+            return {
+                'type': exprTypes.CE_DATA_VALUES_FROM,
+                'dpropExpr': dprop,
+                'datatypeExpr': datatypeExpr
+
+            };
+        }
+
+        /**
          * Parses the given XML node into the class expression.
          * @param element XML node containing class expression to parse.
          * @return Object representing the class expression parsed.
@@ -327,6 +367,8 @@ JswParser = {
                     return parseObjMinCardExpr(element);
                 case 'DataMinCardinality':
                     return parseDataMinCardExpr(element);
+                case 'DataSomeValuesFrom':
+                    return parseDataSomeValuesFrom(element);
                 default:
                     return parseEntity(exprTypes.ET_CLASS, 'Class', element, false);
             }
@@ -690,6 +732,10 @@ JswParser = {
 
         }
 
+        function parseImport(node) {
+
+        }
+
         node = JswUtils.parseString(owlXml).documentElement.firstChild;
 
         // OWL/XML Prefix statements (if any) should be at the start of the document. We need them
@@ -707,6 +753,7 @@ JswParser = {
         }
 
         // Axioms / facts (if any) follow next.
+
         while (node) {
             if (node.nodeType !== 1) {
                 node = node.nextSibling;
@@ -759,6 +806,7 @@ JswParser = {
                         break;
                     case 'ObjectPropertyDomain':
                         parseObjectPropertyDomain(node);
+                        break;
                     case 'ObjectPropertyRange':
                         parseObjectPropertyRange(node);
                         break;
@@ -770,6 +818,10 @@ JswParser = {
                         break;
                     case 'AnnotationAssertion':
                         parseAnnotationAssertion(node);
+                        break;
+                    case 'Import':
+                        parseImport(node);
+                        break;
                 }
             } catch (ex) {
                 if (!onError || !onError(ex)) {

@@ -5,6 +5,7 @@
 var should = require('should');
 var fs = require('fs');
 var path = require('path');
+var _ = require('lodash');
 
 var JswParser = require('../server/ontology/jsw/JswParser');
 var JswOWL = require('../server/ontology/jsw/JswOWL');
@@ -14,18 +15,18 @@ var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
 var Logics = require('../server/ontology/jsw/Logics');
 
-var owl, ontology, reasoner, rule, fipa = '/../server/ontologies/fipa.owl';
+var owl, ontology, reasoner, rule, fipa = '/../server/ontologies/fipa.owl', asawoo = '/../server/ontologies/fipa.owl';
 
 describe('File access', function () {
     it('should access the file', function () {
-        var exists = fs.existsSync(path.resolve(__dirname + fipa));
+        var exists = fs.existsSync(path.resolve(__dirname + asawoo));
         exists.should.equal(true);
     });
 });
 
 describe('File reading', function () {
     it('should correctly read the file', function () {
-        var data = fs.readFileSync(path.resolve(__dirname + fipa));
+        var data = fs.readFileSync(path.resolve(__dirname + asawoo));
         data.should.exist;
         owl = data.toString().replace(/(&)([a-z0-9]+)(;)/gi, '$2:');
     });
@@ -84,7 +85,7 @@ describe('SELECT query with subsumption', function () {
         'SELECT ?a { ?a rdf:type <#Device> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.equal('#Inspiron');
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.be.above(-1);
     });
 
     it('should find another class assertion', function () {
@@ -93,7 +94,7 @@ describe('SELECT query with subsumption', function () {
         'SELECT ?a { ?a rdf:type <#ConnectionDescription> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.equal('#Wifi');
+        _.findIndex(results[0], {'a': '#Wifi'}).should.be.above(-1);
     });
 
     it('should find an objectProperty assertion', function () {
@@ -102,7 +103,7 @@ describe('SELECT query with subsumption', function () {
         'SELECT ?a { ?a <#hasConnection> <#Wifi> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][3]['a'].should.equal('#Inspiron');
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.be.above(-1);
     });
 
     it('should find a dataProperty assertion', function () {
@@ -111,7 +112,7 @@ describe('SELECT query with subsumption', function () {
         'SELECT ?a { <#Inspiron> <#hasName> ?a . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.equal('"Dell Inspiron 15R"');
+        _.findIndex(results[0], {'a': '"Dell Inspiron 15R"'}).should.be.above(-1);
     });
 
     it('should find a subsumed class assertion', function () {
@@ -120,7 +121,8 @@ describe('SELECT query with subsumption', function () {
         'SELECT ?a { ?a rdf:type <#Function> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.equal('#Request1');
+        _.findIndex(results[0], {'a': '#Request1'}).should.be.above(-1);
+
     });
 
     it('should find a dataProperty with two variables', function () {
@@ -129,8 +131,8 @@ describe('SELECT query with subsumption', function () {
             'SELECT ?a ?b { ?a <#hasName> ?b . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        results[0][0]['a'].should.equal('#Inspiron');
-        results[0][0]['b'].should.equal('"Dell Inspiron 15R"');
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.be.above(-1);
+        _.findIndex(results[0], {'b': '"Dell Inspiron 15R"'}).should.be.above(-1);
     });
 
 });

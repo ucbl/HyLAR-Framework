@@ -3,7 +3,8 @@
  */
 var Logics = require('./Logics'),
     IncrementalReasoner = require('./IncrementalReasoning'),
-    Utils = require('./Utils');
+    Utils = require('./Utils'),
+    _ = require('lodash');
 
 TrimPath = require('./TrimPathQuery'),
     rdf = require('./JswRDF'),
@@ -114,13 +115,16 @@ TrimQueryABox.prototype = {
     createQueryLang: function () {
         return TrimPath.makeQueryLang({
             ClassAssertion: { individual: { type: 'String' },
-                className: { type: 'String' }},
+                className: { type: 'String' },
+                explicit: { type: 'Boolean' }},
             ObjectPropertyAssertion: { objectProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
-                rightIndividual: { type: 'String' }},
+                rightIndividual: { type: 'String' },
+                explicit: { type: 'Boolean' }},
             DataPropertyAssertion: { dataProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
-                rightValue: { type: 'String' }}
+                rightValue: { type: 'String' },
+                explicit: { type: 'Boolean' }}
         });
     },
 
@@ -139,6 +143,7 @@ TrimQueryABox.prototype = {
         if (type === rdf.ExpressionTypes.IRI_REF || type === rdf.ExpressionTypes.LITERAL) {
             if (type === rdf.ExpressionTypes.LITERAL) value = value.replace(/"/g, '\\"');
             where += table + '.' + field + "=='" + value + "' AND ";
+
         } else if (type === rdf.ExpressionTypes.VAR) {
             varField = varFields[value];
 
@@ -164,31 +169,31 @@ TrimQueryABox.prototype = {
      * @return string representation of the given RDF query.
      */
     createSql: function (query, ontology, R) {
-        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue, rdfTypeIri, subClassOfIri,
+        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue, predicateField,
             select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
-            varField, varFields, varIndex;
+            varField, varFields, varIndex, consequences;
 
         if (query.statementType == 'DELETE') {
+
             query.triples = this.consequencesToTriples(
                                 this.naiveReasoning(new Array(), query.triples, ontology, R));
+            query.triples = this.consequencesToTriples();
             this.purgeABox();
             return this.createInsertStatement(query.triples).join('');
 
         } else if (query.statementType == 'INSERT') {
-            query.triples = this.consequencesToTriples(
-                                this.naiveReasoning(query.triples, new Array(), ontology, R));
+            consequences = this.naiveReasoning(query.triples, new Array(), ontology, R);
+            query.triples = this.consequencesToTriples(consequences.fe, true).concat(
+                            this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();
             return this.createInsertStatement(query.triples).join('');
 
         } else if (query.statementType == 'SELECT') {
             from = '';
             where = '';
-            rdfTypeIri = rdf.IRIs.TYPE;
-            subClassOfIri = rdf.IRIs.SUBCLASS;
             varFields = {};
-
         } else {
-            throw 'Statement type unrecognized.';
+                throw 'Statement type unrecognized.';
         }
 
         triples = query.triples;
@@ -208,52 +213,44 @@ TrimQueryABox.prototype = {
 
 
             if (predicateValue === rdf.IRIs.TYPE) {
-                if (predicateValue === rdfTypeIri) {
-                    from += 'ClassAssertion AS ' + table + ', ';
-                    subjectField = 'individual';
-                    objectField = 'className';
-
-                    //AJOUT Lionel (pour le traitement des requêtes de subsomption de classes
-                    //todo garder ou pas?
-
-                } else if (predicateValue === subClassOfIri) {
-                    from += 'ClassSubsumer AS ' + table + ', ';
-                    subjectField = 'class';
-                    objectField = 'classSubsumer';
-
-                } else {
-                    from += 'ObjectPropertyAssertion AS ' + table + ', ';
-                    where += table + ".objectProperty=='" + predicateValue + "' AND ";
-                }
-
+                from += 'ClassAssertion AS ' + table + ', ';
+                subjectField = 'individual';
+                objectField = 'className';
+// todo traiter le cas ou dprop n'est pas reference
             } else if (predicateValue in ontology.entities[owl.ExpressionTypes.ET_DPROP]) {
                 objectField = 'rightValue';
                 from += 'DataPropertyAssertion AS ' + table + ', ';
                 varField = varFields[predicateValue];
-
+                predicateField = 'dataProperty';
                 if (varField) {
                     where += table + '.dataProperty==' + varField + ' AND ';
                 } else {
                     varFields[predicateValue] = table + '.dataProperty';
                 }
 
-            }  else if (predicateValue in ontology.entities[owl.ExpressionTypes.ET_OPROP]) {
+            // for now, we consider this...
+            } else if (predicateType === rdf.ExpressionTypes.IRI_REF) {
                 from += 'ObjectPropertyAssertion AS ' + table + ', ';
                 varField = varFields[predicateValue];
-
+                predicateField = 'objectProperty';
                 if (varField) {
                     where += table + '.objectProperty==' + varField + ' AND ';
                 } else {
                     varFields[predicateValue] = table + '.objectProperty';
                 }
-            }
-            else {
+            } else {
                 throw 'Unknown type of a predicate expression: ' + predicateType + '!';
             }
 
             var subjectCond = this.writeExprCondition(triple.subject, table, subjectField, where, varFields);
             where = subjectCond.where;
             varFields = subjectCond.varFields;
+
+            if(predicateField) {
+                var predicateCond = this.writeExprCondition(triple.predicate, table, predicateField, where, varFields);
+                where = predicateCond.where;
+                varFields = predicateCond.varFields;
+            }
 
             var objectCond = this.writeExprCondition(triple.object, table, objectField, where, varFields);
             where = objectCond.where;
@@ -341,7 +338,7 @@ TrimQueryABox.prototype = {
      * Convert JSW assertion facts into formal Logics.js facts
      * @author Mehdi Terdjimi
      */
-    convertAssertions: function() {
+    convertAssertions: function(explicit) {
         var assertion,
             triples = [],
             rdfType = rdf.IRIs.TYPE;
@@ -403,19 +400,22 @@ TrimQueryABox.prototype = {
      * @returns {Array.<T>}
      */
     naiveReasoning: function(triplesIns, triplesDel, ontology, rules) {
-        //todo a "multiple" uniqConcat
-        var F = Utils.uniqConcat(
+        // Explicit facts
+        var Fe = Utils.uniqConcat(
                     Utils.uniqConcat(this.convertAssertions(), ontology.convertAxioms()),
                     Utils.uniqConcat(this.convertTriples(triplesIns), ontology.convertEntities()));
 
-        if(triplesDel.length) F = Utils.diff(F, this.convertTriples(triplesDel));
+        if(triplesDel.length) Fe = Utils.diff(F, this.convertTriples(triplesDel));
 
         var consequences = [];
         for (var key in rules) {
-            consequences = Utils.uniqConcat(consequences, rules[key].consequences(F));
+            consequences = Utils.uniqConcat(consequences, rules[key].consequences(consequences.concat(Fe)));
         }
 
-        return consequences.concat(F);
+        return {
+            fi: consequences,
+            fe: Fe
+        };
     },
 
     /** Used to suit JSW requirements
@@ -423,7 +423,7 @@ TrimQueryABox.prototype = {
      * @param consequences
      * @returns {Array}
      */
-    consequencesToTriples: function(consequences) {
+    consequencesToTriples: function(consequences, explicit) {
         var triples = [];
         for(var key in consequences) {
             var fact = consequences[key];
@@ -440,7 +440,8 @@ TrimQueryABox.prototype = {
                     object: {
                         value: fact.rightIndividual,
                         type: rdf.ExpressionTypes.LITERAL
-                    }
+                    },
+                    explicit: explicit
                 });
             } else {
                 triples.push({
@@ -455,7 +456,8 @@ TrimQueryABox.prototype = {
                     object: {
                         value: fact.rightIndividual,
                         type: rdf.ExpressionTypes.IRI_REF
-                    }
+                    },
+                    explicit: explicit
                 });
             }
         }
@@ -474,14 +476,14 @@ TrimQueryABox.prototype = {
             var triple = triples[tripleKey];
             // If it is an assertion...
             if (triple.predicate.value == rdf.IRIs.TYPE) {
-                table = "ClassAssertion ('individual', 'className')";
-                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "')";
+                table = "ClassAssertion ('individual', 'className', 'explicit')";
+                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
-                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual', 'explicit')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
-                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "')";
+                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue', 'explicit')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "')";
             } else {
                 throw 'Unrecognized assertion type.';
             }
