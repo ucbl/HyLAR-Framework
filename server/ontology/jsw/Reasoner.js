@@ -318,7 +318,7 @@ Reasoner.prototype = {
                 }
 
                 if (!canUse) {
-                // Axiom does not contain A on the left side
+                // axiom does not contain A on the left side
                     continue;
                 }
 

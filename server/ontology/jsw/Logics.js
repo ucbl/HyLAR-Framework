@@ -5,55 +5,119 @@
 
 var UNKNOWN = 'unknown';
 var Combinatorics = require('js-combinatorics'),
-    Utils = require('./Utils');
+    Utils = require('./Utils'),
+    _ = require('lodash');
+
+/**
+ * Checks if both sets share exactly the same facts.
+ * @param fs1
+ * @param fs2
+ * @returns {boolean}
+ */
+var equivalentFactSets = function(fs1, fs2) {
+    if (containsFacts(fs2, fs1) && containsFacts(fs1, fs2) && fs1.length == fs2.length) return true;
+    return false;
+};
+
+/**
+ * Checks if a set of facts is a subset of another set of facts.
+ * @param fs1 the superset
+ * @param fs2 the potential subset
+ */
+var containsFacts = function(fs1, fs2) {
+    if(!fs2 || (fs2.length > fs1.length) || (fs1.length == 0 && fs2.length == 0)) return false;
+    _(fs2).forEach(function(fact) {
+        if(!(fact.appearsIn(fs1))) {
+            return false;
+        }
+    });
+    return true;
+};
+
+/**
+ * Merges two facts' obtainedWith properties
+ * if they are equivalent (otherwise, returns false).
+ */
+var mergeFacts = function(f1, f2) {
+    var fR = _.cloneDeep(f1);
+    if(!f1.equivalentTo(f2)) return false;
+    fR.obtainedFrom = Utils.uniqConcat(f1.obtainedFrom, f2.obtainedFrom);
+    return fR;
+};
+
+/**
+ * True-like merge, which also merges identical facts' obtainedFrom property.
+ * @param fs1
+ * @param fs2
+ */
+var mergeFactSets = function(fs1, fs2) {
+    if(fs1.length == 0) return fs2;
+    if(fs2.length == 0) return fs1;
+
+    var fsR = _.cloneDeep(fs1);
+    for (var key in fs2) {
+        fs2[key].__proto__ = Fact.prototype;
+        var simili =  fs2[key].appearsIn(fs1);
+        if(simili) {
+            fsR[key] = mergeFacts(fs2[key], simili);
+        } else {
+            fsR.push(fs2[key]);
+        }
+    }
+    return fsR;
+};
 
 /**
  * Rule in the form subClassOf(a, b) ^ subClassOf(b, c) -> subClassOf(a, c)
- * i.e. conjunction of axioms
- * @param sla set of (left side) conjunctive axioms
- * @param ra the consequence axiom
+ * i.e. conjunction of facts
+ * @param slf set of (left side) conjunctive facts
+ * @param ra the consequence facts
  * @constructor
  */
-Rule = function(sla, ra) {
-    this.leftAxioms = sla;
-    this.rightAxiom = ra;
+Rule = function(slf, rf) {
+    this.leftFacts = slf;
+    this.rightFact = rf;
 };
 
 Rule.prototype = {
-    leftAxiomsToString: function() {
-        var axiomConj = '';
-        for(var key in this.leftAxioms) {
-            axiomConj += ' ^ ' + this.leftAxioms[key].toString();
+    leftFactsToString: function() {
+        var factConj = '';
+        for(var key in this.leftFacts) {
+            factConj += ' ^ ' + this.leftFacts[key].toString();
         }
-        return axiomConj.substr(3);
+        return factConj.substr(3);
     },
 
     toString: function() {
-        var axiomConj = '';
-        for(var key in this.leftAxioms) {
-            axiomConj += ' ^ ' + this.leftAxioms[key].toString();
+        var factConj = '';
+        for(var key in this.leftFacts) {
+            factConj += ' ^ ' + this.leftFacts[key].toString();
         }
-        return axiomConj.substr(3) + ' -> ' + this.rightAxiom.toString();
+        return factConj.substr(3) + ' -> ' + this.rightFact.toString();
+    },
+
+    findConjunctionsWith: function(facts) {
+        var combo = Combinatorics.baseN(facts, this.leftFacts.length);
+        return combo.toArray();
     },
 
     /**
-     * Verifies if a set of axioms satisfy the rule's condition
-     * @param axioms: a set of axioms
+     * Returns the consequences of the facts being applied to the rule.
      * @returns {boolean}
      */
-    consequences: function(originalAxioms, allAxioms, previousConsequences) {
+    consequences: function(originalFacts, consequences) {
 
-        if(!allAxioms) allAxioms = originalAxioms.slice(0);
-        if(previousConsequences) Utils.uniqConcat(allAxioms, previousConsequences);
+        if (!consequences) consequences = [];
 
         var thisPatternized = this.patternize(),
             thisRule = thisPatternized.rule,
             initialMap = thisPatternized.map,
+            allFacts = Utils.uniqConcat(originalFacts, consequences),
             possibleConjunctions,
-            consequences = [];
+            candidateConsequences = [];
 
         // Calculation of all possible permuted combinations
-        possibleConjunctions = Combinatorics.baseN(allAxioms, this.leftAxioms.length).toArray();
+        possibleConjunctions = this.findConjunctionsWith(allFacts);
 
         // Checks if any conjunction shares the same pattern as current rule
         for (var key in possibleConjunctions) {
@@ -61,15 +125,16 @@ Rule.prototype = {
                 shadowRule = patternized.rule,
                 map = patternized.map;
 
-            if(shadowRule.leftAxiomsToString() === thisRule.leftAxiomsToString()) {
-                var reattr = thisRule.rightAxiom.reattribute(Utils.completeMap(map,initialMap));
-                if (JSON.stringify(consequences).indexOf(JSON.stringify(reattr)) === -1) consequences.push(reattr);
+            if(shadowRule.leftFactsToString() === thisRule.leftFactsToString()) {
+                var reattr = thisRule.rightFact.reattribute(Utils.completeMap(map,initialMap));
+                reattr.obtainedFrom = possibleConjunctions[key];
+                if (!(reattr.appearsIn(candidateConsequences))) candidateConsequences.push(reattr);
             }
         }
-        if(JSON.stringify(consequences) === JSON.stringify(previousConsequences)) {
-            return Utils.diff(allAxioms, originalAxioms);
+        if(containsFacts(consequences, candidateConsequences)) {
+            return consequences;
         }
-        return this.consequences(originalAxioms, allAxioms, consequences);
+        return this.consequences(originalFacts, mergeFactSets(consequences, candidateConsequences));
     },
 
     /**
@@ -84,67 +149,91 @@ Rule.prototype = {
      */
     patternize: function(map) {
         if(map === undefined) map = {};
-        var leftAxioms = [],
-            rightAxiom = [],
+        var leftFacts = [],
+            rightFacts = [],
             patternized;
 
-        for(var key in this.leftAxioms) {
-            if(!this.leftAxioms[key].patternize) {
+        for(var key in this.leftFacts) {
+            if(!this.leftFacts[key].patternize) {
                 1;
             }
-            patternized = this.leftAxioms[key].patternize(map);
-            leftAxioms[key] = patternized.axiom;
+            patternized = this.leftFacts[key].patternize(map);
+            leftFacts[key] = patternized.fact;
             map = patternized.map;
         }
 
-        if(this.rightAxiom !== UNKNOWN) {
-            patternized = this.rightAxiom.patternize(map);
-            rightAxiom = patternized.axiom;
+        if(this.rightFact !== UNKNOWN) {
+            patternized = this.rightFact.patternize(map);
+            rightFacts = patternized.fact;
             map = patternized.map;
         }
 
         return {
             map: map,
-            rule: new Rule(leftAxioms, rightAxiom)
+            rule: new Rule(leftFacts, rightFacts)
         };
-    },
-
-    /**
-     * Evaluates the rule wrt. an set of axioms
-     * @param axiomSet
-     */
-    evaluate: function(axiomSet) {
-
     }
 };
 
 /**
- * Axiom in the form subClassOf(a, b)
- * @param name axiom's name (e.g. subClassOf)
+ * Fact in the form subClassOf(a, b)
+ * @param name fact's/axiom name (e.g. subClassOf)
  * @param li left individual
  * @param ri right individual
  * @constructor
  */
-Axiom = function(name, li, ri) {
+Fact = function(name, li, ri, originFacts) {
+    if(!originFacts) originFacts = [];
     this.name = name;
     this.leftIndividual = li;
     this.rightIndividual = ri;
+    this.obtainedFrom = originFacts
 };
 
-Axiom.prototype = {
+Fact.prototype = {
 
     toString: function() {
         return this.name + '(' + this.leftIndividual + ',' + this.rightIndividual + ')';
     },
 
     /**
-     * Generalizes an axiom, e.g. the patternization of
+     * Checks if the fact is equivalent to another fact.
+     * @param fact
+     * @returns {boolean}
+     */
+    equivalentTo: function(fact) {
+        if(this.toString() == fact.toString()) {
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * Checks if a fact appears in a set of facts
+     * and returns it if existing.
+     * @param factSet
+     * @returns {boolean}
+     */
+    appearsIn: function(factSet) {
+        var that = this;
+        for (var key in factSet) {
+            var fact = factSet[key];
+            fact.__proto__ == Fact.prototype;
+            if(fact.equivalentTo(that)){
+               return fact;
+            }
+        }
+        return false;
+    },
+
+    /**
+     * Generalizes an axiom/fact, e.g. the patternization of
      * hasChild(#Dad, #Kid) would produce hasChild(0, 1)
      * @param map: the original mapping of variables, if needed
      * @returns a JSON object containing:
      *          - map: the mapping between original variables
      *                 and their patternized version
-     *          - axiom: the patternized axiom
+     *          - fact: the patternized fact/axiom
      */
     patternize: function(map) {
         if(map === undefined) map = {};
@@ -156,7 +245,7 @@ Axiom.prototype = {
         }
         return {
             map: map,
-            axiom: new Axiom(this.name, map[this.leftIndividual], map[this.rightIndividual])
+            fact: new Fact(this.name, map[this.leftIndividual], map[this.rightIndividual])
         };
     },
 
@@ -167,16 +256,16 @@ Axiom.prototype = {
             if(map[key] === this.leftIndividual)  leftIndividual = key;
             if(map[key] === this.rightIndividual)  rightIndividual = key;
         }
-        return new Axiom(this.name, leftIndividual, rightIndividual);
+        return new Fact(this.name, leftIndividual, rightIndividual);
     }
 };
 
 /**
- * Fact has the same prototype as Axiom,
+ * Axiom has the same prototype as Fact,
  * for ease of representation purpose
  * @author Mehdi Terdjimi
  */
-Fact = Axiom;
+Axiom = Fact;
 
 module.exports = {
     rule: function(sla, sra) {
