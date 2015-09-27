@@ -50,11 +50,11 @@ module.exports = {
         var bigger, lower;
 
         if(arr1.length > arr2.length) {
-            bigger = arr1;
-            lower = arr2;
+            bigger = _.cloneDeep(arr1);
+            lower = _.cloneDeep(arr2);
         } else {
-            bigger = arr2;
-            lower = arr1;
+            bigger = _.cloneDeep(arr2);
+            lower = _.cloneDeep(arr1);
         }
 
         for(var key in lower) {

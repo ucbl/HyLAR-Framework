@@ -116,15 +116,18 @@ TrimQueryABox.prototype = {
         return TrimPath.makeQueryLang({
             ClassAssertion: { individual: { type: 'String' },
                 className: { type: 'String' },
-                explicit: { type: 'Boolean' }},
+                explicit: { type: 'Boolean' },
+                obtainedFrom: { type: 'String'}},
             ObjectPropertyAssertion: { objectProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
                 rightIndividual: { type: 'String' },
-                explicit: { type: 'Boolean' }},
+                explicit: { type: 'Boolean' },
+                obtainedFrom: { type: 'String'}},
             DataPropertyAssertion: { dataProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
                 rightValue: { type: 'String' },
-                explicit: { type: 'Boolean' }}
+                explicit: { type: 'Boolean' },
+                obtainedFrom: { type: 'String'}}
         });
     },
 
@@ -441,7 +444,8 @@ TrimQueryABox.prototype = {
                         value: fact.rightIndividual,
                         type: rdf.ExpressionTypes.LITERAL
                     },
-                    explicit: explicit
+                    explicit: explicit,
+                    obtainedFrom: fact.obtainedFrom
                 });
             } else {
                 triples.push({
@@ -457,7 +461,8 @@ TrimQueryABox.prototype = {
                         value: fact.rightIndividual,
                         type: rdf.ExpressionTypes.IRI_REF
                     },
-                    explicit: explicit
+                    explicit: explicit,
+                    obtainedFrom: fact.obtainedFrom
                 });
             }
         }

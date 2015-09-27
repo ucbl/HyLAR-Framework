@@ -25,12 +25,14 @@ var equivalentFactSets = function(fs1, fs2) {
  * @param fs2 the potential subset
  */
 var containsFacts = function(fs1, fs2) {
-    if(!fs2 || (fs2.length > fs1.length) || (fs1.length == 0 && fs2.length == 0)) return false;
-    _(fs2).forEach(function(fact) {
+    if(!fs2 || (fs2.length > fs1.length)) return false;
+    for (var key in fs2) {
+        var fact = _.cloneDeep(fs2[key]);
+        fact.__proto__ = Fact.prototype;
         if(!(fact.appearsIn(fs1))) {
             return false;
         }
-    });
+    }
     return true;
 };
 
@@ -40,9 +42,37 @@ var containsFacts = function(fs1, fs2) {
  */
 var mergeFacts = function(f1, f2) {
     var fR = _.cloneDeep(f1);
-    if(!f1.equivalentTo(f2)) return false;
+    if(!(f1.equivalentTo(f2))) {
+        return false;
+    }
+    fR.__proto__ = Fact.prototype;
     fR.obtainedFrom = Utils.uniqConcat(f1.obtainedFrom, f2.obtainedFrom);
     return fR;
+};
+
+var maxMin = function(fs1, fs2) {
+    if (fs1.length > fs2.length) return {
+        max: _.cloneDeep(fs1),
+        min: _.cloneDeep(fs2)
+    };
+    return {
+        max: _.cloneDeep(fs2),
+        min: _.cloneDeep(fs1)
+    };
+};
+
+/**
+ * Finds the fact in the set
+ * and merges both obtainedFrom properties.
+ */
+var findAndMerge = function(fs, fact) {
+    for(var key in fs) {
+        var merged;
+        fs[key].__proto__ = Fact.prototype;
+        if(merged = mergeFacts(fs[key], fact)) {
+            fs[key] = merged;
+        }
+    }
 };
 
 /**
@@ -54,17 +84,19 @@ var mergeFactSets = function(fs1, fs2) {
     if(fs1.length == 0) return fs2;
     if(fs2.length == 0) return fs1;
 
-    var fsR = _.cloneDeep(fs1);
-    for (var key in fs2) {
-        fs2[key].__proto__ = Fact.prototype;
-        var simili =  fs2[key].appearsIn(fs1);
+    var fsMx = maxMin(fs1, fs2).max,
+        fsMn = maxMin(fs1, fs2).min;
+
+    for (var key in fsMn) {
+        fsMn[key].__proto__ = Fact.prototype;
+        var simili =  fsMn[key].appearsIn(fsMx);
         if(simili) {
-            fsR[key] = mergeFacts(fs2[key], simili);
+            findAndMerge(fsMx, simili);
         } else {
-            fsR.push(fs2[key]);
+            fsMx.push(fsMn[key]);
         }
     }
-    return fsR;
+    return fsMx;
 };
 
 /**
@@ -128,13 +160,16 @@ Rule.prototype = {
             if(shadowRule.leftFactsToString() === thisRule.leftFactsToString()) {
                 var reattr = thisRule.rightFact.reattribute(Utils.completeMap(map,initialMap));
                 reattr.obtainedFrom = possibleConjunctions[key];
-                if (!(reattr.appearsIn(candidateConsequences))) candidateConsequences.push(reattr);
+                if (!(reattr.appearsIn(candidateConsequences))) {
+                    candidateConsequences.push(reattr);
+                }
             }
         }
         if(containsFacts(consequences, candidateConsequences)) {
             return consequences;
         }
-        return this.consequences(originalFacts, mergeFactSets(consequences, candidateConsequences));
+        var merged = mergeFactSets(consequences, candidateConsequences);
+        return this.consequences(originalFacts, merged);
     },
 
     /**
@@ -153,14 +188,16 @@ Rule.prototype = {
             rightFacts = [],
             patternized;
 
-        for(var key in this.leftFacts) {
-            if(!this.leftFacts[key].patternize) {
-                1;
+        _(this.leftFacts).forEach(function(fact) {
+            fact.__proto__ = Fact.prototype;
+            try {
+                patternized = fact.patternize(map);
+                leftFacts.push(patternized.fact);
+                map = patternized.map;
+            } catch(e) {
+                throw(e);
             }
-            patternized = this.leftFacts[key].patternize(map);
-            leftFacts[key] = patternized.fact;
-            map = patternized.map;
-        }
+        });
 
         if(this.rightFact !== UNKNOWN) {
             patternized = this.rightFact.patternize(map);
@@ -202,6 +239,7 @@ Fact.prototype = {
      * @returns {boolean}
      */
     equivalentTo: function(fact) {
+        fact.__proto__ = Fact.prototype;
         if(this.toString() == fact.toString()) {
             return true;
         }
@@ -217,10 +255,8 @@ Fact.prototype = {
     appearsIn: function(factSet) {
         var that = this;
         for (var key in factSet) {
-            var fact = factSet[key];
-            fact.__proto__ == Fact.prototype;
-            if(fact.equivalentTo(that)){
-               return fact;
+            if(that.equivalentTo(factSet[key])){
+               return factSet[key];
             }
         }
         return false;
