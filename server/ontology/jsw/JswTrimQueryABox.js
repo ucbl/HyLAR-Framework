@@ -351,7 +351,9 @@ TrimQueryABox.prototype = {
             triples.push({
                 subject: { value: assertion.individual },
                 predicate: { value: rdfType },
-                object: { value: assertion.className }
+                object: { value: assertion.className },
+                explicit: { value: assertion.explicit },
+                obtainedFrom: { value: assertion.obtainedFrom }
             });
         }
 
@@ -360,7 +362,9 @@ TrimQueryABox.prototype = {
             triples.push({
                 subject: { value: assertion.leftIndividual },
                 predicate: { value: assertion.objectProperty },
-                object: { value: assertion.rightIndividual }
+                object: { value: assertion.rightIndividual },
+                explicit: { value: assertion.explicit },
+                obtainedFrom: { value: assertion.obtainedFrom }
             });
         }
 
@@ -369,7 +373,9 @@ TrimQueryABox.prototype = {
             triples.push({
                 subject: { value: assertion.leftIndividual },
                 predicate: { value: assertion.dataProperty },
-                object: { value: assertion.rightValue }
+                object: { value: assertion.rightValue },
+                explicit: { value: assertion.explicit },
+                obtainedFrom: { value: assertion.obtainedFrom }
             });
         }
 
@@ -403,21 +409,25 @@ TrimQueryABox.prototype = {
      * @returns {Array.<T>}
      */
     naiveReasoning: function(triplesIns, triplesDel, ontology, rules) {
-        // Explicit facts
-        var Fe = Utils.uniqConcat(
+        // Total facts
+        var F = Utils.uniqConcat(
                     Utils.uniqConcat(this.convertAssertions(), ontology.convertAxioms()),
                     Utils.uniqConcat(this.convertTriples(triplesIns), ontology.convertEntities()));
 
-        if(triplesDel.length) Fe = Utils.diff(F, this.convertTriples(triplesDel));
+        var consequencesToDel = this.convertTriples(triplesDel),
+            obtainedFroms;
+        for (var key in consequencesToDel) {
 
-        var consequences = [];
+        }
+
+        var consequencesToAdd = [];
         for (var key in rules) {
-            consequences = Utils.uniqConcat(consequences, rules[key].consequences(consequences.concat(Fe)));
+            consequencesToAdd = Utils.uniqConcat(consequencesToAdd, rules[key].consequences(consequencesToAdd.concat(F)));
         }
 
         return {
-            fi: consequences,
-            fe: Fe
+            fi: consequencesToAdd,
+            fe: F
         };
     },
 
