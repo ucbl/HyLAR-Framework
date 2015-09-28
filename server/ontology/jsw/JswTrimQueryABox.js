@@ -481,14 +481,14 @@ TrimQueryABox.prototype = {
             var triple = triples[tripleKey];
             // If it is an assertion...
             if (triple.predicate.value == rdf.IRIs.TYPE) {
-                table = "ClassAssertion ('individual', 'className', 'explicit')";
-                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "')";
+                table = "ClassAssertion ('individual', 'className', 'explicit', 'obtainedFrom')";
+                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
-                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual', 'explicit')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "')";
+                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual', 'explicit', 'obtainedFrom')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
-                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue', 'explicit')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "')";
+                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue', 'explicit', 'obtainedFrom')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "')";
             } else {
                 throw 'Unrecognized assertion type.';
             }

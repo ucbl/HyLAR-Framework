@@ -6,6 +6,18 @@ var _ = require('lodash');
 
 module.exports = {
 
+    stringifyNoComma: function(json) {
+        if(json.length == 0) return '';
+        var str =JSON.stringify(json);
+        return str.replace(/",/g, '"-')
+                .replace(/},/g, '"-');
+    },
+
+    unStringifyAddCommas: function(str) {
+        return JSON.parse(str.replace(/"-/g, '",')
+            .replace(/}-/g, '},'));
+    },
+
     getKeyByValue: function(obj, value) {
         for(var prop in obj) {
             if(obj.hasOwnProperty(prop) ) {

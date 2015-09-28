@@ -14,6 +14,7 @@ var Reasoner = require('../server/ontology/jsw/Reasoner');
 var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
 var Logics = require('../server/ontology/jsw/Logics');
+var Utils = require('../server/ontology/jsw/Utils');
 
 var owl, ontology, reasoner, rule, fipa = '/../server/ontologies/fipa.owl', asawoo = '/../server/ontologies/fipa.owl';
 
@@ -81,6 +82,7 @@ describe('SELECT query with subsumption', function () {
     var query, results;
     it('should find a class assertion', function () {
         // ClassAssertion Test
+        var s = Utils.unStringifyAddCommas(reasoner.aBox.database.ObjectPropertyAssertion[275].obtainedFrom);
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
         'SELECT ?a { ?a rdf:type <#Device> . }');
         query.should.exist;
