@@ -177,15 +177,14 @@ TrimQueryABox.prototype = {
             varField, varFields, varIndex, consequences;
 
         if (query.statementType == 'DELETE') {
-
-            query.triples = this.consequencesToTriples(
-                                this.naiveReasoning(new Array(), query.triples, ontology, R));
-            query.triples = this.consequencesToTriples();
+            consequences = this.naiveReasoning(new Array(), this.convertTriples(query.triples),  R);
+            query.triples = this.consequencesToTriples(consequences.fe, true).concat(
+                            this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();
             return this.createInsertStatement(query.triples).join('');
 
         } else if (query.statementType == 'INSERT') {
-            consequences = this.naiveReasoning(query.triples, new Array(), ontology, R);
+            consequences = this.naiveReasoning(this.convertTriples(query.triples), new Array(), R);
             query.triples = this.consequencesToTriples(consequences.fe, true).concat(
                             this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();
@@ -341,45 +340,42 @@ TrimQueryABox.prototype = {
      * Convert JSW assertion facts into formal Logics.js facts
      * @author Mehdi Terdjimi
      */
-    convertAssertions: function(explicit) {
+    convertAssertions: function() {
         var assertion,
-            triples = [],
+            facts = [],
             rdfType = rdf.IRIs.TYPE;
 
         for(var key in this.database.ClassAssertion) {
             assertion = this.database.ClassAssertion[key];
-            triples.push({
-                subject: { value: assertion.individual },
-                predicate: { value: rdfType },
-                object: { value: assertion.className },
-                explicit: { value: assertion.explicit },
-                obtainedFrom: { value: assertion.obtainedFrom }
-            });
+            facts.push(
+                new Logics.fact(rdfType,
+                    assertion.individual,
+                    assertion.className,
+                    Utils.unStringifyAddCommas(assertion.obtainedFrom),
+                    Utils.booleize(assertion.explicit)));
         }
 
         for(var key in this.database.ObjectPropertyAssertion) {
             assertion = this.database.ObjectPropertyAssertion[key];
-            triples.push({
-                subject: { value: assertion.leftIndividual },
-                predicate: { value: assertion.objectProperty },
-                object: { value: assertion.rightIndividual },
-                explicit: { value: assertion.explicit },
-                obtainedFrom: { value: assertion.obtainedFrom }
-            });
+            facts.push(
+                new Logics.fact(assertion.objectProperty,
+                    assertion.leftIndividual,
+                    assertion.rightIndividual,
+                    Utils.unStringifyAddCommas(assertion.obtainedFrom),
+                    Utils.booleize(assertion.explicit)));
         }
 
         for(var key in this.database.DataPropertyAssertion) {
             assertion = this.database.DataPropertyAssertion[key];
-            triples.push({
-                subject: { value: assertion.leftIndividual },
-                predicate: { value: assertion.dataProperty },
-                object: { value: assertion.rightValue },
-                explicit: { value: assertion.explicit },
-                obtainedFrom: { value: assertion.obtainedFrom }
-            });
+            facts.push(
+                new Logics.fact(assertion.dataProperty,
+                    assertion.leftIndividual,
+                    assertion.rightValue,
+                    Utils.unStringifyAddCommas(assertion.obtainedFrom),
+                    Utils.booleize(assertion.explicit)));
         }
 
-        return this.convertTriples(triples);
+        return facts;
     },
 
     /**
@@ -387,14 +383,14 @@ TrimQueryABox.prototype = {
      * @author Mehdi Terdjimi
      */
     convertTriples: function(triples) {
-        var sub, pred, obj,
+        var sub, pred, obj, expl, obt,
             newFacts = [];
         for(var key in triples) {
             var triple = triples[key];
             sub = triple.subject;
             pred = triple.predicate;
             obj = triple.object;
-            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value));
+            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value, [], false));
         }
 
         return newFacts;
@@ -406,28 +402,33 @@ TrimQueryABox.prototype = {
      * @param triplesIns
      * @param triplesDel
      * @param rules
-     * @returns {Array.<T>}
+     * @returns {{fi: *, fe: *}}
      */
-    naiveReasoning: function(triplesIns, triplesDel, ontology, rules) {
+    naiveReasoning: function(fAdd, fDel, rules) {
         // Total facts
-        var F = Utils.uniqConcat(
-                    Utils.uniqConcat(this.convertAssertions(), ontology.convertAxioms()),
-                    Utils.uniqConcat(this.convertTriples(triplesIns), ontology.convertEntities()));
+        var F = Logics.core.mergeFactSets(this.convertAssertions(), fAdd);
 
-        var consequencesToDel = this.convertTriples(triplesDel),
-            obtainedFroms;
+        var consequencesToDel = fDel;
         for (var key in consequencesToDel) {
-
+            var factToDel = consequencesToDel[key],
+                factToDelConsequences;
+            factToDel.__proto__ = Logics.fact().__proto__;
+            factToDelConsequences = factToDel.getConsequencesIn(F);
+            consequencesToDel = Logics.core.mergeFactSets(consequencesToDel, factToDelConsequences);
         }
+        F = Logics.core.substractFactSets(F, consequencesToDel);
 
         var consequencesToAdd = [];
         for (var key in rules) {
-            consequencesToAdd = Utils.uniqConcat(consequencesToAdd, rules[key].consequences(consequencesToAdd.concat(F)));
+            var subsequentConsequences = rules[key].consequences(Logics.core.mergeFactSets(consequencesToAdd, F));
+            consequencesToAdd = Logics.core.mergeFactSets(consequencesToAdd, subsequentConsequences);
         }
 
+        var allFacts = Logics.core.mergeFactSets(consequencesToAdd, F);
+
         return {
-            fi: consequencesToAdd,
-            fe: F
+            fi: Logics.core.getOnlyImplicitFacts(allFacts),
+            fe: Logics.core.getOnlyExplicitFacts(allFacts)
         };
     },
 

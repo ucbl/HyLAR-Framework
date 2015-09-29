@@ -6,18 +6,48 @@ var _ = require('lodash');
 
 module.exports = {
 
+    booleize: function(str) {
+        if (str === 'true') {
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    /**
+     * Transforms a object into a stringified version
+     * and replaces commas by '-' to avoid TrimPath exceptions.
+     * @param json
+     * @returns {*}
+     */
     stringifyNoComma: function(json) {
         if(json.length == 0) return '';
         var str =JSON.stringify(json);
         return str.replace(/",/g, '"-')
-                .replace(/},/g, '"-');
+                .replace(/},/g, '}-')
+                .replace(/],/g, ']-');
     },
 
+    /**
+     * Reversed stringifyNoComma function.
+     * @param str
+     */
     unStringifyAddCommas: function(str) {
-        return JSON.parse(str.replace(/"-/g, '",')
-            .replace(/}-/g, '},'));
+        try {
+            return JSON.parse(str.replace(/]-/g, '],')
+                .replace(/}-/g, '},')
+                .replace(/"-/g, '",'));
+        } catch(e) {
+            return [];
+        }
     },
 
+    /**
+     * Get the key referring to a value in a JSON object.
+     * @param obj
+     * @param value
+     * @returns {*}
+     */
     getKeyByValue: function(obj, value) {
         for(var prop in obj) {
             if(obj.hasOwnProperty(prop) ) {
@@ -28,6 +58,12 @@ module.exports = {
         return false;
     },
 
+    /**
+     * Merges two maps.
+     * @param mapToComplete
+     * @param mapCompleter
+     * @returns {{}}
+     */
     completeMap: function(mapToComplete, mapCompleter) {
         var newMap = {}
         for(var key in mapToComplete) {
@@ -40,24 +76,12 @@ module.exports = {
         return newMap;
     },
 
-    subsetOf: function(arr1, arr2) {
-        for (var key in arr2) {
-            if (JSON.stringify(arr1).indexOf(JSON.stringify(arr2[key]) === -1)) return false;
-        }
-        return true;
-    },
-
-    diff: function(arr1, arr2) {
-        var result = [];
-        for (var key in arr1) {
-            var obj_arr1 = arr1[key];
-            if(!_.find(arr2, obj_arr1)) {
-                result.push(obj_arr1);
-            }
-        }
-        return result;
-    },
-
+    /**
+     * Concat collection without duplicates (cloning).
+     * @param arr1
+     * @param arr2
+     * @returns {*}
+     */
     uniqConcat: function(arr1, arr2) {
         var bigger, lower;
 

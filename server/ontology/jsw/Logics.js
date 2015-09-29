@@ -9,17 +9,6 @@ var Combinatorics = require('js-combinatorics'),
     _ = require('lodash');
 
 /**
- * Checks if both sets share exactly the same facts.
- * @param fs1
- * @param fs2
- * @returns {boolean}
- */
-var equivalentFactSets = function(fs1, fs2) {
-    if (containsFacts(fs2, fs1) && containsFacts(fs1, fs2) && fs1.length == fs2.length) return true;
-    return false;
-};
-
-/**
  * Checks if a set of facts is a subset of another set of facts.
  * @param fs1 the superset
  * @param fs2 the potential subset
@@ -46,10 +35,18 @@ var mergeFacts = function(f1, f2) {
         return false;
     }
     fR.__proto__ = Fact.prototype;
-    fR.obtainedFrom = Utils.uniqConcat(f1.obtainedFrom, f2.obtainedFrom);
+    fR.obtainedFrom = _.union(f1.obtainedFrom, f2.obtainedFrom);
+    if (fR.obtainedFrom.length > 0) fR.explicit = false;
     return fR;
 };
 
+/**
+ * Returns the max and min from two sets of facts
+ * (cloning)
+ * @param fs1
+ * @param fs2
+ * @returns {{max: *, min: *}}
+ */
 var maxMin = function(fs1, fs2) {
     if (fs1.length > fs2.length) return {
         max: _.cloneDeep(fs1),
@@ -76,30 +73,6 @@ var findAndMerge = function(fs, fact) {
 };
 
 /**
- * True-like merge, which also merges identical facts' obtainedFrom property.
- * @param fs1
- * @param fs2
- */
-var mergeFactSets = function(fs1, fs2) {
-    if(fs1.length == 0) return fs2;
-    if(fs2.length == 0) return fs1;
-
-    var fsMx = maxMin(fs1, fs2).max,
-        fsMn = maxMin(fs1, fs2).min;
-
-    for (var key in fsMn) {
-        fsMn[key].__proto__ = Fact.prototype;
-        var simili =  fsMn[key].appearsIn(fsMx);
-        if(simili) {
-            findAndMerge(fsMx, simili);
-        } else {
-            fsMx.push(fsMn[key]);
-        }
-    }
-    return fsMx;
-};
-
-/**
  * Rule in the form subClassOf(a, b) ^ subClassOf(b, c) -> subClassOf(a, c)
  * i.e. conjunction of facts
  * @param slf set of (left side) conjunctive facts
@@ -112,6 +85,11 @@ Rule = function(slf, rf) {
 };
 
 Rule.prototype = {
+    /**
+     * Convenient method to stringify the set of
+     * left-side facts of a rule.
+     * @returns {string}
+     */
     leftFactsToString: function() {
         var factConj = '';
         for(var key in this.leftFacts) {
@@ -120,6 +98,10 @@ Rule.prototype = {
         return factConj.substr(3);
     },
 
+    /**
+     * Convenient method to stringify a rule.
+     * @returns {string}
+     */
     toString: function() {
         var factConj = '';
         for(var key in this.leftFacts) {
@@ -128,6 +110,12 @@ Rule.prototype = {
         return factConj.substr(3) + ' -> ' + this.rightFact.toString();
     },
 
+    /**
+     * Finds all possible conjunctions of
+     * N facts from a set (cardinality of the conjunction = N)
+     * @param facts
+     * @returns {Array|*}
+     */
     findConjunctionsWith: function(facts) {
         var combo = Combinatorics.baseN(facts, this.leftFacts.length);
         return combo.toArray();
@@ -144,7 +132,7 @@ Rule.prototype = {
         var thisPatternized = this.patternize(),
             thisRule = thisPatternized.rule,
             initialMap = thisPatternized.map,
-            allFacts = Utils.uniqConcat(originalFacts, consequences),
+            allFacts = Core.mergeFactSets(originalFacts, consequences),
             possibleConjunctions,
             candidateConsequences = [];
 
@@ -160,6 +148,7 @@ Rule.prototype = {
             if(shadowRule.leftFactsToString() === thisRule.leftFactsToString()) {
                 var reattr = thisRule.rightFact.reattribute(Utils.completeMap(map,initialMap));
                 reattr.obtainedFrom = possibleConjunctions[key];
+                reattr.explicit = false;
                 if (!(reattr.appearsIn(candidateConsequences))) {
                     candidateConsequences.push(reattr);
                 }
@@ -168,7 +157,7 @@ Rule.prototype = {
         if(containsFacts(consequences, candidateConsequences)) {
             return consequences;
         }
-        var merged = mergeFactSets(consequences, candidateConsequences);
+        var merged = Core.mergeFactSets(consequences, candidateConsequences);
         return this.consequences(originalFacts, merged);
     },
 
@@ -217,18 +206,24 @@ Rule.prototype = {
  * @param name fact's/axiom name (e.g. subClassOf)
  * @param li left individual
  * @param ri right individual
+ * @param originFacts array of facts causing this
  * @constructor
  */
-Fact = function(name, li, ri, originFacts) {
+Fact = function(name, li, ri, originFacts, expl) {
     if(!originFacts) originFacts = [];
     this.name = name;
     this.leftIndividual = li;
     this.rightIndividual = ri;
-    this.obtainedFrom = originFacts
+    this.obtainedFrom = originFacts;
+    this.explicit = expl;
 };
 
 Fact.prototype = {
 
+    /**
+     * Convenient method to stringify a fact.
+     * @returns {string}
+     */
     toString: function() {
         return this.name + '(' + this.leftIndividual + ',' + this.rightIndividual + ')';
     },
@@ -263,6 +258,32 @@ Fact.prototype = {
     },
 
     /**
+     * Returns true if a fact f
+     * is obtainedFrom (this) fact
+     */
+    causes: function(f) {
+        return this.appearsIn(f.obtainedFrom);
+    },
+
+    /**
+     * Gets all facts from the set fs that have been obtained using
+     * the current fact (this), recursively.
+     * @param fs
+     */
+    getConsequencesIn: function(fs, initialCons) {
+        if (!initialCons) initialCons = [];
+        for (var key in fs) {
+            var fact = fs[key];
+            fact.__proto__ = Fact.prototype;
+            if (!fact.appearsIn(initialCons) && this.causes(fact)) {
+                initialCons.push(fact);
+                initialCons = fact.getConsequencesIn(fs, initialCons);
+            }
+        }
+        return initialCons;
+    },
+
+    /**
      * Generalizes an axiom/fact, e.g. the patternization of
      * hasChild(#Dad, #Kid) would produce hasChild(0, 1)
      * @param map: the original mapping of variables, if needed
@@ -281,38 +302,115 @@ Fact.prototype = {
         }
         return {
             map: map,
-            fact: new Fact(this.name, map[this.leftIndividual], map[this.rightIndividual])
+            fact: new Fact(this.name,
+                map[this.leftIndividual],
+                map[this.rightIndividual],
+            this.obtainedFrom,
+            this.explicit)
         };
     },
 
+    /**
+     * Reattribute values in a pattern
+     * using the corresponding map.
+     * @param map
+     * @returns {Fact}
+     */
     reattribute: function(map) {
         var leftIndividual,
             rightIndividual;
         for (var key in map) {
-            if(map[key] === this.leftIndividual)  leftIndividual = key;
-            if(map[key] === this.rightIndividual)  rightIndividual = key;
+            if(map[key] === this.leftIndividual)  {
+                leftIndividual = key;
+            }
+            if(map[key] === this.rightIndividual)  {
+                rightIndividual = key;
+            }
         }
         return new Fact(this.name, leftIndividual, rightIndividual);
     }
 };
 
 /**
- * Axiom has the same prototype as Fact,
- * for ease of representation purpose
- * @author Mehdi Terdjimi
+ * All necessary stuff around the Logics module
+ * @type {{substractFactSets: Function, mergeFactSets: Function}}
  */
-Axiom = Fact;
+Core = {
+    /**
+     * Returns fs1 without the facts occuring in fs2.
+     * @param fs1
+     * @param fs2
+     */
+    substractFactSets: function(fs1, fs2) {
+        var fsR = [];
+        for (var key in fs1) {
+            var fact = fs1[key];
+            fact.__proto__ = Fact.prototype;
+            if (!fact.appearsIn(fs2)) {
+                fsR.push(fact);
+            }
+        }
+        return fsR;
+    },
+
+    /**
+     * True-like merge, which also merges
+     * identical facts obtainedFrom properties.
+     * @param fs1
+     * @param fs2
+     */
+    mergeFactSets: function(fs1, fs2) {
+        if(fs1.length == 0) return fs2;
+        if(fs2.length == 0) return fs1;
+
+        var fsMx = maxMin(fs1, fs2).max,
+            fsMn = maxMin(fs1, fs2).min;
+
+        for (var key in fsMn) {
+            fsMn[key].__proto__ = Fact.prototype;
+            var simili =  fsMn[key].appearsIn(fsMx);
+            if(simili) {
+                findAndMerge(fsMx, simili);
+            } else {
+                fsMx.push(fsMn[key]);
+            }
+        }
+        return fsMx;
+    },
+
+    getOnlyImplicitFacts: function(fs) {
+        var fR = [];
+        for (var key in fs) {
+            var fact = fs[key];
+            fact.__proto__ = Fact.prototype;
+            if(!fact.explicit) {
+                fR.push(fact);
+            }
+        }
+        return fR;
+    },
+
+    getOnlyExplicitFacts: function(fs) {
+        var fR = [];
+        for (var key in fs) {
+            var fact = fs[key];
+            fact.__proto__ = Fact.prototype;
+            if(fact.explicit) {
+                fR.push(fact);
+            }
+        }
+        return fR;
+    }
+};
 
 module.exports = {
     rule: function(sla, sra) {
         return new Rule(sla, sra);
     },
 
-    axiom: function(name, li, ri) {
-        return new Axiom(name, li, ri);
+    fact: function(name, li, ri, obt, expl) {
+        return new Fact(name, li, ri, obt, expl);
     },
 
-    fact: function(name, li, ri) {
-        return new Fact(name, li, ri);
-    }
+    core: Core
 };

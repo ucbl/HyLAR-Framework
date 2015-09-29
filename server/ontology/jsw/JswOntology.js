@@ -283,7 +283,7 @@ Ontology.prototype = {
                     if(left.type == right.type) {
                         leftPart = left.IRI;
                         rightPart = right.IRI;
-                        newAxioms.push(new Logics.axiom(axiomName, leftPart, rightPart));
+                        newAxioms.push(new Logics.fact(axiomName, leftPart, rightPart, [], true));
                     }
                 default:
                     break;
@@ -296,13 +296,13 @@ Ontology.prototype = {
     convertEntities: function() {
         var newFacts = [];
         for (var key in this.entities[JswOWL.ExpressionTypes.ET_CLASS]) {
-            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.CLASS));
+            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.CLASS, [], true));
         }
         for (var key in this.entities[JswOWL.ExpressionTypes.ET_OPROP]) {
-            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.OPROP));
+            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.OPROP, [], true));
         }
         for (var key in this.entities[JswOWL.ExpressionTypes.ET_DPROP]) {
-            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.DPROP));
+            newFacts.push(new Logics.fact(JswRDF.IRIs.TYPE, key, JswOWL.IRIs.DPROP, [], true));
         }
         return newFacts;
     }

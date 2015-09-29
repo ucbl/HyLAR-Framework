@@ -16,28 +16,28 @@ module.exports = {
     rules: [
         // scm-sco
         new Logics.rule([
-                new Logics.axiom(JswRDF.IRIs.SUBCLASS, '?c1', '?c2'),
-                new Logics.axiom(JswRDF.IRIs.SUBCLASS, '?c2', '?c3')],
-            new Logics.axiom(JswRDF.IRIs.SUBCLASS, '?c1', '?c3')),
+                new Logics.fact(JswRDF.IRIs.SUBCLASS, '?c1', '?c2'),
+                new Logics.fact(JswRDF.IRIs.SUBCLASS, '?c2', '?c3')],
+            new Logics.fact(JswRDF.IRIs.SUBCLASS, '?c1', '?c3')),
 
         // cax-sco
         new Logics.rule([
-                new Logics.axiom(JswRDF.IRIs.SUBCLASS, '?c1', '?c2'),
-                new Logics.axiom(JswRDF.IRIs.TYPE, '?x', '?c1')],
-            new Logics.axiom(JswRDF.IRIs.TYPE, '?x', '?c2')),
+                new Logics.fact(JswRDF.IRIs.SUBCLASS, '?c1', '?c2'),
+                new Logics.fact(JswRDF.IRIs.TYPE, '?x', '?c1')],
+            new Logics.fact(JswRDF.IRIs.TYPE, '?x', '?c2')),
 
         // scm-cls
         new Logics.rule([
-                new Logics.axiom(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
-            new Logics.axiom(JswRDF.IRIs.SUBCLASS, '?c', '?c')),
+                new Logics.fact(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
+            new Logics.fact(JswRDF.IRIs.SUBCLASS, '?c', '?c')),
         new Logics.rule([
-                new Logics.axiom(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
-            new Logics.axiom(JswOWL.IRIs.EQUIVALENT_CLASS, '?c', '?c')),
+                new Logics.fact(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
+            new Logics.fact(JswOWL.IRIs.EQUIVALENT_CLASS, '?c', '?c')),
         new Logics.rule([
-                new Logics.axiom(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
-            new Logics.axiom(JswRDF.IRIs.SUBCLASS, '?c', JswOWL.IRIs.THING)),
+                new Logics.fact(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
+            new Logics.fact(JswRDF.IRIs.SUBCLASS, '?c', JswOWL.IRIs.THING)),
         new Logics.rule([
-                new Logics.axiom(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
-            new Logics.axiom(JswRDF.IRIs.SUBCLASS, JswOWL.IRIs.NOTHING, '?c'))
+                new Logics.fact(JswRDF.IRIs.TYPE, '?c', JswOWL.IRIs.CLASS)],
+            new Logics.fact(JswRDF.IRIs.SUBCLASS, JswOWL.IRIs.NOTHING, '?c'))
     ]
 };

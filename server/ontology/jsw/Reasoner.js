@@ -10,7 +10,7 @@ var Queue = require('./JswQueue'),
     JswRDF = require('./JswRDF'),
     JswOntology = require('./JswOntology'),
     OWL2RL = require('./OWL2RL'),
-    Utils = require('./Utils');
+    Logics = require('./Logics');
 
 /**
  * Reasoner is an OWL-EL create. Currently, it has some limitations and does not allow
@@ -18,7 +18,8 @@ var Queue = require('./JswQueue'),
  */
 Reasoner = function (ontology) {
     var preConsequences, preTriplesImplicit,
-        preTriplesExplicit, preInsertStatement;
+        preTriplesExplicit, preInsertStatement,
+        facts;
 
     /** Including RL **/
     this.rules = OWL2RL.rules;
@@ -30,7 +31,8 @@ Reasoner = function (ontology) {
 
     /** Preparing the aBox */
     this.aBox = new TrimQueryABox.trimQueryABox();
-    preConsequences = this.aBox.naiveReasoning([], [], this.resultOntology, this.rules);
+    facts = Logics.core.mergeFactSets(this.resultOntology.convertEntities(), this.resultOntology.convertAxioms());
+    preConsequences = this.aBox.naiveReasoning(facts, [], this.rules);
     preTriplesImplicit = this.aBox.consequencesToTriples(preConsequences.fi, false);
     preTriplesExplicit = this.aBox.consequencesToTriples(preConsequences.fe, true);
     preInsertStatement = this.aBox.createInsertStatement(preTriplesExplicit.concat(preTriplesImplicit));
@@ -1029,7 +1031,7 @@ Reasoner.prototype = {
      *
      * @return jsw Ontology ontology which is a normalized version of the given one.
      */
-    normalizeOntology: function (ontology, resultOntology) {
+    normalizeOntology: function () {
         var axiom, axiomIndex, queue, nothingClass, resultAxioms,
             rules, ruleCount, ruleIndex, instanceClasses,
             ontology = this.originalOntology,

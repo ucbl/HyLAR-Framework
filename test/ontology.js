@@ -18,6 +18,8 @@ var Utils = require('../server/ontology/jsw/Utils');
 
 var owl, ontology, reasoner, rule, fipa = '/../server/ontologies/fipa.owl', asawoo = '/../server/ontologies/fipa.owl';
 
+var before, after, bIns;
+
 describe('File access', function () {
     it('should access the file', function () {
         var exists = fs.existsSync(path.resolve(__dirname + asawoo));
@@ -46,21 +48,12 @@ describe('Ontology Classification', function () {
     it('should classify the ontology', function () {
         reasoner = Reasoner.create(ontology);
         reasoner.should.exist;
+        before = reasoner.aBox.convertAssertions().length;
     });
 
     it('should convert axioms', function () {
         var formalAxioms = reasoner.resultOntology.convertAxioms();
         formalAxioms.length.should.be.above(0);
-    });
-});
-
-describe('Rule creation', function () {
-    it('should create a rule', function () {
-        var axiom1 = new Logics.axiom(JswRDF.IRIs.SUBCLASS, 'a', 'b'),
-            axiom2 = new Logics.axiom(JswRDF.IRIs.SUBCLASS, 'b', 'c'),
-            axiom3 = new Logics.axiom(JswRDF.IRIs.SUBCLASS, 'a', 'c');
-        rule = new Logics.rule([axiom1, axiom2], axiom3);
-        rule.should.exist;
     });
 });
 
@@ -82,7 +75,6 @@ describe('SELECT query with subsumption', function () {
     var query, results;
     it('should find a class assertion', function () {
         // ClassAssertion Test
-        var s = Utils.unStringifyAddCommas(reasoner.aBox.database.ObjectPropertyAssertion[275].obtainedFrom);
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
         'SELECT ?a { ?a rdf:type <#Device> . }');
         query.should.exist;
@@ -139,15 +131,34 @@ describe('SELECT query with subsumption', function () {
 
 });
 
+describe('Re-INSERT exact same query', function () {
+    var query;
+    it('should not change anything', function () {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
+        '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+        '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
+        '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        query.should.exist;
+        bIns = reasoner.aBox.convertAssertions().length;
+        reasoner.answerQuery(query);
+        reasoner.aBox.convertAssertions().length.should.eql(bIns);
+    });
+});
+
 describe('DELETE query with subsumption', function () {
     var query, results;
     it('should DELETE with subsumptions', function () {
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-        'DELETE DATA { <#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        'DELETE DATA { <#Inspiron> rdf:type <#Device> . ' +
+        '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+        '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
         '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
         '<#Wifi> rdf:type <#ConnectionDescription> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
+        after = reasoner.aBox.convertAssertions().length;
+        after.should.eql(before);
     });
-
 });
