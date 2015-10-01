@@ -43,7 +43,7 @@ describe('Ontology Parsing', function () {
             console.err(err);
         });
         ontology.should.exist;
-        console.log((new Date().getTime() - ts) + ' ms');
+        console.log((new Date().getTime() - ts) + ' ms ');
     });
 });
 
@@ -53,12 +53,12 @@ describe('Ontology Classification', function () {
         reasoner = Reasoner.create(ontology);
         reasoner.should.exist;
         before = reasoner.aBox.convertAssertions().length;
-        console.log((new Date().getTime() - ts) + ' ms');
+        console.log((new Date().getTime() - ts) + ' ms ');
     });
 
-    it('should convert axioms', function () {
-        var formalAxioms = reasoner.resultOntology.convertAxioms();
-        formalAxioms.length.should.be.above(0);
+    it('should convert axioms ', function () {
+        var formalAxioms  = reasoner.resultOntology.convertAxioms ();
+        formalAxioms .length.should.be.above(0);
     });
 });
 
@@ -67,14 +67,43 @@ describe('INSERT query with subsumption', function () {
     it('should parse the INSERT statement and infer data', function () {
         ts = new Date().getTime();
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-        'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
+        'INSERT DATA { ' +
+        '<#Inspiron> rdf:type <#Device> . ' +
+        '<#nspiron> rdf:type <#Device> . ' +
+        '<#spiron> rdf:type <#Device> . ' +
+        '<#piron> rdf:type <#Device> . ' +
+        '<#iron> rdf:type <#Device> . ' +
+        '<#ron> rdf:type <#Device> . ' +
+        '<#on> rdf:type <#Device> . ' +
+        '<#n> rdf:type <#Device> . ' +
         '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+        '<#nspiron> <#hasConnection> <#Ethernet100mbps> . ' +
+        '<#ron> <#hasConnection> <#Bluetooth> . ' +
         '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#equest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#quest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#uest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#est1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#st1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#t1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#> rdf:type <#RequestDeviceInfo> . ' +
         '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
-        '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        '<#nspiron> <#hasName> "Dell Inspiron 15" . ' +
+        '<#spiron> <#hasName> "Dell Inspiron 1" . ' +
+        '<#piron> <#hasName> "Dell Inspiron " . ' +
+        '<#iron> <#hasName> "Dell Inspiron" . ' +
+        '<#ron> <#hasName> "Dell Inspiro" . ' +
+        '<#on> <#hasName> "Dell Inspir" . ' +
+        '<#n> <#hasName> "Dell Inspi" . ' +
+        '<#Wifi> rdf:type <#ConnectionDescription> . ' +
+        '<#Bluetooth> rdf:type <#ConnectionDescription> . ' +
+        '<#Zigbee> rdf:type <#ConnectionDescription> . ' +
+        '<#Ethernet100mbps> rdf:type <#ConnectionDescription> . ' +
+        '}');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        console.log((new Date().getTime() - ts) + ' ms');
+        console.log((new Date().getTime() - ts) + ' ms ');
     });
 });
 
@@ -143,15 +172,44 @@ describe('Re-INSERT exact same query', function () {
     it('should not change anything (insert)', function () {
         ts = new Date().getTime();
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-        'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
+        'INSERT DATA { ' +
+        '<#Inspiron> rdf:type <#Device> . ' +
+        '<#nspiron> rdf:type <#Device> . ' +
+        '<#spiron> rdf:type <#Device> . ' +
+        '<#piron> rdf:type <#Device> . ' +
+        '<#iron> rdf:type <#Device> . ' +
+        '<#ron> rdf:type <#Device> . ' +
+        '<#on> rdf:type <#Device> . ' +
+        '<#n> rdf:type <#Device> . ' +
         '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+        '<#nspiron> <#hasConnection> <#Ethernet100mbps> . ' +
+        '<#ron> <#hasConnection> <#Bluetooth> . ' +
         '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#equest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#quest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#uest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#est1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#st1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#t1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#> rdf:type <#RequestDeviceInfo> . ' +
         '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
-        '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        '<#nspiron> <#hasName> "Dell Inspiron 15" . ' +
+        '<#spiron> <#hasName> "Dell Inspiron 1" . ' +
+        '<#piron> <#hasName> "Dell Inspiron " . ' +
+        '<#iron> <#hasName> "Dell Inspiron" . ' +
+        '<#ron> <#hasName> "Dell Inspiro" . ' +
+        '<#on> <#hasName> "Dell Inspir" . ' +
+        '<#n> <#hasName> "Dell Inspi" . ' +
+        '<#Wifi> rdf:type <#ConnectionDescription> . ' +
+        '<#Bluetooth> rdf:type <#ConnectionDescription> . ' +
+        '<#Zigbee> rdf:type <#ConnectionDescription> . ' +
+        '<#Ethernet100mbps> rdf:type <#ConnectionDescription> . ' +
+        '}');
         query.should.exist;
         bIns = reasoner.aBox.convertAssertions().length;
         reasoner.answerQuery(query);
-        console.log((new Date().getTime() - ts) + ' ms');
+        console.log((new Date().getTime() - ts) + ' ms ');
         reasoner.aBox.convertAssertions().length.should.eql(bIns);
     });
 });
@@ -161,14 +219,43 @@ describe('DELETE query with subsumption', function () {
     it('should DELETE with subsumptions', function () {
         ts = new Date().getTime();
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-        'DELETE DATA { <#Inspiron> rdf:type <#Device> . ' +
+        'DELETE DATA { ' +
+        '<#Inspiron> rdf:type <#Device> . ' +
+        '<#nspiron> rdf:type <#Device> . ' +
+        '<#spiron> rdf:type <#Device> . ' +
+        '<#piron> rdf:type <#Device> . ' +
+        '<#iron> rdf:type <#Device> . ' +
+        '<#ron> rdf:type <#Device> . ' +
+        '<#on> rdf:type <#Device> . ' +
+        '<#n> rdf:type <#Device> . ' +
         '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+        '<#nspiron> <#hasConnection> <#Ethernet100mbps> . ' +
+        '<#ron> <#hasConnection> <#Bluetooth> . ' +
         '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#equest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#quest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#uest1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#est1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#st1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#t1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#> rdf:type <#RequestDeviceInfo> . ' +
         '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
-        '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        '<#nspiron> <#hasName> "Dell Inspiron 15" . ' +
+        '<#spiron> <#hasName> "Dell Inspiron 1" . ' +
+        '<#piron> <#hasName> "Dell Inspiron " . ' +
+        '<#iron> <#hasName> "Dell Inspiron" . ' +
+        '<#ron> <#hasName> "Dell Inspiro" . ' +
+        '<#on> <#hasName> "Dell Inspir" . ' +
+        '<#n> <#hasName> "Dell Inspi" . ' +
+        '<#Wifi> rdf:type <#ConnectionDescription> . ' +
+        '<#Bluetooth> rdf:type <#ConnectionDescription> . ' +
+        '<#Zigbee> rdf:type <#ConnectionDescription> . ' +
+        '<#Ethernet100mbps> rdf:type <#ConnectionDescription> . ' +
+        '}');
         query.should.exist;
         results = reasoner.answerQuery(query);
-        console.log((new Date().getTime() - ts) + ' ms');
+        console.log((new Date().getTime() - ts) + ' ms ');
         after = reasoner.aBox.convertAssertions().length;
         after.should.eql(before);
     });
