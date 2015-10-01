@@ -394,7 +394,7 @@ TrimQueryABox.prototype = {
             sub = triple.subject;
             pred = triple.predicate;
             obj = triple.object;
-            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value, [], false));
+            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value, [], true));
         }
 
         return newFacts;

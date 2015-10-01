@@ -78,10 +78,21 @@ IRIs = {
     /** Bottom data property. */
     BOTTOM_DATA_PROPERTY: 'http://www.w3.org/2002/07/owl#bottomDataProperty',
     /** Equivalent Classes axiom */
-    EQUIVALENT_CLASS: 'http://www.w3.org/2002/07/owl#equivalentClass'
+    EQUIVALENT_CLASS: 'http://www.w3.org/2002/07/owl#equivalentClass',
+    /** Same as property */
+    SAMEAS: 'http://www.w3.org/2002/07/owl#sameAs'
+};
+
+Prefixes = {
+    "owl:sameAs": IRIs.SAMEAS,
+    "owl:Thing": IRIs.THING,
+    "owl:Nothing": IRIs.NOTHING,
+    "owl:Class": IRIs.CLASS,
+    "owl:ObjectProperty": IRIs.OPROP
 };
 
 module.exports = {
     ExpressionTypes: ExpressionTypes,
-    IRIs: IRIs
+    IRIs: IRIs,
+    Prefixes: Prefixes
 };

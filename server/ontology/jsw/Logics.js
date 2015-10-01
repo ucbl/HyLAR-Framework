@@ -8,6 +8,10 @@ var Combinatorics = require('js-combinatorics'),
     Utils = require('./Utils'),
     _ = require('lodash');
 
+String.prototype.toRuleSet = function() {
+    return Core.parseStrRule(this);
+};
+
 /**
  * Checks if a set of facts is a subset of another set of facts.
  * @param fs1 the superset
@@ -117,7 +121,12 @@ Rule.prototype = {
      * @returns {Array|*}
      */
     findConjunctionsWith: function(facts) {
-        var combo = Combinatorics.baseN(facts, this.leftFacts.length);
+        var combo;
+        try {
+            combo = Combinatorics.baseN(facts, this.leftFacts.length);
+        } catch(e) {
+            throw 'Combinatorics exception';
+        }
         return combo.toArray();
     },
 
@@ -211,6 +220,13 @@ Rule.prototype = {
  */
 Fact = function(name, li, ri, originFacts, expl) {
     if(!originFacts) originFacts = [];
+    if(originFacts.length > 0 && expl == true) {
+        throw 'A fact cannot be explicit if it has one or more origin facts.';
+    }
+    if(originFacts.length == 0 && expl == false) {
+        throw 'A fact cannot be implicit if it has no origin facts.';
+    }
+
     this.name = name;
     this.leftIndividual = li;
     this.rightIndividual = ri;
@@ -225,7 +241,7 @@ Fact.prototype = {
      * @returns {string}
      */
     toString: function() {
-        return this.name + '(' + this.leftIndividual + ',' + this.rightIndividual + ')';
+        return 'T(' + this.leftIndividual + ', ' + this.name + ', ' + this.rightIndividual + ')';
     },
 
     /**
@@ -427,14 +443,55 @@ Core = {
                 var fact = fs[fkey],
                     fpat = fact.patternize(),
                     pFact = fpat.fact;
-                    if(pFact.relatedTo(pRule)) {
-                        restriction.push(rule);
-                        break;
-                    }
-
-            }
+                if(pFact.relatedTo(pRule)) {
+                    restriction.push(rule);
+                    break;
+                }
+        }
         }
         return restriction;
+    },
+
+    /**
+     * Parses string rules in the form
+     * T(?s, ?p1, ?o) ^ T(?s ?p2 ?o) -> T(?s, ?p2, ?o) ...
+     * x-- SPACES ARE MANDATORY --x
+     * @param str
+     */
+    parseStrRule: function(str) {
+        var leftRgxp = /.+ ->/g,
+            rightRgxp = /-> .+/g,
+            conj = ' ^ ',
+            leftMatches = str.match(leftRgxp),
+            rightMatches = str.match(rightRgxp),
+            leftfs = [], ruleSet = [];
+
+        if(str.length) {
+
+            var lFacts = leftMatches[0].replace(' ->', '').split(conj),
+                rFacts = rightMatches[0].replace('-> ', '').split(conj);
+
+            for (var key in lFacts) {
+                leftfs.push(this.parseStrFact(lFacts[key]));
+            }
+
+            for (var key in rFacts) {
+                var rFact = this.parseStrFact(rFacts[key]);
+                ruleSet.push(new Rule(leftfs, rFact));
+            }
+        }
+
+        return ruleSet;
+    },
+
+    /**
+     * Parse fact in the form
+     * T(?s, ?p1, ?o)
+     */
+    parseStrFact: function(str) {
+        var membersRgxp = /\((.+), (.+), (.+)\)/i,
+            matches = str.match(membersRgxp);
+        return new Fact(matches[2], matches[1], matches[3], [], true);
     }
 };
 

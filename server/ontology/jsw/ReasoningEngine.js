@@ -28,7 +28,7 @@ module.exports = {
         F = Logics.core.substractFactSets(F, consequencesToDel);
 
         // Insertion
-        var consequencesToAdd = Logics.core.evaluateRuleSet(R, F)
+        var consequencesToAdd = Logics.core.evaluateRuleSet(R, F);
         var allFacts = Logics.core.mergeFactSets(consequencesToAdd, F);
 
         return {
