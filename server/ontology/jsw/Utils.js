@@ -77,31 +77,6 @@ module.exports = {
     },
 
     /**
-     * Concat collection without duplicates (cloning).
-     * @param arr1
-     * @param arr2
-     * @returns {*}
-     */
-    uniqConcat: function(arr1, arr2) {
-        var bigger, lower;
-
-        if(arr1.length > arr2.length) {
-            bigger = _.cloneDeep(arr1);
-            lower = _.cloneDeep(arr2);
-        } else {
-            bigger = _.cloneDeep(arr2);
-            lower = _.cloneDeep(arr1);
-        }
-
-        for(var key in lower) {
-            if(JSON.stringify(bigger).indexOf(JSON.stringify(lower[key])) === -1) {
-                bigger.push(lower[key]);
-            }
-        }
-        return bigger;
-    },
-
-    /**
      * Simple HelloWorld
      * @param req
      * @param res

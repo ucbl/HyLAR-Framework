@@ -17,10 +17,12 @@ var Queue = require('./JswQueue'),
  * Reasoner is an OWL-EL create. Currently, it has some limitations and does not allow
  * reasoning on full EL++, but it does cover EL+ and its minor extensions.
  */
-Reasoner = function (ontology) {
+Reasoner = function (ontology, RMethod) {
     var preConsequences, preTriplesImplicit,
         preTriplesExplicit, preInsertStatement,
         facts;
+
+    if (!RMethod) RMethod = ReasoningEngine.naive;
 
     /** Including RL **/
     this.rules = OWL2RL.rules;
@@ -33,7 +35,7 @@ Reasoner = function (ontology) {
     /** Preparing the aBox */
     this.aBox = new TrimQueryABox.trimQueryABox();
     facts = Logics.core.mergeFactSets(this.resultOntology.convertEntities(), this.resultOntology.convertAxioms());
-    preConsequences = ReasoningEngine.naive(facts, [], [], this.rules);
+    preConsequences = RMethod(facts, [], [], this.rules);
     preTriplesImplicit = this.aBox.consequencesToTriples(preConsequences.fi, false);
     preTriplesExplicit = this.aBox.consequencesToTriples(preConsequences.fe, true);
     preInsertStatement = this.aBox.createInsertStatement(preTriplesExplicit.concat(preTriplesImplicit));
@@ -928,7 +930,7 @@ Reasoner.prototype = {
      *
      * @param query An object representing a query to be answered.
      */
-    answerQuery: function (query) {
+    answerQuery: function (query, RMethod) {
         if (!query) {
 
             throw 'The query is not specified!';
@@ -981,7 +983,7 @@ Reasoner.prototype = {
             }
         }
 
-        var results = this.aBox.answerQuery(query, this.resultOntology, this.rules);
+        var results = this.aBox.answerQuery(query, this.resultOntology, this.rules, RMethod);
         return results;
     },
 

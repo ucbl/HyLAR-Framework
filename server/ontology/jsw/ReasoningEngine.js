@@ -7,7 +7,6 @@ var Logics = require('./Logics');
 module.exports = {
     /**
      * A naïve reasoner that recalculates the entire knowledge base
-     * wtr. a set of triples to insert and a set of triples to delete.
      * @param triplesIns
      * @param triplesDel
      * @param rules
@@ -17,6 +16,7 @@ module.exports = {
         // Total facts
         F = Logics.core.mergeFactSets(F, FeAdd);
 
+        // Deletion
         var consequencesToDel = FeDel;
         for (var key in consequencesToDel) {
             var factToDel = consequencesToDel[key],
@@ -27,12 +27,8 @@ module.exports = {
         }
         F = Logics.core.substractFactSets(F, consequencesToDel);
 
-        var consequencesToAdd = [];
-        for (var key in R) {
-            var subsequentConsequences = R[key].consequences(Logics.core.mergeFactSets(consequencesToAdd, F));
-            consequencesToAdd = Logics.core.mergeFactSets(consequencesToAdd, subsequentConsequences);
-        }
-
+        // Insertion
+        var consequencesToAdd = Logics.core.evaluateRuleSet(R, F)
         var allFacts = Logics.core.mergeFactSets(consequencesToAdd, F);
 
         return {
@@ -57,18 +53,18 @@ module.exports = {
 
         // Deletion
         if (FeDel && FeDel.length) {
-            Rdel = R.restrictTo(Logics.core.mergeFactSets(FeDel, FiDel));
-            FiDel = Rdel.evaluate(Logics.core.mergeFactSets(F, FeDel));
+            Rdel = Logics.core.restrictRuleSet(R, Logics.core.mergeFactSets(FeDel, FiDel));
+            FiDel = Logics.core.evaluateRuleSet(Rdel, Logics.core.mergeFactSets(F, FeDel));
             F = Logics.core.substractFactSets(F, Logics.core.mergeFactSets(FeDel, FiDel));
 
-            Rred = R.restrictTo(R, Logics.core.mergeFactSets(FiDel));
-            FiAdd = Rred.evaluate(Logics.core.mergeFactSets(F, FiDel));
+            Rred = Logics.core.restrictRuleSet(R, FiDel);
+            FiAdd = Logics.core.evaluateRuleSet(Rred, Logics.core.mergeFactSets(F, FiDel));
         }
 
         // Insertion
         if (FeAdd && FeAdd.length) {
-            Rins = this.restrictTo(R, Logics.core.mergeFactSets(F, FeAdd, FiAdd));
-            FiAdd = Logics.core.mergeFactSets(FiAdd, this.evaluate(Rins, Logics.core.mergeFactSets(F, FeAdd, FiAdd)));
+            Rins = Logics.core.restrictRuleSet(R, Logics.core.mergeFactSets(F, FeAdd, FiAdd));
+            FiAdd = Logics.core.mergeFactSets(FiAdd, Logics.core.evaluateRuleSet(Rins, Logics.core.mergeFactSets(F, FeAdd, FiAdd)));
             F = Logics.core.mergeFactSets(F, Logics.core.mergeFactSets(FeAdd, FiAdd));
         }
 

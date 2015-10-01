@@ -40,8 +40,8 @@ TrimQueryABox.prototype = {
      * @param query RDF query to answer.
      * @return Data set containing the results matching the query.
      */
-    answerQuery: function (query, ontology, rules) {
-        var sql = this.createSql(query, ontology, rules), sqlQueries = sql.split(';').slice(0,-1);
+    answerQuery: function (query, ontology, rules, RMethod) {
+        var sql = this.createSql(query, ontology, rules, RMethod), sqlQueries = sql.split(';').slice(0,-1);
 
         try {
             return this.processSql(sqlQueries, false);
@@ -171,14 +171,16 @@ TrimQueryABox.prototype = {
      * @param query jsw.rdf.Query to return the SQL representation for.
      * @return string representation of the given RDF query.
      */
-    createSql: function (query, ontology, R) {
+    createSql: function (query, ontology, R, RMethod) {
         var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue,
             predicateField, select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable,
             vars, varCount, varField, varFields, varIndex, consequences, F;
 
+        if (!RMethod) RMethod = ReasoningEngine.naive;
+
         if (query.statementType == 'DELETE') {
             F = this.convertAssertions();
-            consequences = ReasoningEngine.naive(new Array(), this.convertTriples(query.triples), F, R);
+            consequences = RMethod(new Array(), this.convertTriples(query.triples), F, R);
             query.triples = this.consequencesToTriples(consequences.fe, true).concat(
                             this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();
@@ -186,7 +188,7 @@ TrimQueryABox.prototype = {
 
         } else if (query.statementType == 'INSERT') {
             F = this.convertAssertions();
-            consequences = ReasoningEngine.naive(this.convertTriples(query.triples), new Array(), F, R);
+            consequences = RMethod(this.convertTriples(query.triples), new Array(), F, R);
             query.triples = this.consequencesToTriples(consequences.fe, true).concat(
                             this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();

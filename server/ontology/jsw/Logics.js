@@ -328,6 +328,12 @@ Fact.prototype = {
             }
         }
         return new Fact(this.name, leftIndividual, rightIndividual);
+    },
+
+    relatedTo: function(rule) {
+        var facts = rule.leftFacts;
+        if(this.appearsIn(facts)) return true;
+        return false;
     }
 };
 
@@ -400,6 +406,35 @@ Core = {
             }
         }
         return fR;
+    },
+
+    evaluateRuleSet: function(rs, fs) {
+        var cons = []
+        for (var key in rs) {
+            var subsequentConsequences = rs[key].consequences(this.mergeFactSets(cons, fs));
+            cons = this.mergeFactSets(cons, subsequentConsequences);
+        }
+        return cons;
+    },
+
+    restrictRuleSet: function(rs, fs) {
+        var restriction = []
+        for(var rkey in rs) {
+            var rule = rs[rkey],
+                rpat = rule.patternize(),
+                pRule = rpat.rule;
+            for (var fkey in fs) {
+                var fact = fs[fkey],
+                    fpat = fact.patternize(),
+                    pFact = fpat.fact;
+                    if(pFact.relatedTo(pRule)) {
+                        restriction.push(rule);
+                        break;
+                    }
+
+            }
+        }
+        return restriction;
     }
 };
 

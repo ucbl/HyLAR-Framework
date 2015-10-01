@@ -15,10 +15,11 @@ var JswSPARQL = require('../server/ontology/jsw/JswSPARQL');
 
 var Logics = require('../server/ontology/jsw/Logics');
 var Utils = require('../server/ontology/jsw/Utils');
+var ReasoningEngine = require('../server/ontology/jsw/ReasoningEngine');
 
 var owl, ontology, reasoner, rule, fipa = '/../server/ontologies/fipa.owl', asawoo = '/../server/ontologies/fipa.owl';
 
-var before, after, bIns;
+var before, after, bIns, ts, tf;
 
 describe('File access', function () {
     it('should access the file', function () {
@@ -37,18 +38,22 @@ describe('File reading', function () {
 
 describe('Ontology Parsing', function () {
     it('should parse the ontology', function () {
+        ts = new Date().getTime();
         ontology = JswParser.parse(owl, function (err) {
             console.err(err);
         });
         ontology.should.exist;
+        console.log((new Date().getTime() - ts) + ' ms');
     });
 });
 
 describe('Ontology Classification', function () {
     it('should classify the ontology', function () {
-        reasoner = Reasoner.create(ontology);
+        ts = new Date().getTime();
+        reasoner = Reasoner.create(ontology, ReasoningEngine.incremental);
         reasoner.should.exist;
         before = reasoner.aBox.convertAssertions().length;
+        console.log((new Date().getTime() - ts) + ' ms');
     });
 
     it('should convert axioms', function () {
@@ -59,15 +64,17 @@ describe('Ontology Classification', function () {
 
 describe('INSERT query with subsumption', function () {
     var query, results;
-    it('should parse the INSERT statement', function () {
+    it('should parse the INSERT statement and infer data', function () {
+        ts = new Date().getTime();
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-            'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
-            '<#Inspiron> <#hasConnection> <#Wifi> . ' +
-            '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
-            '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
-            '<#Wifi> rdf:type <#ConnectionDescription> . }');
+        'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
+        '<#Inspiron> <#hasConnection> <#Wifi> . ' +
+        '<#Request1> rdf:type <#RequestDeviceInfo> . ' +
+        '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
+        '<#Wifi> rdf:type <#ConnectionDescription> . }');
         query.should.exist;
-        results = reasoner.answerQuery(query);
+        results = reasoner.answerQuery(query, ReasoningEngine.incremental);
+        console.log((new Date().getTime() - ts) + ' ms');
     });
 });
 
@@ -122,7 +129,7 @@ describe('SELECT query with subsumption', function () {
     it('should find a dataProperty with two variables', function () {
         // DataProperty with two variables test
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-            'SELECT ?a ?b { ?a <#hasName> ?b . }');
+        'SELECT ?a ?b { ?a <#hasName> ?b . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
         _.findIndex(results[0], {'a': '#Inspiron'}).should.be.above(-1);
@@ -133,7 +140,8 @@ describe('SELECT query with subsumption', function () {
 
 describe('Re-INSERT exact same query', function () {
     var query;
-    it('should not change anything', function () {
+    it('should not change anything (insert)', function () {
+        ts = new Date().getTime();
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
         'INSERT DATA { <#Inspiron> rdf:type <#Device> . ' +
         '<#Inspiron> <#hasConnection> <#Wifi> . ' +
@@ -142,7 +150,8 @@ describe('Re-INSERT exact same query', function () {
         '<#Wifi> rdf:type <#ConnectionDescription> . }');
         query.should.exist;
         bIns = reasoner.aBox.convertAssertions().length;
-        reasoner.answerQuery(query);
+        reasoner.answerQuery(query, ReasoningEngine.incremental);
+        console.log((new Date().getTime() - ts) + ' ms');
         reasoner.aBox.convertAssertions().length.should.eql(bIns);
     });
 });
@@ -150,6 +159,7 @@ describe('Re-INSERT exact same query', function () {
 describe('DELETE query with subsumption', function () {
     var query, results;
     it('should DELETE with subsumptions', function () {
+        ts = new Date().getTime();
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
         'DELETE DATA { <#Inspiron> rdf:type <#Device> . ' +
         '<#Inspiron> <#hasConnection> <#Wifi> . ' +
@@ -157,7 +167,8 @@ describe('DELETE query with subsumption', function () {
         '<#Inspiron> <#hasName> "Dell Inspiron 15R" . ' +
         '<#Wifi> rdf:type <#ConnectionDescription> . }');
         query.should.exist;
-        results = reasoner.answerQuery(query);
+        results = reasoner.answerQuery(query, ReasoningEngine.incremental);
+        console.log((new Date().getTime() - ts) + ' ms');
         after = reasoner.aBox.convertAssertions().length;
         after.should.eql(before);
     });
