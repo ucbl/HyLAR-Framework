@@ -10,7 +10,8 @@ var Queue = require('./JswQueue'),
     JswRDF = require('./JswRDF'),
     JswOntology = require('./JswOntology'),
     OWL2RL = require('./OWL2RL'),
-    Logics = require('./Logics');
+    Logics = require('./Logics'),
+    ReasoningEngine = require('./ReasoningEngine');
 
 /**
  * Reasoner is an OWL-EL create. Currently, it has some limitations and does not allow
@@ -32,7 +33,7 @@ Reasoner = function (ontology) {
     /** Preparing the aBox */
     this.aBox = new TrimQueryABox.trimQueryABox();
     facts = Logics.core.mergeFactSets(this.resultOntology.convertEntities(), this.resultOntology.convertAxioms());
-    preConsequences = this.aBox.naiveReasoning(facts, [], this.rules);
+    preConsequences = ReasoningEngine.naive(facts, [], [], this.rules);
     preTriplesImplicit = this.aBox.consequencesToTriples(preConsequences.fi, false);
     preTriplesExplicit = this.aBox.consequencesToTriples(preConsequences.fe, true);
     preInsertStatement = this.aBox.createInsertStatement(preTriplesExplicit.concat(preTriplesImplicit));

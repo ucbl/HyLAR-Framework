@@ -2,7 +2,7 @@
  * Created by Spadon on 17/10/2014.
  */
 var Logics = require('./Logics'),
-    IncrementalReasoner = require('./IncrementalReasoning'),
+    ReasoningEngine = require('./ReasoningEngine'),
     Utils = require('./Utils'),
     _ = require('lodash');
 
@@ -172,19 +172,21 @@ TrimQueryABox.prototype = {
      * @return string representation of the given RDF query.
      */
     createSql: function (query, ontology, R) {
-        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue, predicateField,
-            select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable, vars, varCount,
-            varField, varFields, varIndex, consequences;
+        var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue,
+            predicateField, select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable,
+            vars, varCount, varField, varFields, varIndex, consequences, F;
 
         if (query.statementType == 'DELETE') {
-            consequences = this.naiveReasoning(new Array(), this.convertTriples(query.triples),  R);
+            F = this.convertAssertions();
+            consequences = ReasoningEngine.naive(new Array(), this.convertTriples(query.triples), F, R);
             query.triples = this.consequencesToTriples(consequences.fe, true).concat(
                             this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();
             return this.createInsertStatement(query.triples).join('');
 
         } else if (query.statementType == 'INSERT') {
-            consequences = this.naiveReasoning(this.convertTriples(query.triples), new Array(), R);
+            F = this.convertAssertions();
+            consequences = ReasoningEngine.naive(this.convertTriples(query.triples), new Array(), F, R);
             query.triples = this.consequencesToTriples(consequences.fe, true).concat(
                             this.consequencesToTriples(consequences.fi, false));
             this.purgeABox();
@@ -394,42 +396,6 @@ TrimQueryABox.prototype = {
         }
 
         return newFacts;
-    },
-
-    /**
-     * A naïve reasoner that recalculates the entire knowledge base
-     * wtr. a set of triples to insert and a set of triples to delete.
-     * @param triplesIns
-     * @param triplesDel
-     * @param rules
-     * @returns {{fi: *, fe: *}}
-     */
-    naiveReasoning: function(fAdd, fDel, rules) {
-        // Total facts
-        var F = Logics.core.mergeFactSets(this.convertAssertions(), fAdd);
-
-        var consequencesToDel = fDel;
-        for (var key in consequencesToDel) {
-            var factToDel = consequencesToDel[key],
-                factToDelConsequences;
-            factToDel.__proto__ = Logics.fact().__proto__;
-            factToDelConsequences = factToDel.getConsequencesIn(F);
-            consequencesToDel = Logics.core.mergeFactSets(consequencesToDel, factToDelConsequences);
-        }
-        F = Logics.core.substractFactSets(F, consequencesToDel);
-
-        var consequencesToAdd = [];
-        for (var key in rules) {
-            var subsequentConsequences = rules[key].consequences(Logics.core.mergeFactSets(consequencesToAdd, F));
-            consequencesToAdd = Logics.core.mergeFactSets(consequencesToAdd, subsequentConsequences);
-        }
-
-        var allFacts = Logics.core.mergeFactSets(consequencesToAdd, F);
-
-        return {
-            fi: Logics.core.getOnlyImplicitFacts(allFacts),
-            fe: Logics.core.getOnlyExplicitFacts(allFacts)
-        };
     },
 
     /** Used to suit JSW requirements
