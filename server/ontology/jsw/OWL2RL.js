@@ -65,5 +65,5 @@ module.exports = {
         'T(?c1, owl:equivalentClass, ?c2) ^ T(?x, rdf:type, ?c2) -> T(?x, rdf:type, ?c1)'
             .toRuleSet())
 
-        .slice(0, 10)
+        .slice(0,3)
 };

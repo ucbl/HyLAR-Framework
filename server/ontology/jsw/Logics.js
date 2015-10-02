@@ -134,19 +134,16 @@ Rule.prototype = {
      * Returns the consequences of the facts being applied to the rule.
      * @returns {boolean}
      */
-    consequences: function(originalFacts, consequences) {
-
-        if (!consequences) consequences = [];
+    consequences: function(facts) {
 
         var thisPatternized = this.patternize(),
             thisRule = thisPatternized.rule,
             initialMap = thisPatternized.map,
-            allFacts = Core.mergeFactSets(originalFacts, consequences),
             possibleConjunctions,
             candidateConsequences = [];
 
         // Calculation of all possible permuted combinations
-        possibleConjunctions = this.findConjunctionsWith(allFacts);
+        possibleConjunctions = this.findConjunctionsWith(facts);
 
         // Checks if any conjunction shares the same pattern as current rule
         for (var key in possibleConjunctions) {
@@ -163,11 +160,11 @@ Rule.prototype = {
                 }
             }
         }
-        if(containsFacts(consequences, candidateConsequences)) {
-            return consequences;
+        if(containsFacts(facts, candidateConsequences)) {
+            return facts;
         }
-        var merged = Core.mergeFactSets(consequences, candidateConsequences);
-        return this.consequences(originalFacts, merged);
+        facts = Core.mergeFactSets(facts, candidateConsequences);
+        return this.consequences(facts);
     },
 
     /**
@@ -348,7 +345,10 @@ Fact.prototype = {
 
     relatedTo: function(rule) {
         var facts = rule.leftFacts;
-        if(this.appearsIn(facts)) return true;
+        for (var key in facts) {
+            if(this.name == facts[key].name) return true;
+        }
+
         return false;
     }
 };
@@ -424,30 +424,35 @@ Core = {
         return fR;
     },
 
+    complementaryOf: function(fs1, fs2) {
+        var comp = [];
+        for (var key in fs2) {
+            var f2 = fs2[key];
+            if(!f2.appearsIn(fs1)) comp.push(f2);
+        }
+        return comp;
+    },
+
     evaluateRuleSet: function(rs, fs) {
-        var cons = []
+        var cons = [];
         for (var key in rs) {
             var subsequentConsequences = rs[key].consequences(this.mergeFactSets(cons, fs));
             cons = this.mergeFactSets(cons, subsequentConsequences);
         }
-        return cons;
+        return this.substractFactSets(fs, cons);
     },
 
     restrictRuleSet: function(rs, fs) {
         var restriction = []
         for(var rkey in rs) {
-            var rule = rs[rkey],
-                rpat = rule.patternize(),
-                pRule = rpat.rule;
+            var rule = rs[rkey];
             for (var fkey in fs) {
-                var fact = fs[fkey],
-                    fpat = fact.patternize(),
-                    pFact = fpat.fact;
-                if(pFact.relatedTo(pRule)) {
+                var fact = fs[fkey];
+                if(fact.relatedTo(rule)) {
                     restriction.push(rule);
                     break;
                 }
-        }
+            }
         }
         return restriction;
     },
