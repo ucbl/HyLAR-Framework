@@ -134,37 +134,53 @@ Rule.prototype = {
      * Returns the consequences of the facts being applied to the rule.
      * @returns {boolean}
      */
-    consequences: function(facts) {
+    consequences: function(newFacts, originalFacts) {
 
+        var allFacts = Core.mergeFactSets(newFacts, originalFacts);
+
+        // Calculation of all possible permuted combinations
+        var conjAll = this.findConjunctionsWith(allFacts),
+            conjOrig = this.findConjunctionsWith(Core.substractFactSets(originalFacts, newFacts)),
+            consAll = [], consOrig = [];
+
+        // Checks if any conjunction shares the same pattern as current rule
+        for (var key in conjAll) {
+            var cons = this.matches(conjAll[key]);
+            if(cons) consAll = Core.mergeFactSets([cons], consAll);
+        }
+
+        for (var key in conjOrig) {
+            var cons = this.matches(conjOrig[key]);
+            if(cons) consOrig = Core.mergeFactSets([cons], consOrig);
+        }
+
+        var consDiff = Core.substractFactSets(consAll, consOrig);
+
+        if(Core.substractFactSets(consDiff, newFacts) == 0) {
+            return newFacts;
+        } else {
+            newFacts = Core.mergeFactSets(consDiff, newFacts);
+            return this.consequences(newFacts, originalFacts);
+        }
+    },
+
+    matches: function(conj) {
         var thisPatternized = this.patternize(),
             thisRule = thisPatternized.rule,
             initialMap = thisPatternized.map,
-            possibleConjunctions,
-            candidateConsequences = [];
 
-        // Calculation of all possible permuted combinations
-        possibleConjunctions = this.findConjunctionsWith(facts);
+            patternized = new Rule(conj, UNKNOWN).patternize(),
+            shadowRule = patternized.rule,
+            map = patternized.map;
 
-        // Checks if any conjunction shares the same pattern as current rule
-        for (var key in possibleConjunctions) {
-            var patternized = new Rule(possibleConjunctions[key], UNKNOWN).patternize(),
-                shadowRule = patternized.rule,
-                map = patternized.map;
-
-            if(shadowRule.leftFactsToString() === thisRule.leftFactsToString()) {
-                var reattr = thisRule.rightFact.reattribute(Utils.completeMap(map,initialMap));
-                reattr.obtainedFrom = possibleConjunctions[key];
-                reattr.explicit = false;
-                if (!(reattr.appearsIn(candidateConsequences))) {
-                    candidateConsequences.push(reattr);
-                }
-            }
+        if(shadowRule.leftFactsToString() === thisRule.leftFactsToString()) {
+            var reattr = thisRule.rightFact.reattribute(Utils.completeMap(map,initialMap));
+            reattr.obtainedFrom = conj;
+            reattr.explicit = false;
+            return reattr;
+        } else {
+            return false;
         }
-        if(containsFacts(facts, candidateConsequences)) {
-            return facts;
-        }
-        facts = Core.mergeFactSets(facts, candidateConsequences);
-        return this.consequences(facts);
     },
 
     /**
@@ -433,13 +449,14 @@ Core = {
         return comp;
     },
 
-    evaluateRuleSet: function(rs, fs) {
-        var cons = [];
+    evaluateRuleSet: function(rs, fs, newFacts) {
+        var cons = [],
+            newCons = [];
         for (var key in rs) {
-            var subsequentConsequences = rs[key].consequences(this.mergeFactSets(cons, fs));
-            cons = this.mergeFactSets(cons, subsequentConsequences);
+            newCons = rs[key].consequences(newFacts, this.mergeFactSets(cons, fs));
+            cons = this.mergeFactSets(cons, newCons);
         }
-        return this.substractFactSets(fs, cons);
+        return cons;
     },
 
     restrictRuleSet: function(rs, fs) {
