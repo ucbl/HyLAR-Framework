@@ -40,6 +40,7 @@ var mergeFacts = function(f1, f2) {
     }
     fR.__proto__ = Fact.prototype;
     fR.obtainedFrom = _.union(f1.obtainedFrom, f2.obtainedFrom);
+    fR.graphs = _.union(f1.graphs, f2.graphs);
     if (fR.obtainedFrom.length > 0) fR.explicit = false;
     return fR;
 };
@@ -231,7 +232,7 @@ Rule.prototype = {
  * @param originFacts array of facts causing this
  * @constructor
  */
-Fact = function(name, li, ri, originFacts, expl) {
+Fact = function(name, li, ri, originFacts, expl, graphs) {
     if(!originFacts) originFacts = [];
     if(originFacts.length > 0 && expl == true) {
         throw 'A fact cannot be explicit if it has one or more origin facts.';
@@ -239,12 +240,14 @@ Fact = function(name, li, ri, originFacts, expl) {
     if(originFacts.length == 0 && expl == false) {
         throw 'A fact cannot be implicit if it has no origin facts.';
     }
+    //if(!graph) graph = '';
 
     this.name = name;
     this.leftIndividual = li;
     this.rightIndividual = ri;
     this.obtainedFrom = originFacts;
     this.explicit = expl;
+    this.graphs = graphs || [];
 };
 
 Fact.prototype = {

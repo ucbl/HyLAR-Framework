@@ -6,7 +6,7 @@ var Logics = require('./Logics');
 
 module.exports = {
     /**
-     * A na�ve reasoner that recalculates the entire knowledge base
+     * A naive reasoner that recalculates the entire knowledge base
      * @param triplesIns
      * @param triplesDel
      * @param rules

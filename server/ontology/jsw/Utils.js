@@ -23,9 +23,7 @@ module.exports = {
     stringifyNoComma: function(json) {
         if(json.length == 0) return '';
         var str =JSON.stringify(json);
-        return str.replace(/",/g, '"-')
-                .replace(/},/g, '}-')
-                .replace(/],/g, ']-');
+        return str.replace(/,/g, '-----');
     },
 
     /**
@@ -34,9 +32,7 @@ module.exports = {
      */
     unStringifyAddCommas: function(str) {
         try {
-            return JSON.parse(str.replace(/]-/g, '],')
-                .replace(/}-/g, '},')
-                .replace(/"-/g, '",'));
+            return JSON.parse(str.replace(/-----/g, ','));
         } catch(e) {
             return [];
         }

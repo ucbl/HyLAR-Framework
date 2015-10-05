@@ -45,7 +45,7 @@ describe('Ontology Parsing', function () {
             console.err(err);
         });
         ontology.should.exist;
-        console.log((new Date().getTime() - ts) + ' ms ');
+        console.log('\n' + (new Date().getTime() - ts) + ' ms ');
     });
 });
 
