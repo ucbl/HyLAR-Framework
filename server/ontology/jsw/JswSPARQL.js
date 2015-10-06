@@ -200,47 +200,13 @@ SPARQL = {
 // Parse SELECT, INSERT DATA or DELETE DATA clauses.
         if (tokenIndex === tokenCount) {
             return query;
-        } else if (token.toUpperCase() == 'DELETE') {
-            //  DELETE DATA STATEMENT @author Mehdi Terdjimi
-
+        } else if (token.toUpperCase() == 'DELETE' || token.toUpperCase() == 'INSERT') {
+            //  UPDATE STATEMENT @author Mehdi Terdjimi
+            query.statementType = token;
             tokenIndex++;
             token = tokens[tokenIndex];
 
-            if (token != 'DATA')  throw 'Expected DATA after DELETE, having ' + token;
-
-            tokenIndex++;
-            token = tokens[tokenIndex];
-
-            if (token != '{') throw 'Expected "{", having ' + token;
-
-            for (tokenIndex++; tokenIndex < tokens.length; tokenIndex++) {
-                token = tokens[tokenIndex];
-                if (!(token == '}' || token == '.')) {
-
-                    subject = this.parseVarOrTerm(token, query);
-
-                    tokenIndex++;
-                    token = tokens[tokenIndex];
-
-                    predicate = this.parseVarOrTerm(token, query);
-
-                    tokenIndex++;
-                    token = tokens[tokenIndex];
-
-                    object = this.parseVarOrTerm(token, query);
-                    query.addTriple(subject, predicate, object);
-
-                }
-            }
-            query.statementType = 'DELETE';
-
-        } else if (token.toUpperCase() == 'INSERT') {
-            //  INSERT DATA STATEMENT @author Mehdi Terdjimi
-
-            tokenIndex++;
-            token = tokens[tokenIndex];
-
-            if (token != 'DATA')  throw 'Expected DATA after INSERT, having ' + token;
+            if (token != 'DATA')  throw 'Expected DATA after ' + query.statementType +', having ' + token;
 
             tokenIndex++;
             token = tokens[tokenIndex];
@@ -249,27 +215,20 @@ SPARQL = {
 
             for (tokenIndex++; tokenIndex < tokens.length; tokenIndex++) {
                 token = tokens[tokenIndex];
-                if (!(token == '}' || token == '.')) {
-
-                    subject = this.parseVarOrTerm(token, query);
-
-                    tokenIndex++;
+                if(token == 'GRAPH') {
+                    var parsed = this.parseGraph(tokens, tokenIndex, query),
+                        query = parsed.query,
+                        tokenIndex = parsed.index;
+                    token = token[tokenIndex];
+                } else if(!(token == '}' || token == '.')) {
+                    var parsed = this.parseTriple(tokens, tokenIndex, query),
+                        query = parsed.query,
+                        tokenIndex = parsed.index;
                     token = tokens[tokenIndex];
-
-                    predicate = this.parseVarOrTerm(token, query);
-
-                    tokenIndex++;
-                    token = tokens[tokenIndex];
-
-                    object = this.parseVarOrTerm(token, query);
-                    query.addTriple(subject, predicate, object);
-
                 }
             }
-            query.statementType = 'INSERT';
-
         } else if (token.toUpperCase() !== 'SELECT') {
-            throw 'SELECT or INSERT statement expected, but "' + token + '" was found!';
+            throw 'SELECT, INSERT or DELETE statement expected, but "' + token + '" was found!';
         } else {
             query.statementType = 'SELECT';
             tokenIndex += 1;
@@ -497,6 +456,55 @@ SPARQL = {
         }
 
         return query;
+    },
+
+    parseGraph: function(tokens, tokenIndex, query) {
+        tokenIndex++;
+        var token = tokens[tokenIndex], uri;
+        try {
+            uri = this.parseAbsoluteIri(token);
+        } catch(e) {
+            throw 'Expected URI, thrown ' + e.toString();
+        }
+        tokenIndex++;
+        token = tokens[tokenIndex];
+        if (token != '{') throw 'Expected "{", having ' + token;
+
+        for (tokenIndex++; tokenIndex < tokens.length; tokenIndex++) {
+            token = tokens[tokenIndex];
+            if(token == '}') break;
+            if(!(token == '}' || token == '.')) {
+                var parsed = this.parseTriple(tokens, tokenIndex, query, uri),
+                    query = parsed.query,
+                    tokenIndex = parsed.index;
+            }
+        }
+
+        return {
+            index: tokenIndex,
+            query: query
+        }
+    },
+
+    parseTriple: function(tokens, tokenIndex, query, uri) {
+        var subject, predicate, object, token = tokens[tokenIndex];
+        subject = this.parseVarOrTerm(token, query);
+
+        tokenIndex++;
+        token = tokens[tokenIndex];
+
+        predicate = this.parseVarOrTerm(token, query);
+
+        tokenIndex++;
+        token = tokens[tokenIndex];
+
+        object = this.parseVarOrTerm(token, query);
+        query.addTriple(subject, predicate, object, uri);
+
+        return {
+            index: tokenIndex,
+            query: query
+        }
     },
 
     /**

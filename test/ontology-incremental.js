@@ -107,6 +107,81 @@ describe('[I] INSERT query with subsumption', function () {
     });
 });
 
+describe('INSERT query into graph', function () {
+    var query, results;
+    it('should parse the INSERT statement and infer data', function () {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'INSERT DATA { ' +
+            'GRAPH <http://liris.cnrs.fr/asawoo/devices/> { ' +
+                '<#NokiaLumia> rdf:type <#Device> . ' +
+                '<#NokiaLumia> <#hasConnection> <#Bluetooth> . ' +
+                '<#NokiaLumia> <#hasName> "Nokia Lumia 635" . ' +
+            '} ' +
+            'GRAPH <http://liris.cnrs.fr/asawoo/other/> { ' +
+                '<#Request23> rdf:type <#RequestDeviceInfo> ' +
+            '} ' +
+        '}');
+        query.should.exist;
+        results = reasoner.answerQuery(query, ReasoningEngine.incremental);
+    });
+});
+
+describe('SELECT query using named graphs', function () {
+    var query, results;
+    it('should find 2 devices', function () {
+        // ClassAssertion Test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a { ?a rdf:type <#Device> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.be.above(-1);
+        _.findIndex(results[0], {'a': '#NokiaLumia'}).should.be.above(-1);
+    });
+
+    it('should only find the nokia', function () {
+        // ClassAssertion Test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a FROM NAMED <http://liris.cnrs.fr/asawoo/devices/> { ?a rdf:type <#Device> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.eql(-1);
+        _.findIndex(results[0], {'a': '#NokiaLumia'}).should.be.above(-1);
+    });
+
+    it('should only find the nokia (again)', function () {
+        // ClassAssertion Test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a ' +
+        'FROM NAMED <http://liris.cnrs.fr/asawoo/devices/> ' +
+        'FROM NAMED <http://liris.cnrs.fr/asawoo/other/> ' +
+        '{ ?a rdf:type <#Device> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.eql(-1);
+        _.findIndex(results[0], {'a': '#NokiaLumia'}).should.be.above(-1);
+    });
+
+    it('should find nothing', function () {
+        // ClassAssertion Test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a FROM NAMED <http://liris.cnrs.fr/asawoo/other/> { ?a rdf:type <#Device> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        _.findIndex(results[0], {'a': '#Inspiron'}).should.eql(-1);
+        _.findIndex(results[0], {'a': '#NokiaLumia'}).should.eql(-1);
+    });
+
+    it('should only find the request23', function () {
+        // ClassAssertion Test
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'SELECT ?a FROM NAMED <http://liris.cnrs.fr/asawoo/other/> { ?a rdf:type <#RequestDeviceInfo> . }');
+        query.should.exist;
+        results = reasoner.answerQuery(query);
+        _.findIndex(results[0], {'a': '#Request23'}).should.be.above(-1);
+        _.findIndex(results[0], {'a': '#Request1'}).should.eql(-1);
+    });
+});
+
 describe('SELECT query with subsumption', function () {
     var query, results;
     it('should find a class assertion', function () {
