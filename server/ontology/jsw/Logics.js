@@ -535,8 +535,8 @@ module.exports = {
         return new Rule(sla, sra);
     },
 
-    fact: function(name, li, ri, obt, expl) {
-        return new Fact(name, li, ri, obt, expl);
+    fact: function(name, li, ri, obt, expl, graphs) {
+        return new Fact(name, li, ri, obt, expl, graphs);
     },
 
     core: Core

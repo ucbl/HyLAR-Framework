@@ -117,17 +117,20 @@ TrimQueryABox.prototype = {
             ClassAssertion: { individual: { type: 'String' },
                 className: { type: 'String' },
                 explicit: { type: 'Boolean' },
-                obtainedFrom: { type: 'String'}},
+                obtainedFrom: { type: 'String'},
+                graphs: { type: 'String' }},
             ObjectPropertyAssertion: { objectProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
                 rightIndividual: { type: 'String' },
                 explicit: { type: 'Boolean' },
-                obtainedFrom: { type: 'String'}},
+                obtainedFrom: { type: 'String'},
+                graphs: { type: 'String' }},
             DataPropertyAssertion: { dataProperty: { type: 'String' },
                 leftIndividual: { type: 'String' },
                 rightValue: { type: 'String' },
                 explicit: { type: 'Boolean' },
-                obtainedFrom: { type: 'String'}}
+                obtainedFrom: { type: 'String'},
+                graphs: { type: 'String' }}
         });
     },
 
@@ -387,14 +390,15 @@ TrimQueryABox.prototype = {
      * @author Mehdi Terdjimi
      */
     convertTriples: function(triples) {
-        var sub, pred, obj, expl, obt,
+        var sub, pred, obj, graphs,
             newFacts = [];
         for(var key in triples) {
             var triple = triples[key];
             sub = triple.subject;
             pred = triple.predicate;
             obj = triple.object;
-            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value, [], true));
+            graphs = triple.graphs;
+            newFacts.push(new Logics.fact(pred.value, sub.value, obj.value, [], true, graphs));
         }
 
         return newFacts;
@@ -424,7 +428,8 @@ TrimQueryABox.prototype = {
                         type: rdf.ExpressionTypes.LITERAL
                     },
                     explicit: explicit,
-                    obtainedFrom: fact.obtainedFrom
+                    obtainedFrom: fact.obtainedFrom,
+                    graphs: fact.graphs
                 });
             } else {
                 triples.push({
@@ -441,7 +446,8 @@ TrimQueryABox.prototype = {
                         type: rdf.ExpressionTypes.IRI_REF
                     },
                     explicit: explicit,
-                    obtainedFrom: fact.obtainedFrom
+                    obtainedFrom: fact.obtainedFrom,
+                    graphs: fact.graphs
                 });
             }
         }
@@ -460,14 +466,14 @@ TrimQueryABox.prototype = {
             var triple = triples[tripleKey];
             // If it is an assertion...
             if (triple.predicate.value == rdf.IRIs.TYPE) {
-                table = "ClassAssertion ('individual', 'className', 'explicit', 'obtainedFrom')";
-                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "')";
+                table = "ClassAssertion ('individual', 'className', 'explicit', 'obtainedFrom', 'graphs')";
+                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(triple.graphs) + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
-                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual', 'explicit', 'obtainedFrom')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "')";
+                table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual', 'explicit', 'obtainedFrom', 'graphs')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(triple.graphs) + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
-                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue', 'explicit', 'obtainedFrom')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "')";
+                table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue', 'explicit', 'obtainedFrom', 'graphs')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(triple.graphs) + "')";
             } else {
                 throw 'Unrecognized assertion type.';
             }

@@ -60,13 +60,13 @@ var RDFQuery = function() {
         /**
          * Adds an RDF triple which needs to be matched to the query.
          */
-        addTriple: function (subject, predicate, object, graph) {
-            if(!graph) graph = '';
+        addTriple: function (subject, predicate, object, graphs) {
+            if(!graphs) graphs = [];
             this.triples.push({
                 'subject': subject,
                 'predicate': predicate,
                 'object': object,
-                'graph': graph
+                'graphs': graphs
             });
         },
 

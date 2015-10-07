@@ -215,7 +215,7 @@ SPARQL = {
 
             for (tokenIndex++; tokenIndex < tokens.length; tokenIndex++) {
                 token = tokens[tokenIndex];
-                if(token == 'GRAPH') {
+                if(token.toUpperCase() == 'GRAPH') {
                     var parsed = this.parseGraph(tokens, tokenIndex, query),
                         query = parsed.query,
                         tokenIndex = parsed.index;
@@ -487,8 +487,14 @@ SPARQL = {
     },
 
     parseTriple: function(tokens, tokenIndex, query, uri) {
-        var subject, predicate, object, token = tokens[tokenIndex];
+        var subject, predicate, object, graphs,
+            token = tokens[tokenIndex],
         subject = this.parseVarOrTerm(token, query);
+        if(!uri) {
+            graphs = [];
+        } else {
+            graphs = [uri];
+        }
 
         tokenIndex++;
         token = tokens[tokenIndex];
@@ -499,7 +505,7 @@ SPARQL = {
         token = tokens[tokenIndex];
 
         object = this.parseVarOrTerm(token, query);
-        query.addTriple(subject, predicate, object, uri);
+        query.addTriple(subject, predicate, object, graphs);
 
         return {
             index: tokenIndex,
