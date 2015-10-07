@@ -178,6 +178,7 @@ Rule.prototype = {
             var reattr = thisRule.rightFact.reattribute(Utils.completeMap(map,initialMap));
             reattr.obtainedFrom = conj;
             reattr.explicit = false;
+            reattr.graphs = Core.mergeGraphs(conj);
             return reattr;
         } else {
             return false;
@@ -517,6 +518,15 @@ Core = {
         var membersRgxp = /\((.+), (.+), (.+)\)/i,
             matches = str.match(membersRgxp);
         return new Fact(matches[2], matches[1], matches[3], [], true);
+    },
+
+    mergeGraphs: function(fs) {
+        var graphs = [];
+        for(var key in fs) {
+            var f = fs[key];
+            graphs = _.union(graphs, f.graphs);
+        }
+        return graphs;
     }
 };
 
