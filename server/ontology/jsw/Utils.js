@@ -6,6 +6,12 @@ var _ = require('lodash');
 
 module.exports = {
 
+    ESCAPE_CHAR: '-----',
+
+    escapeRegExp: function(str) {
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    },
+
     booleize: function(str) {
         if (str === 'true') {
             return true;
@@ -23,7 +29,8 @@ module.exports = {
     stringifyNoComma: function(json) {
         if(json.length == 0) return '';
         var str =JSON.stringify(json);
-        return str.replace(/,/g, '-----');
+        return str.replace(/,/g, this.ESCAPE_CHAR)
+                .replace(/"/g, '\"');
     },
 
     /**
@@ -32,7 +39,8 @@ module.exports = {
      */
     unStringifyAddCommas: function(str) {
         try {
-            return JSON.parse(str.replace(/-----/g, ','));
+            return JSON.parse(str.replace(/\\"/g, '"')
+                                .replace(new RegExp(this.ESCAPE_CHAR, 'g'), ','));
         } catch(e) {
             return [];
         }

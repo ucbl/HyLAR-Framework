@@ -147,9 +147,19 @@ TrimQueryABox.prototype = {
             varField;
 
         if (type === rdf.ExpressionTypes.IRI_REF || type === rdf.ExpressionTypes.LITERAL) {
-            if (type === rdf.ExpressionTypes.LITERAL) value = value.replace(/"/g, '\\"');
-            where += table + '.' + field + "=='" + value + "' AND ";
-
+            if(expr.graphs == true) {
+                var values = Utils.unStringifyAddCommas(value);
+                where += '(';
+                for (var key in values) {
+                    value = values[key].replace(/[\[\]"]/g, '');
+                    where += table + '.' + field + " LIKE '" + value + "'";
+                    if(key < values.length-1) where += ' OR ';
+                }
+                where += ') AND ';
+            } else {
+                if (type === rdf.ExpressionTypes.LITERAL) value = value.replace(/"/g, '\\"');
+                where += table + '.' + field + "=='" + value + "' AND ";
+            }
         } else if (type === rdf.ExpressionTypes.VAR) {
             varField = varFields[value];
 
@@ -176,8 +186,8 @@ TrimQueryABox.prototype = {
      */
     createSql: function (query, ontology, R, RMethod) {
         var from, where, limit, object, objectField, objectType, orderBy, predicate, predicateType, predicateValue,
-            predicateField, select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable,
-            vars, varCount, varField, varFields, varIndex, consequences, F;
+            predicateField, graphField, select, table, subjectField, table, triple, triples, tripleCount, tripleIndex, variable,
+            vars, varCount, varField, varFields, varIndex, consequences, F, graphs;
 
         if (!RMethod) RMethod = ReasoningEngine.naive;
 
@@ -218,14 +228,19 @@ TrimQueryABox.prototype = {
             objectType = object.type;
             subjectField = 'leftIndividual';
             objectField = 'rightIndividual';
+            graphField = 'graphs';
             table = 't' + tripleIndex;
-
+            graphs = {
+                type: rdf.ExpressionTypes.LITERAL,
+                value: Utils.stringifyNoComma(_.sortBy(query.graphs)),
+                graphs: true
+            };
 
             if (predicateValue === rdf.IRIs.TYPE) {
                 from += 'ClassAssertion AS ' + table + ', ';
                 subjectField = 'individual';
                 objectField = 'className';
-// todo traiter le cas ou dprop n'est pas reference
+                // todo traiter le cas ou dprop n'est pas reference
             } else if (predicateValue in ontology.entities[owl.ExpressionTypes.ET_DPROP]) {
                 objectField = 'rightValue';
                 from += 'DataPropertyAssertion AS ' + table + ', ';
@@ -259,6 +274,12 @@ TrimQueryABox.prototype = {
                 var predicateCond = this.writeExprCondition(triple.predicate, table, predicateField, where, varFields);
                 where = predicateCond.where;
                 varFields = predicateCond.varFields;
+            }
+
+            if(graphs.value != '') {
+                var graphCond = this.writeExprCondition(graphs, table, graphField, where, varFields);
+                where = graphCond.where;
+                varFields = graphCond.varFields;
             }
 
             var objectCond = this.writeExprCondition(triple.object, table, objectField, where, varFields);
@@ -464,16 +485,16 @@ TrimQueryABox.prototype = {
 
         for (var tripleKey in triples) {
             var triple = triples[tripleKey];
-            // If it is an assertion...
+            // If it is an assertion... //todo proposer une meilleure lisibilité
             if (triple.predicate.value == rdf.IRIs.TYPE) {
                 table = "ClassAssertion ('individual', 'className', 'explicit', 'obtainedFrom', 'graphs')";
-                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(triple.graphs) + "')";
+                tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(_.sortBy(triple.graphs)).replace(/"/g, '\\"') + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.IRI_REF) {
                 table = "ObjectPropertyAssertion ('objectProperty', 'leftIndividual', 'rightIndividual', 'explicit', 'obtainedFrom', 'graphs')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(triple.graphs) + "')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(_.sortBy(triple.graphs)).replace(/"/g, '\\"') + "')";
             } else if (triple.predicate.type == rdf.ExpressionTypes.IRI_REF && triple.object.type == rdf.ExpressionTypes.LITERAL) {
                 table = "DataPropertyAssertion ('dataProperty', 'leftIndividual', 'rightValue', 'explicit', 'obtainedFrom', 'graphs')";
-                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(triple.graphs) + "')";
+                tuples = " ('" + triple.predicate.value + "', '" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(_.sortBy(triple.graphs)).replace(/"/g, '\\"') + "')";
             } else {
                 throw 'Unrecognized assertion type.';
             }

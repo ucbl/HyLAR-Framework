@@ -152,8 +152,8 @@ describe('SELECT query using named graphs', function () {
         // ClassAssertion Test
         query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
         'SELECT ?a ' +
-        'FROM NAMED <http://liris.cnrs.fr/asawoo/devices/> ' +
         'FROM NAMED <http://liris.cnrs.fr/asawoo/other/> ' +
+        'FROM NAMED <http://liris.cnrs.fr/asawoo/devices/> ' +
         '{ ?a rdf:type <#Device> . }');
         query.should.exist;
         results = reasoner.answerQuery(query);
@@ -241,6 +241,26 @@ describe('SELECT query with subsumption', function () {
     });
 
 });
+
+describe('DELETE graph data', function () {
+    var query, results;
+    it('should parse the DELETE statement and infer data', function () {
+        query = JswSPARQL.sparql.parse('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        'DELETE DATA { ' +
+        'GRAPH <http://liris.cnrs.fr/asawoo/devices/> { ' +
+        '<#NokiaLumia> rdf:type <#Device> . ' +
+        '<#NokiaLumia> <#hasConnection> <#Bluetooth> . ' +
+        '<#NokiaLumia> <#hasName> "Nokia Lumia 635" . ' +
+        '} ' +
+        'GRAPH <http://liris.cnrs.fr/asawoo/other/> { ' +
+        '<#Request23> rdf:type <#RequestDeviceInfo> ' +
+        '} ' +
+        '}');
+        query.should.exist;
+        results = reasoner.answerQuery(query, ReasoningEngine.incremental);
+    });
+});
+
 
 describe('[I] Re-INSERT exact same query', function () {
     var query;
