@@ -262,11 +262,11 @@ SPARQL = {
             } else {
                 vars = [];
 
-// Parse SELECT variables.
+                // Parse SELECT variables.
                 while (tokenIndex < tokenCount) {
                     token = tokens[tokenIndex];
 
-                    if (token.toUpperCase() === 'WHERE' || token === '{') {
+                    if (token.toUpperCase() === 'WHERE' || token === '{' || token.toUpperCase() === 'FROM') {
                         break;
                     }
 
@@ -290,13 +290,28 @@ SPARQL = {
 
             if (tokenIndex === tokenCount) {
                 return query;
-            } else if (token.toUpperCase() === 'WHERE') {
+            }
+
+            // Named graphs parsing
+            query.graphs = [];
+            while (tokens[tokenIndex] === 'FROM') {
+                tokenIndex += 1;
+                if (tokens[tokenIndex].toUpperCase() != 'NAMED') {
+                    throw 'NAMED expected: only NAMED graphs are currently supported';
+                }
+                tokenIndex += 1;
+                var graph = this.parseAbsoluteIri(tokens[tokenIndex]);
+                query.graphs.push(graph);
+                tokenIndex += 1;
+            }
+
+            if (tokens[tokenIndex].toUpperCase() === 'WHERE') {
                 if (tokens[tokenIndex + 1] === '{') {
                     tokenIndex += 2; // Skip to the next token after '{'.
                 } else {
                     throw 'WHERE clause should be surrounded with "{}"!';
                 }
-            } else if (token === '{') {
+            } else if (tokens[tokenIndex] === '{') {
                 tokenIndex += 1;
             } else {
                 throw 'WHERE clause was expected, but "' + token + '" was found!';
@@ -451,8 +466,6 @@ SPARQL = {
                     throw 'Unexpected token "' + token + '" found!';
                 }
             }
-
-
         }
 
         return query;
