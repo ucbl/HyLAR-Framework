@@ -31,7 +31,7 @@ app.get('/classify', OntologyController.getOntology, OntologyController.parseStr
 app.get('/query', OntologyController.processSPARQL);
 
 //File uploading
-app.post('/ontology', OntologyController.upload)
+app.post('/ontology', OntologyController.upload);
 
 //Ontology listing
 app.get('/ontology', OntologyController.list);

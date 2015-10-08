@@ -31,7 +31,7 @@ app.controller('MainCtrl',
                         'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
                         'SELECT ?a ?b { ?a rdfs:subClassOf ?b }'
                         ;
-        $scope.owlFileName = 'test.owl';
+        $scope.owlFileName = 'fipa.owl';
         $scope.workerlog = LoggingService.log;
 
         var processMessage = function(data) {

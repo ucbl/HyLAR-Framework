@@ -10,10 +10,16 @@ var inject = require('gulp-inject');
 var runSequence = require('run-sequence');
 var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
+var replace = require('gulp-replace');
 
 var appPath = ('app');
 var libPath = appPath + '/lib';
 var serverPath = ('server');
+
+var regtofix = /context = context \? _\.defaults\(root\.Object\(\), context, _\.pick\(root, contextProps\)\) : root;/g;
+var lodashfix = 'context = context ? _.defaults(root.Object(), ' +
+                'context, _.pick(root, contextProps)) : root; \n' +
+                ' if (typeof context.Object !== "function") context = this;';
 
 // Cleans lib folder
 gulp.task('clean', function () {
@@ -36,6 +42,7 @@ gulp.task('build-migrate', function() {
             standalone: 'lodash'
         }))
         .pipe(concat('jsw.js'))
+        .pipe(replace(regtofix, lodashfix)) // Fixing lodash issues
         .pipe(gulp.dest(appPath + '/scripts/reasoning'));
 });
 
