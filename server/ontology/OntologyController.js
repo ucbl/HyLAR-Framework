@@ -65,7 +65,8 @@ module.exports = {
 
         req.processingDelay  = new Date().getTime() - initialTime;
         req.classificationData = {
-            create: reasoner
+            reasoner: reasoner,
+            ontology: ontology
         };
 
         next();
@@ -74,7 +75,7 @@ module.exports = {
     sendClassificationData: function(req, res) {
         var seen = [];
         ClassificationData = req.classificationData;
-        stringifiedReasoner = JSON.stringify(ClassificationData.create, function(key, val) {
+        stringifiedReasoner = JSON.stringify(ClassificationData.reasoner, function(key, val) {
             if (val != null && typeof val == "object") {
                 if (seen.indexOf(val) >= 0)
                     return;
@@ -89,14 +90,14 @@ module.exports = {
 
         fs.writeFileSync(dbDir + req.param('filename') + '.json',
             '{' +
-                'create: ' + stringifiedReasoner + ',' +
+                'reasoner: ' + stringifiedReasoner + ',' +
                 'ontology: ' + JSON.stringify(ClassificationData.ontology) +
             '}'
         );
 
         res.status(200).send({
             data : {
-                create: stringifiedReasoner,
+                reasoner: stringifiedReasoner,
                 ontology: ClassificationData.ontology,
                 requestDelay: req.requestDelay,
                 processingDelay: req.processingDelay,
@@ -143,7 +144,7 @@ module.exports = {
         } else {
             var sparql = JswSPARQL.sparql,
                 query = sparql.parse(req.param('query')),
-                results = ClassificationData.create.aBox.answerQuery(query);
+                results = ClassificationData.reasoner.aBox.answerQuery(query);
 
             processedTime = new Date().getTime();
             res.status(200).send({

@@ -8,7 +8,8 @@ app.service('Hylar', ['HylarClient', 'HylarRemote',
             classification: 'server',
             querying: 'client',
             inWorker: true,
-            create: localStorage.getItem('create')
+            reasoningMethod: 'greedy',
+            reasoner: localStorage.getItem('reasoner')
         };
 
         this.client = HylarClient;

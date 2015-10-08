@@ -10,20 +10,22 @@ var CONFIG = {};
 function startReasoner(data) {
 
     /**
-     * Creating a create object for the given ontology
+     * Creating a reasoner object for the given ontology
      */
     try {
-        var reasoner, stringifiedReasoner, endMsg, errMsg,
+        var reasoner, stringifiedReasoner, endMsg, errMsg, RMethod,
             seen = [];
 
+        (data.method == 'incremental') ? RMethod = ReasoningEngine.incremental : ReasoningEngine.naive;
+
         // If the create has been already initialized
-        if(data.create) {
-            reasoner = data.create;
+        if(data.reasoner) {
+            reasoner = data.reasoner;
         // If the classification is done client side
         } else {
           // Recover ontology proto due to its loss during the JSON serialization
           data.ontology.__proto__ = new JswOntology.ontology().__proto__;
-          reasoner = new Reasoner(data.ontology);
+          reasoner = new Reasoner(data.ontology, RMethod);
         }
 
         stringifiedReasoner = JSON.stringify(reasoner, function(key, val) {
@@ -64,10 +66,12 @@ function startReasoner(data) {
     }
 }
 
-function queryReasoner(queryString, reasoner, inWorker) {
+function queryReasoner(queryString, reasoner, inWorker, method) {
     /**
      * Creating SPARQL query
      */
+    var RMethod;
+    (method == 'incremental') ? RMethod = ReasoningEngine.incremental : ReasoningEngine.naive;
 
     try {
         var errMsg, query = SPARQL.parse(queryString);
@@ -87,16 +91,16 @@ function queryReasoner(queryString, reasoner, inWorker) {
 
 
     /**
-     * Querying the create
+     * Querying the reasoner
      */
 
     try {
         var results, before, processingDelay, endMsg, errMsg;
 
-        reasoner.aBox.__proto__ = TrimQueryABox.trimQueryABox.prototype;
+        reasoner.aBox.__proto__ = TrimQueryABox.prototype;
         reasoner.aBox.queryLang.__proto__ = new QueryLang().__proto__;
         before = new Date().getTime();
-        results = reasoner.aBox.answerQuery(query);
+        results = reasoner.aBox.answerQuery(query, reasoner.resultOntology, OWL2RL.rules, RMethod);
         processingDelay = new Date().getTime() - before;
         endMsg = {
             data: results,

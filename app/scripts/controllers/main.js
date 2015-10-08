@@ -47,8 +47,8 @@ app.controller('MainCtrl',
         };
 
         $scope.removeReasoner = function() {
-            localStorage.removeItem('create');
-            $scope.config.create = localStorage.getItem('create');
+            localStorage.removeItem('reasoner');
+            $scope.config.reasoner = localStorage.getItem('reasoner');
         };
 
         $scope.startWorker = function() {
@@ -89,7 +89,7 @@ app.controller('MainCtrl',
                                             LoggingService.msg('Requesting time : ' + data.requestDelay).submit();
                                             LoggingService.msg('Response delay : ' + responseDelay).submit();
                                             LoggingService.msg('Classifying time : ' + classifyingTime).submit();
-                                            $scope.config.create = localStorage.getItem('create');
+                                            $scope.config.reasoner = localStorage.getItem('reasoner');
                                         });
                                     });
                             });
@@ -108,8 +108,8 @@ app.controller('MainCtrl',
 
         $scope.executeQuery = function() {
 
-            if(Hylar.config.querying == 'client' && !localStorage.getItem('create')) {
-                LoggingService.err('Client-side create not ready').submit();
+            if(Hylar.config.querying == 'client' && !localStorage.getItem('reasoner')) {
+                LoggingService.err('Client-side reasoner not ready').submit();
                 return;
             }
 
@@ -121,7 +121,7 @@ app.controller('MainCtrl',
                 if(Hylar.config.querying == 'client') {
                     promise = Hylar.client.process({
                         command: 'process',
-                        reasoner: localStorage.getItem('create'),
+                        reasoner: localStorage.getItem('reasoner'),
                         sparqlQuery: query,
                         inWorker: Hylar.config.inWorker
                     });

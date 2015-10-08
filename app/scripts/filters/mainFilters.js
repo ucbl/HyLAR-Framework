@@ -18,8 +18,8 @@ app.filter('displayMsg', function() {
 
     .filter('displayReasonerStatus', function($filter) {
         return function(exists) {
-            if(!exists) return 'No local create';
-            return 'Local create is ready';
+            if(!exists) return 'No local reasoner';
+            return 'Local reasoner is ready';
         }
     })
 

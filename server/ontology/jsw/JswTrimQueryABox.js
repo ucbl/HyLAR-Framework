@@ -11,7 +11,7 @@ TrimPath = require('./TrimPathQuery'),
     owl = require('./JswOWL');
 
 /** Allows to work with SQL representation of queries against RDF data. */
-var TrimQueryABox = function () {
+TrimQueryABox = function () {
     /** The object storing ABox data. */
     this.database = {
         ClassAssertion: [],

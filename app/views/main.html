@@ -36,19 +36,27 @@
             </td>
             <td>
                 <ul class="list-group-small">
-                    <li ng-class="(config.create) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
-                        {{ config.create | displayReasonerStatus }}
-                        <a href="" ng-show="config.create" ng-click="removeReasoner()">(remove)</a>
+                    <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
+                        {{ config.reasoner | displayReasonerStatus }}
+                        <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
                     </li>
-                    <!--<li ng-class="(frontReasoner.create.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
-                        <span ng-repeat="classifiedOntology in frontReasoner.create" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
+                    <!--<li ng-class="(frontReasoner.reasoner.length) ? 'list-group-item list-group-item-info' : 'list-group-item list-group-item-default'">
+                        <span ng-repeat="classifiedOntology in frontReasoner.reasoner" class="glyphicon glyphicon-list">{{ classifiedOntology.name}}</span>
                     </li>-->
                 </ul>
             </td>
             <td>
                 <ul class="list-group list-group-small-forms">
                     <li class="list-group-item">
-                        Classification :
+                        Reasoning:
+                        <label for="classificationRadioServer">Greedy</label>
+                        <input class="radio-inline" id="reasoningGreedy" ng-model="config.reasoningMethod" value="greedy" type="radio"/>
+
+                        <label for="classificationRadioClient">Incremental</label>
+                        <input class="radio-inline" id="reasoningIncremental" ng-model="config.reasoningMethod" value="incremental" type="radio"/>
+                    </li>
+                    <li class="list-group-item">
+                        Classification:
                         <label for="classificationRadioServer">server-side</label>
                         <input class="radio-inline" id="classificationRadioServer" ng-model="config.classification" value="server" type="radio"/>
 
@@ -56,7 +64,7 @@
                         <input class="radio-inline" id="classificationRadioClient" ng-model="config.classification" value="client" type="radio"/>
                     </li>
                     <li class="list-group-item">
-                        Querying :
+                        Querying:
                         <label for="queryingRadioServer">server-side</label>
                         <input id="queryingRadioServer" ng-model="config.querying" value="server" type="radio"/>
 
