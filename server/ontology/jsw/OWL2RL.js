@@ -12,7 +12,7 @@ var Logics = require('./Logics'),
     JswRDF = require('./JswRDF'),
     JswOWL = require('./JswOWL');
 
-module.exports = {
+OWL2RL = {
     rules: [
         // scm-sco
         new Logics.rule([
@@ -52,8 +52,8 @@ module.exports = {
 
         // cls-hv1
         /*.concat(
-        'T(?x, owl:hasValue, ?y) ^ T(?x, owl:onProperty, ?p) ^ T(?u, rdf:type, ?x) -> T(?u, ?p, ?y)'
-            .toRuleSet())*/
+         'T(?x, owl:hasValue, ?y) ^ T(?x, owl:onProperty, ?p) ^ T(?u, rdf:type, ?x) -> T(?u, ?p, ?y)'
+         .toRuleSet())*/
 
         //cax-eqc1
         .concat(
@@ -66,4 +66,8 @@ module.exports = {
             .toRuleSet())
 
         .slice(0,3)
+}
+
+module.exports = {
+    rules: OWL2RL.rules
 };
