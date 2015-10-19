@@ -69,5 +69,9 @@ gulp.task('server', function() {
 });
 
 gulp.task('default', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate','build-index', 'server');
+    return runSequence('clean', 'build-bower', 'build-migrate', 'build-index', 'server');
+});
+
+gulp.task('serve', function() {
+    return runSequence('server');
 });

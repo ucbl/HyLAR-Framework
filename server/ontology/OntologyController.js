@@ -9,6 +9,8 @@ var fs = require('fs'),
     JswParser = require('./jsw/JswParser'),
     Reasoner = require('./jsw/Reasoner'),
     JswSPARQL = require('./jsw/JswSPARQL'),
+    ReasoningEngine = require('./jsw/ReasoningEngine'),
+    OWL2RL = require('./jsw/OWL2RL'),
 
     ClassificationData = null,
     stringifiedReasoner = null,
@@ -59,9 +61,11 @@ module.exports = {
 
     generateReasoner: function(req, res, next) {
         var ontology = req.ontology,
-            initialTime = new Date().getTime();
+            initialTime = new Date().getTime(),
+            RMethod;
+        if (req.param('reasoningMethod') == 'incremental') RMethod = ReasoningEngine.incremental;
 
-        var reasoner = new Reasoner.create(ontology);
+        var reasoner = new Reasoner.create(ontology, RMethod);
 
         req.processingDelay  = new Date().getTime() - initialTime;
         req.classificationData = {
@@ -144,7 +148,10 @@ module.exports = {
         } else {
             var sparql = JswSPARQL.sparql,
                 query = sparql.parse(req.param('query')),
-                results = ClassificationData.reasoner.aBox.answerQuery(query);
+                results, RMethod;
+
+            if (req.param('reasoningMethod') == 'incremental') RMethod = ReasoningEngine.incremental;
+            results = ClassificationData.reasoner.aBox.answerQuery(query, ClassificationData.reasoner.resultOntology, OWL2RL.rules, RMethod);
 
             processedTime = new Date().getTime();
             res.status(200).send({

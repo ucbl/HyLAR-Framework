@@ -137,7 +137,7 @@ Rule.prototype = {
      */
     consequences: function(newFacts, originalFacts) {
 
-        var allFacts = Core.mergeFactSets(newFacts, originalFacts);
+        var allFacts = Core.mergeFactSets(newFacts, originalFacts, Core.mergeGraphs(newFacts));
 
         // Calculation of all possible permuted combinations
         var conjAll = this.findConjunctionsWith(allFacts),
@@ -395,13 +395,32 @@ Core = {
         return fsR;
     },
 
+    restrictToGraphs: function(fs, gs) {
+        var fr = [];
+        if(!gs || gs.length == 0) return fs;
+        for (var key in fs) {
+            if(this.shareSomeGraph(fs[key].graphs, gs)) {
+                fr.push(fs[key])
+            }
+        }
+        return fr;
+    },
+
+    shareSomeGraph: function(gs1, gs2) {
+        if(!gs1 || !gs2) return true;
+        for (var key in gs1) {
+            if(gs1[key] in gs2) return true;
+        }
+        return false;
+    },
+
     /**
      * True-like merge, which also merges
      * identical facts obtainedFrom properties.
      * @param fs1
      * @param fs2
      */
-    mergeFactSets: function(fs1, fs2) {
+    mergeFactSets: function(fs1, fs2, graphs) {
         if(fs1.length == 0) return fs2;
         if(fs2.length == 0) return fs1;
 
@@ -417,7 +436,7 @@ Core = {
                 fsMx.push(fsMn[key]);
             }
         }
-        return fsMx;
+        return this.restrictToGraphs(fsMx, graphs);
     },
 
     getOnlyImplicitFacts: function(fs) {

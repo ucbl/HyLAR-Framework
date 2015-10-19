@@ -4,7 +4,7 @@
 
 var Logics = require('./Logics');
 
-module.exports = {
+ReasoningEngine = {
     /**
      * A naive reasoner that recalculates the entire knowledge base
      * @param triplesIns
@@ -66,4 +66,9 @@ module.exports = {
             fe: Logics.core.getOnlyExplicitFacts(F)
         };
     }
+};
+
+module.exports = {
+    naive: ReasoningEngine.naive,
+    incremental: ReasoningEngine.incremental
 };

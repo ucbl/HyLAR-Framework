@@ -12,7 +12,7 @@ var Logics = require('./Logics'),
     JswRDF = require('./JswRDF'),
     JswOWL = require('./JswOWL');
 
-module.exports = {
+OWL2RL = {
     rules: [
         // scm-sco
         new Logics.rule([
@@ -65,5 +65,9 @@ module.exports = {
         'T(?c1, owl:equivalentClass, ?c2) ^ T(?x, rdf:type, ?c2) -> T(?x, rdf:type, ?c1)'
             .toRuleSet())
 
-        .slice(0,3)
+        .slice(0,2)
+};
+
+module.exports = {
+    rules: OWL2RL.rules
 };

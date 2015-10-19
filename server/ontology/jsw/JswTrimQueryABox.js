@@ -25,9 +25,8 @@ TrimQueryABox = function () {
 
 /** Prototype for all jsw.TrimQueryABox objects. */
 TrimQueryABox.prototype = {
-    processSql: function(queries, recreateQueryLang) {
-        var queryLang, responses = [];
-        recreateQueryLang ? queryLang = this.queryLang : this.createQueryLang();
+    processSql: function(queries) {
+        var queryLang = this.createQueryLang(), responses = [];
         for (var key in queries) {
             var query = queries[key];
             responses.push(queryLang.parseSQL(query).filter(this.database));
@@ -42,14 +41,7 @@ TrimQueryABox.prototype = {
      */
     answerQuery: function (query, ontology, rules, RMethod) {
         var sql = this.createSql(query, ontology, rules, RMethod), sqlQueries = sql.split(';').slice(0,-1);
-
-        try {
-            return this.processSql(sqlQueries, false);
-        } catch (ex) {
-            /* Recreate the query language object, since the previous object can not be used now.*/
-            return this.processSql(sqlQueries, true);
-            throw ex;
-        }
+        return this.processSql(sqlQueries);
     },
 
     /**
@@ -485,7 +477,7 @@ TrimQueryABox.prototype = {
 
         for (var tripleKey in triples) {
             var triple = triples[tripleKey];
-            // If it is an assertion... //todo proposer une meilleure lisibilité
+            // If it is an assertion... //todo proposer une meilleure lisibilitï¿½
             if (triple.predicate.value == rdf.IRIs.TYPE) {
                 table = "ClassAssertion ('individual', 'className', 'explicit', 'obtainedFrom', 'graphs')";
                 tuples = " ('" + triple.subject.value + "', '" + triple.object.value + "', '" + triple.explicit + "', '" + Utils.stringifyNoComma(triple.obtainedFrom) + "', '" + Utils.stringifyNoComma(_.sortBy(triple.graphs)).replace(/"/g, '\\"') + "')";
