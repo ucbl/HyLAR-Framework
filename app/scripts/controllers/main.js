@@ -14,6 +14,53 @@ app.controller('MainCtrl',
               ServerTime, LoggingService,
               FileUploader) {
 
+        $scope.clearLog = function() {
+            LoggingService.log = [];
+        };
+
+        $scope.ungraph = function() {
+            $scope.query = $scope.query.replace(/(FROM NAMED .+)+(\{ .+ \})/g, '$2');
+            $scope.query = $scope.query.replace(/(GRAPH <.+> \{ )(.+)( \})/g, '$2');
+        };
+
+        $scope.deletize = function() {
+            $scope.query = $scope.query.replace(/INSERT DATA/g, 'DELETE DATA');
+        };
+
+        $scope.insert10 = function() {
+            $scope.query = Hylar.exampleReq.insert10;
+        };
+        $scope.insert20 = function() {
+            $scope.query = Hylar.exampleReq.insert20;
+        };
+        $scope.insert30 = function() {
+            $scope.query = Hylar.exampleReq.insert30;
+        };
+        $scope.insert40 = function() {
+            $scope.query = Hylar.exampleReq.insert40;
+        };
+        $scope.insert50 = function() {
+            $scope.query = Hylar.exampleReq.insert50;
+        };
+        $scope.select_all = function() {
+            $scope.query = Hylar.exampleReq.select_all;
+        };
+        $scope.select10 = function() {
+            $scope.query = Hylar.exampleReq.select10;
+        };
+        $scope.select20 = function() {
+            $scope.query = Hylar.exampleReq.select20;
+        };
+        $scope.select30 = function() {
+            $scope.query = Hylar.exampleReq.select30;
+        };
+        $scope.select40 = function() {
+            $scope.query = Hylar.exampleReq.select40;
+        };
+        $scope.select50 = function() {
+            $scope.query = Hylar.exampleReq.select40;
+        };
+
         $scope.updateList = function() {
             $scope.ontologyList = Hylar.remote.list;
         };
@@ -63,12 +110,14 @@ app.controller('MainCtrl',
                     if(Hylar.config.classification == 'server') {
                         promise = Hylar.remote.classify({
                             filename: filename,
-                            time: time.milliseconds
+                            time: time.milliseconds,
+                            reasoningMethod: $scope.config.reasoningMethod
                         }).$promise;
                     } else {
                         promise = Hylar.remote.fetch({
                             filename: filename,
-                            time: time.milliseconds
+                            time: time.milliseconds,
+                            reasoningMethod: $scope.config.reasoningMethod
                         }).$promise;
                     }
 
@@ -123,13 +172,15 @@ app.controller('MainCtrl',
                         command: 'process',
                         reasoner: localStorage.getItem('reasoner'),
                         sparqlQuery: query,
-                        inWorker: Hylar.config.inWorker
+                        inWorker: Hylar.config.inWorker,
+                        reasoningMethod: $scope.config.reasoningMethod
                     });
                 } else {
                     promise = Hylar.remote.query({
                         query: query,
                         time: time.milliseconds,
-                        inWorker: Hylar.config.inWorker
+                        inWorker: Hylar.config.inWorker,
+                        reasoningMethod: $scope.config.reasoningMethod
                     }).$promise;
                 }
 

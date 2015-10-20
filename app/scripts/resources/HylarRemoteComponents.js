@@ -6,7 +6,7 @@ app.factory('OntologyClassifier', ['$resource',
         function($resource) {
             var ENV = angular.injector(['config']).get('ENV');
             return $resource(ENV.serverRootPath + '/classify', {}, {
-                'classify': { method: 'GET', params: {filename: '@filename', time: '@time'}, isArray: false }
+                'classify': { method: 'GET', params: {filename: '@filename', time: '@time', reasoningMethod: '@reasoningMethod'}, isArray: false }
             });
         }
     ])
@@ -15,7 +15,7 @@ app.factory('OntologyClassifier', ['$resource',
         function($resource) {
             var ENV = angular.injector(['config']).get('ENV');
             return $resource(ENV.serverRootPath + '/ontology/:filename', {}, {
-                'fetch': { method: 'GET', params: {filename: '@filename', time: '@time'}, isArray: false }
+                'fetch': { method: 'GET', params: {filename: '@filename', time: '@time', reasoningMethod: '@reasoningMethod'}, isArray: false }
             });
         }
     ])

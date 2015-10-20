@@ -52,8 +52,8 @@ OWL2RL = {
 
         // cls-hv1
         /*.concat(
-         'T(?x, owl:hasValue, ?y) ^ T(?x, owl:onProperty, ?p) ^ T(?u, rdf:type, ?x) -> T(?u, ?p, ?y)'
-         .toRuleSet())*/
+        'T(?x, owl:hasValue, ?y) ^ T(?x, owl:onProperty, ?p) ^ T(?u, rdf:type, ?x) -> T(?u, ?p, ?y)'
+            .toRuleSet())*/
 
         //cax-eqc1
         .concat(
@@ -65,8 +65,8 @@ OWL2RL = {
         'T(?c1, owl:equivalentClass, ?c2) ^ T(?x, rdf:type, ?c2) -> T(?x, rdf:type, ?c1)'
             .toRuleSet())
 
-        .slice(0,3)
-}
+        .slice(0,2)
+};
 
 module.exports = {
     rules: OWL2RL.rules
