@@ -130,6 +130,7 @@ app.controller('MainCtrl',
 
                                 data.command = 'start';
                                 data.inWorker = Hylar.config.inWorker;
+                                data.reasoningMethod = $scope.config.reasoningMethod;
 
                                 Hylar.client.process(data).then(function(message) {
                                         ServerTime.getServerTime().$promise.then(function(time) {

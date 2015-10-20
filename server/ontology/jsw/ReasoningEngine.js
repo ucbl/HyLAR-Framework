@@ -13,15 +13,20 @@ ReasoningEngine = {
      * @returns {{fi: *, fe: *}}
      */
     naive: function(FeAdd, FeDel, F, R) {
+        var Fd = [],
+            Fa = [];
+
         // Total facts
         F = Logics.core.mergeFactSets(F, FeAdd);
+        Fa = Logics.core.restrictToGraphsFrom(F, FeAdd);
+        Fd = Logics.core.restrictToGraphsFrom(FeDel);
 
         // Deletion
-        var consequencesToDel = Logics.core.evaluateRuleSet(R, F, FeDel);
+        var consequencesToDel = Logics.core.evaluateRuleSet(R, Fd, FeDel);
         F = Logics.core.substractFactSets(F, consequencesToDel);
 
         // Insertion
-        var consequencesToAdd = Logics.core.evaluateRuleSet(R, F, FeAdd);
+        var consequencesToAdd = Logics.core.evaluateRuleSet(R, Fa, FeAdd);
         F = Logics.core.mergeFactSets(consequencesToAdd, F);
 
         return {
@@ -42,12 +47,17 @@ ReasoningEngine = {
             Rred = [],
             Rins = [],
             FiDel = [],
-            FiAdd = [];
+            FiAdd = [],
+            Fd = [];
+
+        F = Logics.core.restrictToGraphsFrom(F, FeAdd);
+        Fd = Logics.core.restrictToGraphsFrom(F, FeDel);
+
 
         // Deletion
         if (FeDel && FeDel.length) {
             Rdel = Logics.core.restrictRuleSet(R, Logics.core.mergeFactSets(FeDel, FiDel));
-            FiDel = Logics.core.evaluateRuleSet(Rdel, F, FeDel);
+            FiDel = Logics.core.evaluateRuleSet(Rdel, Fd, FeDel);
             F = Logics.core.substractFactSets(F, Logics.core.mergeFactSets(FeDel, FiDel));
 
             Rred = Logics.core.restrictRuleSet(R, FiDel);

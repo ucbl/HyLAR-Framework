@@ -278,13 +278,13 @@ Fact.prototype = {
      * Checks if a fact appears in a set of facts
      * and returns it if existing.
      * @param factSet
-     * @returns {boolean}
+     * @returns {Fact}
      */
     appearsIn: function(factSet) {
         var that = this;
         for (var key in factSet) {
             if(that.equivalentTo(factSet[key])){
-               return factSet[key];
+                return that;
             }
         }
         return false;
@@ -409,7 +409,7 @@ Core = {
     shareSomeGraph: function(gs1, gs2) {
         if(!gs1 || !gs2) return true;
         for (var key in gs1) {
-            if(gs1[key] in gs2) return true;
+            if(JSON.stringify(gs2).indexOf(JSON.stringify(gs1[key])) != -1) return true;
         }
         return false;
     },
@@ -417,6 +417,9 @@ Core = {
     /**
      * True-like merge, which also merges
      * identical facts obtainedFrom properties.
+     * Can be restricted to a particular
+     * set of graphs.
+     * @param graphs
      * @param fs1
      * @param fs2
      */
@@ -546,6 +549,19 @@ Core = {
             graphs = _.union(graphs, f.graphs);
         }
         return graphs;
+    },
+
+    graphsFrom: function(gs) {
+        var graphs = [];
+        for (var key in gs) {
+            var currGraphs = gs[key].graphs;
+            graphs = _.union(graphs, currGraphs);
+        }
+        return graphs;
+    },
+
+    restrictToGraphsFrom: function(fsRet, fsSrc) {
+        return this.restrictToGraphs(fsRet, this.graphsFrom(fsSrc));
     }
 };
 

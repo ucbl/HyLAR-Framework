@@ -7,6 +7,6 @@ function receive(event) {
     if(data.command === "start") {
         return startReasoner(data);
     } else if(data.command === "process") {
-        return queryReasoner(data.sparqlQuery, data.reasoner, data.inWorker);
+        return queryReasoner(data.sparqlQuery, data.reasoner, data.inWorker, data.reasoningMethod);
     }
 }

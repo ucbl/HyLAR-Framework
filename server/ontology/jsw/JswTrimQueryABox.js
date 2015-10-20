@@ -372,7 +372,8 @@ TrimQueryABox.prototype = {
                     assertion.individual,
                     assertion.className,
                     Utils.unStringifyAddCommas(assertion.obtainedFrom),
-                    Utils.booleize(assertion.explicit)));
+                    Utils.booleize(assertion.explicit),
+                    Utils.unStringifyAddCommas(assertion.graphs)))
         }
 
         for(var key in this.database.ObjectPropertyAssertion) {
@@ -382,7 +383,8 @@ TrimQueryABox.prototype = {
                     assertion.leftIndividual,
                     assertion.rightIndividual,
                     Utils.unStringifyAddCommas(assertion.obtainedFrom),
-                    Utils.booleize(assertion.explicit)));
+                    Utils.booleize(assertion.explicit),
+                    Utils.unStringifyAddCommas(assertion.graphs)))
         }
 
         for(var key in this.database.DataPropertyAssertion) {
@@ -392,7 +394,8 @@ TrimQueryABox.prototype = {
                     assertion.leftIndividual,
                     assertion.rightValue,
                     Utils.unStringifyAddCommas(assertion.obtainedFrom),
-                    Utils.booleize(assertion.explicit)));
+                    Utils.booleize(assertion.explicit),
+                    Utils.unStringifyAddCommas(assertion.graphs)))
         }
 
         return facts;

@@ -16,7 +16,7 @@ function startReasoner(data) {
         var reasoner, stringifiedReasoner, endMsg, errMsg, RMethod,
             seen = [];
 
-        (data.method == 'incremental') ? RMethod = ReasoningEngine.incremental : ReasoningEngine.naive;
+        (data.reasoningMethod == 'incremental') ? RMethod = ReasoningEngine.incremental : ReasoningEngine.naive;
 
         // If the create has been already initialized
         if(data.reasoner) {
