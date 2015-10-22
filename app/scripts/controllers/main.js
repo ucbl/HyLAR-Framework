@@ -58,7 +58,7 @@ app.controller('MainCtrl',
             $scope.query = Hylar.exampleReq.select40;
         };
         $scope.select50 = function() {
-            $scope.query = Hylar.exampleReq.select40;
+            $scope.query = Hylar.exampleReq.select50;
         };
 
         $scope.updateList = function() {

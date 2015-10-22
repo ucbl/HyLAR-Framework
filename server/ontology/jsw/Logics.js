@@ -275,8 +275,7 @@ Fact.prototype = {
     },
 
     /**
-     * Checks if a fact appears in a set of facts
-     * and returns it if existing.
+     * Checks if a fact appears in a set of facts.
      * @param factSet
      * @returns {Fact}
      */
@@ -285,6 +284,22 @@ Fact.prototype = {
         for (var key in factSet) {
             if(that.equivalentTo(factSet[key])){
                 return that;
+            }
+        }
+        return false;
+    },
+
+    /**
+     * Checks if a fact appears in a set of facts
+     * and returns it if existing.
+     * @param factSet
+     * @returns {Fact}
+     */
+    find: function(factSet) {
+        var that = this;
+        for (var key in factSet) {
+            if(that.equivalentTo(factSet[key])){
+                return factSet[key];
             }
         }
         return false;
@@ -380,19 +395,43 @@ Fact.prototype = {
 Core = {
     /**
      * Returns fs1 without the facts occuring in fs2.
+     * If a fact in fs2 also appears on any graph not concerned by fs1,
+     * it only removes the graph concerned by fs1
+     * without removing the fact from fs2.
      * @param fs1
      * @param fs2
      */
     substractFactSets: function(fs1, fs2) {
         var fsR = [];
         for (var key in fs1) {
-            var fact = fs1[key];
+            var simili, fact = fs1[key];
             fact.__proto__ = Fact.prototype;
+
+            simili = fact.find(fs2);
+            if(simili) {
+                fact = this.substractGraphSets(fact, simili);
+                if(fact.graphs.length > 0) {
+                    fsR.push(fact);
+                }
+            }
+
             if (!fact.appearsIn(fs2)) {
                 fsR.push(fact);
             }
         }
         return fsR;
+    },
+
+    substractGraphSets: function(f1, f2) {
+        var graphs = [];
+        for(var key in f1.graphs) {
+            var gf1 = f1.graphs[key];
+            if(JSON.stringify(f2).indexOf(gf1) == -1) {
+                graphs.push(gf1);
+            }
+        }
+        f1.graphs = graphs;
+        return f1;
     },
 
     restrictToGraphs: function(fs, gs) {
@@ -407,7 +446,7 @@ Core = {
     },
 
     shareSomeGraph: function(gs1, gs2) {
-        if(!gs1 || !gs2) return true;
+        if(gs1.length == 0 && gs2.length == 0) return true;
         for (var key in gs1) {
             if(JSON.stringify(gs2).indexOf(JSON.stringify(gs1[key])) != -1) return true;
         }
@@ -417,13 +456,10 @@ Core = {
     /**
      * True-like merge, which also merges
      * identical facts obtainedFrom properties.
-     * Can be restricted to a particular
-     * set of graphs.
-     * @param graphs
      * @param fs1
      * @param fs2
      */
-    mergeFactSets: function(fs1, fs2, graphs) {
+    mergeFactSets: function(fs1, fs2) {
         if(fs1.length == 0) return fs2;
         if(fs2.length == 0) return fs1;
 
@@ -439,7 +475,7 @@ Core = {
                 fsMx.push(fsMn[key]);
             }
         }
-        return this.restrictToGraphs(fsMx, graphs);
+        return fsMx;
     },
 
     getOnlyImplicitFacts: function(fs) {

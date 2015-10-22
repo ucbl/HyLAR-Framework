@@ -13,20 +13,18 @@ ReasoningEngine = {
      * @returns {{fi: *, fe: *}}
      */
     naive: function(FeAdd, FeDel, F, R) {
-        var Fd = [],
-            Fa = [];
-
         // Total facts
         F = Logics.core.mergeFactSets(F, FeAdd);
-        Fa = Logics.core.restrictToGraphsFrom(F, FeAdd);
-        Fd = Logics.core.restrictToGraphsFrom(FeDel);
+
+        // Restriction on graphs from both deletion/addition
+        F = Logics.core.restrictToGraphsFrom(F, Logics.core.mergeFactSets(FeDel, FeAdd));
 
         // Deletion
-        var consequencesToDel = Logics.core.evaluateRuleSet(R, Fd, FeDel);
+        var consequencesToDel = Logics.core.evaluateRuleSet(R, F, FeDel);
         F = Logics.core.substractFactSets(F, consequencesToDel);
 
         // Insertion
-        var consequencesToAdd = Logics.core.evaluateRuleSet(R, Fa, FeAdd);
+        var consequencesToAdd = Logics.core.evaluateRuleSet(R, F, FeAdd);
         F = Logics.core.mergeFactSets(consequencesToAdd, F);
 
         return {
@@ -47,17 +45,16 @@ ReasoningEngine = {
             Rred = [],
             Rins = [],
             FiDel = [],
-            FiAdd = [],
-            Fd = [];
+            FiAdd = [];
 
-        F = Logics.core.restrictToGraphsFrom(F, FeAdd);
-        Fd = Logics.core.restrictToGraphsFrom(F, FeDel);
-
+        // Total facts
+        F = Logics.core.mergeFactSets(F, FeAdd);
+        F = Logics.core.restrictToGraphsFrom(F, Logics.core.mergeFactSets(FeDel, FeAdd));
 
         // Deletion
         if (FeDel && FeDel.length) {
             Rdel = Logics.core.restrictRuleSet(R, Logics.core.mergeFactSets(FeDel, FiDel));
-            FiDel = Logics.core.evaluateRuleSet(Rdel, Fd, FeDel);
+            FiDel = Logics.core.evaluateRuleSet(Rdel, F, FeDel);
             F = Logics.core.substractFactSets(F, Logics.core.mergeFactSets(FeDel, FiDel));
 
             Rred = Logics.core.restrictRuleSet(R, FiDel);
@@ -66,7 +63,7 @@ ReasoningEngine = {
 
         // Insertion
         if (FeAdd && FeAdd.length) {
-            Rins = Logics.core.restrictRuleSet(R, Logics.core.mergeFactSets(F, FeAdd, FiAdd));
+            Rins = Logics.core.restrictRuleSet(R, Logics.core.mergeFactSets(Logics.core.mergeFactSets(F, FeAdd), FiAdd));
             FiAdd = Logics.core.mergeFactSets(FiAdd, Logics.core.evaluateRuleSet(Rins, F, Logics.core.mergeFactSets(FeAdd, FiAdd)));
             F = Logics.core.mergeFactSets(F, Logics.core.mergeFactSets(FeAdd, FiAdd));
         }
