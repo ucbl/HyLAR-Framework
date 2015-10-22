@@ -23,8 +23,8 @@ app.controller('MainCtrl',
             $scope.query = $scope.query.replace(/(GRAPH <.+> \{ )(.+)( \})/g, '$2');
         };
 
-        $scope.deletize = function() {
-            $scope.query = $scope.query.replace(/INSERT DATA/g, 'DELETE DATA');
+        $scope.deletize = function(query) {
+            return query.replace(/INSERT DATA/g, 'DELETE DATA');
         };
 
         $scope.insert10 = function() {
@@ -41,6 +41,21 @@ app.controller('MainCtrl',
         };
         $scope.insert50 = function() {
             $scope.query = Hylar.exampleReq.insert50;
+        };
+        $scope.delete10 = function() {
+            $scope.query = $scope.deletize(Hylar.exampleReq.insert10);
+        };
+        $scope.delete20 = function() {
+            $scope.query = $scope.deletize(Hylar.exampleReq.insert20);
+        };
+        $scope.delete30 = function() {
+            $scope.query = $scope.deletize(Hylar.exampleReq.insert30);
+        };
+        $scope.delete40 = function() {
+            $scope.query = $scope.deletize(Hylar.exampleReq.insert40);
+        };
+        $scope.delete50 = function() {
+            $scope.query = $scope.deletize(Hylar.exampleReq.insert50);
         };
         $scope.select_all = function() {
             $scope.query = Hylar.exampleReq.select_all;
@@ -192,7 +207,15 @@ app.controller('MainCtrl',
                         } else {
                             var responseDelay = time.milliseconds - response.time;
                             $scope.sparqlResults = response.data;
-                            LoggingService.msg($scope.sparqlResults.length + ' results.').submit();
+                            if($scope.sparqlResults.length != undefined) {
+                                LoggingService.msg($scope.sparqlResults.length + ' results.').submit();
+                            } else {
+                                var logpre;
+                                $scope.sparqlResults
+                                    ? logpre = LoggingService.msg('Success.')
+                                    : logpre = LoggingService.err('Failure!');
+                                    logpre.submit();
+                            }
                             response.requestDelay && LoggingService.msg('Requesting time : ' + response.requestDelay).submit();
                             responseDelay && LoggingService.msg('Response delay : ' + responseDelay).submit();
                             LoggingService.msg('Querying processing time : ' + response.processingDelay).submit();

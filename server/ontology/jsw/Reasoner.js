@@ -39,7 +39,7 @@ Reasoner = function (ontology, RMethod) {
     preTriplesImplicit = this.aBox.consequencesToTriples(preConsequences.fi, false);
     preTriplesExplicit = this.aBox.consequencesToTriples(preConsequences.fe, true);
     preInsertStatement = this.aBox.createInsertStatement(preTriplesExplicit.concat(preTriplesImplicit));
-    this.aBox.processSql(preInsertStatement);
+    this.aBox.processSql(preInsertStatement, 'INSERT');
 };
 
 /** Prototype for all Reasoner objects. */

@@ -2,7 +2,8 @@
  * Created by Spadon on 14/10/2014.
  */
 
-var CONFIG = {};
+var CONFIG = {},
+    reasoner;
 
 /**
  * Main task
@@ -13,7 +14,7 @@ function startReasoner(data) {
      * Creating a reasoner object for the given ontology
      */
     try {
-        var reasoner, stringifiedReasoner, endMsg, errMsg, RMethod,
+        var stringifiedReasoner, endMsg, errMsg, RMethod,
             seen = [];
 
         (data.reasoningMethod == 'incremental') ? RMethod = ReasoningEngine.incremental : ReasoningEngine.naive;
@@ -66,7 +67,7 @@ function startReasoner(data) {
     }
 }
 
-function queryReasoner(queryString, reasoner, inWorker, method) {
+function queryReasoner(queryString, inWorker, method) {
     /**
      * Creating SPARQL query
      */

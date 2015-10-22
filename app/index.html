@@ -3,7 +3,7 @@
 
     <head>
         <meta charset="utf-8">
-        <title></title>
+        <title>HyLAR: Hybrid Location-Agnostic (RL) Reasoner</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -23,6 +23,7 @@
         <script src="/scripts/config.js"></script>
         <script src="/scripts/controllers/about.js"></script>
         <script src="/scripts/controllers/main.js"></script>
+        <script src="/scripts/filters/mainFilters.js"></script>
         <script src="/scripts/reasoning/jsw.js"></script>
         <script src="/scripts/reasoning/JswReasoner.js"></script>
         <script src="/scripts/resources/HylarRemoteComponents.js"></script>
@@ -32,7 +33,6 @@
         <script src="/scripts/services/HylarClientComponents.js"></script>
         <script src="/scripts/services/HylarRemote.js"></script>
         <script src="/scripts/services/Logging.js"></script>
-        <script src="/scripts/filters/mainFilters.js"></script>
         <!-- endinject -->
 
         <!-- inject:css -->
@@ -46,18 +46,23 @@
 
         <div class="container">
             <div class="header">
-                <ul class="nav nav-pills pull-right">
-                    <li class="active"><a ng-href="#">Home</a></li>
-                    <li><a ng-href="#">About</a></li>
-                    <li><a ng-href="#">Contact</a></li>
-                </ul>
-                <h3 class="text-muted">HyLAR</h3>
+                <div class="nav nav-pills pull-right">
+                    <a href="http://www.cnrs.fr">
+                        <img style="max-height: 80px; padding:10px;" alt="CNRS" title="CNRS" src="http://liris.cnrs.fr/++resource++liris.Theme.images/logo_cnrs.jpg">
+                    </a>
+                    <a href="http://liris.cnrs.fr">
+                        <img style="max-height: 60px; padding:10px;" alt="Logo LIRIS" src="http://liris.cnrs.fr/asawoo/lib/exe/fetch.php?media=logo_liris.png">
+                    </a>
+                    <a href="http://liris.cnrs.fr">
+                        <img style="max-height: 60px; padding:10px;" alt="Logo LIRIS" src="http://liris.cnrs.fr/asawoo/lib/exe/fetch.php?media=logo_asawoo.png">
+                    </a>
+                </div>
+                <h2 class="text-muted">HyLAR: Hybrid Location-Agnostic Reasoner</h2>
             </div>
 
             <div ng-include="'views/main.html'" ng-controller="MainCtrl"></div>
             <div class="footer"></div>
         </div>
-
     </body>
 
 </html>
