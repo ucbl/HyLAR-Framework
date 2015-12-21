@@ -91,16 +91,14 @@ body {
 }
 
 .worker-log {
-    font-family: Arial;
-    font-size: 12px;
+    font-family: courier;
     font-weight: bold;
-    padding: 0px;
-    margin: 0px;
+    padding: 5px;
+    margin: 5px;
 }
 
 .worker-log .time {
-    font-weight: normal;
-    color: #000000;
+    color: #105cb6;
     border-radius: 5px;
 }
 
@@ -157,14 +155,15 @@ body {
 }
 
 .scrollable {
-    border: 0px;
-    background-color: #f7f7f7;
+    border: dotted #105cb6 1px;
+    background-color: #EBF4FD;
     overflow: auto;
     height: 150px;
 }
 
 .scrollable-results {
     overflow: scroll;
+    height: 300px;
     font-family: courier;
     font-weight: bold;
     padding: 5px;
@@ -173,18 +172,17 @@ body {
 }
 
 .sparqlresult {
-    border-bottom: 1px solid #245269;
+    border-bottom: 1px dashed #d58512;
     margin: 3px;
     padding: 3px;
 }
 
 .sparqlvar {
-    color: #000000;
+    color: #d58512;
 }
 
 .sparqlval {
-    font-weight: normal;
-    color: #262626;
+    color: #66512c;
 }
 
 .list-group-small {
@@ -220,12 +218,4 @@ th {
     margin: 0px 5px;
     height: auto;
     padding: 3px;
-}
-
-.btn-tiny {
-    margin: 0px 5px;
-    height: auto;
-    padding: 3px;
-    font-size:10px;
-    font-weight: bold;
 }

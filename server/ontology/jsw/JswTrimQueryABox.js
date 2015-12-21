@@ -25,21 +25,13 @@ TrimQueryABox = function () {
 
 /** Prototype for all jsw.TrimQueryABox objects. */
 TrimQueryABox.prototype = {
-    processSql: function(queries, statementType) {
-        var queryLang = this.createQueryLang(), responses = [], answer;
+    processSql: function(queries) {
+        var queryLang = this.createQueryLang(), responses = [];
         for (var key in queries) {
             var query = queries[key];
             responses.push(queryLang.parseSQL(query).filter(this.database));
         }
-        if(statementType === 'INSERT' || statementType === 'DELETE') {
-            answer = true;
-            _(responses).forEach(function(response) {
-                answer  = answer && response;
-            });
-        } else {
-            answer = _.uniq(responses)[0];
-        }
-        return answer;
+        return responses;
     },
     /**
      * Answers the given RDF query.
@@ -49,7 +41,7 @@ TrimQueryABox.prototype = {
      */
     answerQuery: function (query, ontology, rules, RMethod) {
         var sql = this.createSql(query, ontology, rules, RMethod), sqlQueries = sql.split(';').slice(0,-1);
-        return this.processSql(sqlQueries, query.statementType);
+        return this.processSql(sqlQueries);
     },
 
     /**
