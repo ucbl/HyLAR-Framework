@@ -2,15 +2,42 @@
  * Created by pc on 21/12/2015.
  */
 
-app.service('ClientResources', ['Ping', function() {
-    this.battery = navigator.getBattery();
-    this.ping = 0;
+app.service('ClientResources', ['ServerTime', function(ServerTime) {
 
-    this.generatePing = function($resource) {
-        var ENV = angular.injector(['config']).get('ENV');
-        return $resource(ENV.serverRootPath + '/hello', {}, {
-            'classify': { method: 'GET', params: {time: '@time', reasoningMethod: '@reasoningMethod'}, isArray: false }
+    this.resources = function() {
+        var blevel, bcharging;
+        return navigator.getBattery()
+            .then(function(battery) {
+                blevel = battery.level;
+                bcharging = true;
+                return ServerTime.getServerTime().$promise
+            })
+            .then(function(res) {
+                return {
+                    ping: new Date().getTime() - res.milliseconds,
+                    blevel: blevel,
+                    bcharging: bcharging
+                };
+            });
+    };
+
+    this.performClassif = function() {
+        return this.resources().then(function(res) {
+            if( (res.blevel > 0.25) || (res.bcharging) ) {
+                return 'client';
+            } else {
+                return 'server';
+            }
         });
-    }
+    };
 
+    this.performQuerying = function() {
+        return this.resources().then(function(res) {
+            if ((res.ping > 100) && ((res.battery > 0.25) || (res.bcharging))) {
+                return 'client';
+            } else {
+                return 'server';
+            }
+        });
+    };
 }]);

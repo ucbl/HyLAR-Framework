@@ -10,7 +10,7 @@
 app.controller('MainCtrl',
 
     function ($scope, $http, $q,
-              Hylar,
+              Hylar, ClientResources,
               ServerTime, LoggingService,
               FileUploader) {
 
@@ -99,41 +99,47 @@ app.controller('MainCtrl',
         };
 
         $scope.startWorker = function() {
+            var that = this;
+            ClientResources.performClassif().then(function(res) {
+                if (Hylar.config.classification == 'auto') {
+                    Hylar.config.classification = res;
+                    LoggingService.msg('Classification on the ' + res + ' side.').submit()
+                }
 
-            if(this.owlFileName) {
-                var promise,
-                    filename = this.owlFileName;
-                LoggingService.msg('Initializing...').submit();
+                if (that.owlFileName) {
+                    var promise,
+                        filename = that.owlFileName;
+                    LoggingService.msg('Initializing...').submit();
 
-                ServerTime.getServerTime().$promise.then(function(time) {
+                    ServerTime.getServerTime().$promise.then(function (time) {
 
-                    if(Hylar.config.classification == 'server') {
-                        promise = Hylar.remote.classify({
-                            filename: filename,
-                            time: time.milliseconds,
-                            reasoningMethod: $scope.config.reasoningMethod
-                        }).$promise;
-                    } else {
-                        promise = Hylar.remote.fetch({
-                            filename: filename,
-                            time: time.milliseconds,
-                            reasoningMethod: $scope.config.reasoningMethod
-                        }).$promise;
-                    }
+                        if (Hylar.config.classification == 'server') {
+                            promise = Hylar.remote.classify({
+                                filename: filename,
+                                time: time.milliseconds,
+                                reasoningMethod: $scope.config.reasoningMethod
+                            }).$promise;
+                        } else {
+                            promise = Hylar.remote.fetch({
+                                filename: filename,
+                                time: time.milliseconds,
+                                reasoningMethod: $scope.config.reasoningMethod
+                            }).$promise;
+                        }
 
-                    promise.then(
-                        function (response) {
-                            ServerTime.getServerTime().$promise.then(function(time) {
-                                var data = response.data,
-                                    responseDelay = time.milliseconds - data.time,
-                                    startTime = time.milliseconds;
+                        promise.then(
+                            function (response) {
+                                ServerTime.getServerTime().$promise.then(function (time) {
+                                    var data = response.data,
+                                        responseDelay = time.milliseconds - data.time,
+                                        startTime = time.milliseconds;
 
-                                data.command = 'start';
-                                data.inWorker = Hylar.config.inWorker;
-                                data.reasoningMethod = $scope.config.reasoningMethod;
+                                    data.command = 'start';
+                                    data.inWorker = Hylar.config.inWorker;
+                                    data.reasoningMethod = $scope.config.reasoningMethod;
 
-                                Hylar.client.process(data).then(function(message) {
-                                        ServerTime.getServerTime().$promise.then(function(time) {
+                                    Hylar.client.process(data).then(function (message) {
+                                        ServerTime.getServerTime().$promise.then(function (time) {
                                             var classifyingTime = data.processingDelay || time.milliseconds - startTime;
                                             processMessage(message);
                                             LoggingService.msg('Requesting time : ' + data.requestDelay).submit();
@@ -142,64 +148,73 @@ app.controller('MainCtrl',
                                             $scope.config.reasoner = localStorage.getItem('reasoner');
                                         });
                                     });
-                            });
+                                });
 
 
-                        },
-                        function (err) {
-                            LoggingService.err('OWL Parsing failed. ' + err.data).submit();
-                        }
-                    );
+                            },
+                            function (err) {
+                                LoggingService.err('OWL Parsing failed. ' + err.data).submit();
+                            }
+                        );
 
-                });
+                    });
 
-            }
+                }
+            });
         };
 
         $scope.executeQuery = function() {
-
-            if(Hylar.config.querying == 'client' && !localStorage.getItem('reasoner')) {
-                LoggingService.err('Client-side reasoner not ready').submit();
-                return;
-            }
-
-            var promise,
-                query = this.query;
-            LoggingService.msg('Evaluating query ... ').submit();
-
-            ServerTime.getServerTime().$promise.then(function(time) {
-                if(Hylar.config.querying == 'client') {
-                    promise = Hylar.client.process({
-                        command: 'process',
-                        reasoner: localStorage.getItem('reasoner'),
-                        sparqlQuery: query,
-                        inWorker: Hylar.config.inWorker,
-                        reasoningMethod: $scope.config.reasoningMethod
-                    });
-                } else {
-                    promise = Hylar.remote.query({
-                        query: query,
-                        time: time.milliseconds,
-                        inWorker: Hylar.config.inWorker,
-                        reasoningMethod: $scope.config.reasoningMethod
-                    }).$promise;
+            var that = this;
+            ClientResources.performQuerying().then(function(res) {
+                if (Hylar.config.querying == 'auto') {
+                    Hylar.config.querying = res;
+                    LoggingService.msg('Querying on the ' + res + ' side.').submit()
                 }
 
-                promise.then(function(response) {
-                    ServerTime.getServerTime().$promise.then(function (time) {
-                        if(response.isError) {
-                            LoggingService.err(response.msg).submit();
-                        } else {
-                            var responseDelay = time.milliseconds - response.time;
-                            $scope.sparqlResults = response.data;
-                            LoggingService.msg($scope.sparqlResults.length + ' results.').submit();
-                            response.requestDelay && LoggingService.msg('Requesting time : ' + response.requestDelay).submit();
-                            responseDelay && LoggingService.msg('Response delay : ' + responseDelay).submit();
-                            LoggingService.msg('Querying processing time : ' + response.processingDelay).submit();
-                        }
+                if(Hylar.config.querying == 'client' && !localStorage.getItem('reasoner')) {
+                    LoggingService.err('Client-side reasoner not ready').submit();
+                    return;
+                }
+
+                var promise,
+                    query = that.query;
+                LoggingService.msg('Evaluating query ... ').submit();
+
+                ServerTime.getServerTime().$promise.then(function(time) {
+                    if(Hylar.config.querying == 'client') {
+                        promise = Hylar.client.process({
+                            command: 'process',
+                            reasoner: localStorage.getItem('reasoner'),
+                            sparqlQuery: query,
+                            inWorker: Hylar.config.inWorker,
+                            reasoningMethod: $scope.config.reasoningMethod
+                        });
+                    } else {
+                        promise = Hylar.remote.query({
+                            query: query,
+                            time: time.milliseconds,
+                            inWorker: Hylar.config.inWorker,
+                            reasoningMethod: $scope.config.reasoningMethod
+                        }).$promise;
+                    }
+
+                    promise.then(function(response) {
+                        ServerTime.getServerTime().$promise.then(function (time) {
+                            if(response.isError) {
+                                LoggingService.err(response.msg).submit();
+                            } else {
+                                var responseDelay = time.milliseconds - response.time;
+                                $scope.sparqlResults = response.data;
+                                LoggingService.msg($scope.sparqlResults.length + ' results.').submit();
+                                response.requestDelay && LoggingService.msg('Requesting time : ' + response.requestDelay).submit();
+                                responseDelay && LoggingService.msg('Response delay : ' + responseDelay).submit();
+                                LoggingService.msg('Querying processing time : ' + response.processingDelay).submit();
+                            }
+                        });
                     });
                 });
             });
+
         };
 
         $scope.updateList();
