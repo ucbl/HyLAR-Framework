@@ -43,5 +43,5 @@ app.get('/sparql',  OntologyController.getExternalOntology, OntologyController.p
 //Time
 
 // Launching server
-app.listen(3000);
+app.listen(3002);
 
