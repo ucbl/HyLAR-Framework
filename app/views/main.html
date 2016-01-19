@@ -1,146 +1,147 @@
-<div class="table-responsive">
-    <table class="table table-striped three-column">
-        <tr>
-            <th class="thlabel">
+<div class="container">
+
+    <div clas="row">
+        <div class="col-sm-4">
+            <div class="thlabel">
                 OWL File
-            </th>
-            <th>
+            </div>
+            <ul class="list-group list-group-small-forms">
+                <li class="list-group-item">
+                    <input id="owlInput" type="file" ng-model="fileToUpload" nv-file-select uploader="uploader"/>
+                </li>
+                <li class="list-group-item">
+                    <table>
+                        <tr>
+                            <td>
+                                <select ng-model="owlFileName" ng-options="filename for filename in ontologyList"/>
+                            </td>
+                        </tr>
+                    </table>
+                </li>
+                <ul class="list-group-small">
+                    <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
+                        {{ config.reasoner | displayReasonerStatus }}
+                        <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
+                    </li>
+                </ul>
+                <li class="list-group-item">
+                    <input type="button" id="classifyButton" class="btn btn-default btn-sm" value="Classify ontology" ng-click="startWorker()"/>
+                    <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-4">
+            <div class="thlabel">
                 Specific queries
-            </th>
-            <th>
+            </div>
+            <ul class="list-group list-group-small-forms">
+                <li class="list-group-item">
+                    INSERT
+                    <input type="button" id="i1" class="btn btn-default btn-tiny" value="10" ng-click="insert10()"/>
+                    <input type="button" id="i2" class="btn btn-default btn-tiny" value="20" ng-click="insert20()"/>
+                    <input type="button" id="i3" class="btn btn-default btn-tiny" value="30" ng-click="insert30()"/>
+                    <input type="button" id="i4" class="btn btn-default btn-tiny" value="40" ng-click="insert40()"/>
+                    <input type="button" id="i5" class="btn btn-default btn-tiny" value="50" ng-click="insert50()"/>
+                </li>
+                <li class="list-group-item">
+                    DELETE
+                    <input type="button" id="d1" class="btn btn-default btn-tiny" value="10" ng-click="delete10()"/>
+                    <input type="button" id="d2" class="btn btn-default btn-tiny" value="20" ng-click="delete20()"/>
+                    <input type="button" id="d3" class="btn btn-default btn-tiny" value="30" ng-click="delete30()"/>
+                    <input type="button" id="d4" class="btn btn-default btn-tiny" value="40" ng-click="delete40()"/>
+                    <input type="button" id="d5" class="btn btn-default btn-tiny" value="50" ng-click="delete50()"/>
+                </li>
+                <li class="list-group-item">
+                    SELECT
+                    <input type="button" id="sa" class="btn btn-default btn-tiny" value="all" ng-click="select_all()"/>
+                    <input type="button" id="s1" class="btn btn-default btn-tiny" value="10" ng-click="select10()"/>
+                    <input type="button" id="s2" class="btn btn-default btn-tiny" value="20" ng-click="select20()"/>
+                    <input type="button" id="s3" class="btn btn-default btn-tiny" value="30" ng-click="select30()"/>
+                    <input type="button" id="s4" class="btn btn-default btn-tiny" value="40" ng-click="select40()"/>
+                    <input type="button" id="s5" class="btn btn-default btn-tiny" value="50" ng-click="select50()"/>
+                </li>
+                <li class="list-group-item">
+                    <input type="button" id="ug" class="btn btn-default btn-sm" value="UNGRAPH" ng-click="ungraph()"/>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-4">
+            <div class="thlabel">
                 Controls
-            </th>
-        </tr>
-        <tr>
-            <td>
-                <ul class="list-group list-group-small-forms">
-                    <li class="list-group-item">
-                        <input id="owlInput" type="file" ng-model="fileToUpload" nv-file-select uploader="uploader"/>
-                    </li>
-                    <li class="list-group-item">
-                        <table>
-                            <tr>
-                                <td>
-                                    <select ng-model="owlFileName" ng-options="filename for filename in ontologyList"/>
-                                </td>
-                            </tr>
-                        </table>
-                    </li>
-                    <ul class="list-group-small">
-                        <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
-                            {{ config.reasoner | displayReasonerStatus }}
-                            <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
-                        </li>
-                    </ul>
-                    <li class="list-group-item">
-                        <input type="button" id="classifyButton" class="btn btn-default btn-sm" value="Classify ontology" ng-click="startWorker()"/>
-                        <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
-                    </li>
-                </ul>
-            </td>
-            <td>
-                <ul class="list-group list-group-small-forms">
-                    <li class="list-group-item">
-                        INSERT
-                        <input type="button" id="i1" class="btn btn-default btn-tiny" value="10" ng-click="insert10()"/>
-                        <input type="button" id="i2" class="btn btn-default btn-tiny" value="20" ng-click="insert20()"/>
-                        <input type="button" id="i3" class="btn btn-default btn-tiny" value="30" ng-click="insert30()"/>
-                        <input type="button" id="i4" class="btn btn-default btn-tiny" value="40" ng-click="insert40()"/>
-                        <input type="button" id="i5" class="btn btn-default btn-tiny" value="50" ng-click="insert50()"/>
-                    </li>
-                    <li class="list-group-item">
-                        DELETE
-                        <input type="button" id="d1" class="btn btn-default btn-tiny" value="10" ng-click="delete10()"/>
-                        <input type="button" id="d2" class="btn btn-default btn-tiny" value="20" ng-click="delete20()"/>
-                        <input type="button" id="d3" class="btn btn-default btn-tiny" value="30" ng-click="delete30()"/>
-                        <input type="button" id="d4" class="btn btn-default btn-tiny" value="40" ng-click="delete40()"/>
-                        <input type="button" id="d5" class="btn btn-default btn-tiny" value="50" ng-click="delete50()"/>
-                    </li>
-                    <li class="list-group-item">
-                        SELECT
-                        <input type="button" id="sa" class="btn btn-default btn-tiny" value="all" ng-click="select_all()"/>
-                        <input type="button" id="s1" class="btn btn-default btn-tiny" value="10" ng-click="select10()"/>
-                        <input type="button" id="s2" class="btn btn-default btn-tiny" value="20" ng-click="select20()"/>
-                        <input type="button" id="s3" class="btn btn-default btn-tiny" value="30" ng-click="select30()"/>
-                        <input type="button" id="s4" class="btn btn-default btn-tiny" value="40" ng-click="select40()"/>
-                        <input type="button" id="s5" class="btn btn-default btn-tiny" value="50" ng-click="select50()"/>
-                    </li>
-                    <li class="list-group-item">
-                        <input type="button" id="ug" class="btn btn-default btn-sm" value="UNGRAPH" ng-click="ungraph()"/>
-                    </li>
-                </ul>
-            </td>
-            <td>
-                <ul class="list-group list-group-small-forms">
-                    <li class="list-group-item">
-                        Reasoning:
-                        <label for="classificationRadioServer">Greedy</label>
-                        <input class="radio-inline" id="reasoningGreedy" ng-model="config.reasoningMethod" value="greedy" type="radio"/>
+            </div>
+            <ul class="list-group list-group-small-forms">
+                <li class="list-group-item">
+                    Reasoning:
+                    <label for="classificationRadioServer">Greedy</label>
+                    <input class="uib-btn-radio" id="reasoningGreedy" ng-model="config.reasoningMethod" value="greedy" type="radio"/>
 
-                        <label for="classificationRadioClient">Incremental</label>
-                        <input class="radio-inline" id="reasoningIncremental" ng-model="config.reasoningMethod" value="incremental" type="radio"/>
-                    </li>
-                    <li class="list-group-item">
-                        Classification:
-                        <label for="classificationRadioServer">server-side</label>
-                        <input class="radio-inline" id="classificationRadioServer" ng-model="config.classification" value="server" type="radio"/>
+                    <label for="classificationRadioClient">Incremental</label>
+                    <input class="radio-inline" id="reasoningIncremental" ng-model="config.reasoningMethod" value="incremental" type="radio"/>
+                </li>
+                <li class="list-group-item">
+                    Classification:
+                    <label for="classificationRadioServer">server-side</label>
+                    <input class="radio-inline" id="classificationRadioServer" ng-model="config.classification" value="server" type="radio"/>
 
-                        <label for="classificationRadioClient">client-side</label>
-                        <input class="radio-inline" id="classificationRadioClient" ng-model="config.classification" value="client" type="radio"/>
+                    <label for="classificationRadioClient">client-side</label>
+                    <input class="radio-inline" id="classificationRadioClient" ng-model="config.classification" value="client" type="radio"/>
 
-                        <label for="classificationRadioAuto">auto</label>
-                        <input class="radio-inline" id="classificationRadioAuto" ng-model="config.classification" value="auto" type="radio"/>
-                    </li>
-                    <li class="list-group-item">
-                        Querying:
-                        <label for="queryingRadioServer">server-side</label>
-                        <input id="queryingRadioServer" ng-model="config.querying" value="server" type="radio"/>
+                    <label for="classificationRadioAuto">auto</label>
+                    <input class="radio-inline" id="classificationRadioAuto" ng-model="config.classification" value="auto" type="radio"/>
+                </li>
+                <li class="list-group-item">
+                    Querying:
+                    <label for="queryingRadioServer">server-side</label>
+                    <input id="queryingRadioServer" ng-model="config.querying" value="server" type="radio"/>
 
-                        <label for="queryingRadioClient">client-side</label>
-                        <input id="queryingRadioClient" ng-model="config.querying" value="client" checked type="radio"/>
+                    <label for="queryingRadioClient">client-side</label>
+                    <input id="queryingRadioClient" ng-model="config.querying" value="client" checked type="radio"/>
 
-                        <label for="queryingRadioAuto">auto</label>
-                        <input id="queryingRadioAuto" ng-model="config.querying" value="auto" checked type="radio"/>
-                    </li>
-                    <li class="list-group-item">
-                        <label class="btn btn-sm btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
-                        <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
-                    </li>
-                </ul>
+                    <label for="queryingRadioAuto">auto</label>
+                    <input id="queryingRadioAuto" ng-model="config.querying" value="auto" checked type="radio"/>
+                </li>
+                <li class="list-group-item">
+                    <label class="btn btn-sm btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
+                    <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
+                </li>
+            </ul>
+        </div>
+    </div>
 
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <textarea class="form-control sparql" rows="10" ng-model="query">
-                </textarea>
-            </td>
-            <td colspan="1">
-                <div scroll-glue class="scrollable worker-log">
-                    <div ng-repeat="log in workerlog">
-                        <span class="worker-log time">{{ log | displayDate }}</span>
-                        <span ng-class="(log.isError) ? 'worker-log error' : 'worker-log msg'">{{ log | displayMsg }}</span>
-                    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="thlabel">
+                SPARQL Query
+            </div>
+            <textarea style="width:100%" class="form-control sparql" rows="10" ng-model="query">
+            </textarea>
+        </div>
+        <div class="col-sm-4">
+            <div class="thlabel">
+                Log
+            </div>
+            <div scroll-glue class="scrollable worker-log">
+                <div ng-repeat="log in workerlog">
+                    <span class="worker-log time">{{ log | displayDate }}</span>
+                    <span ng-class="(log.isError) ? 'worker-log error' : 'worker-log msg'">{{ log | displayMsg }}</span>
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
+    </div>
 
-        <tr>
-            <th colspan="3">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="thlabel">
                 SPARQL results (bindings)
-            </th>
-        </tr>
-        <tr>
-            <td colspan="3">
-                <div class="scrollable-results">
-                    <div class="sparqlresult"  ng-repeat="result in sparqlResults">
-                        <span ng-repeat="(key, value) in result">
-                            <span class="sparqlvar">{{ key }}</span> : <span class="sparqlval">{{ value }}</span>
-                        </span>
-                    </div>
+            </div>
+            <div class="scrollable-results">
+                <div class="sparqlresult"  ng-repeat="result in sparqlResults">
+                    <span ng-repeat="(key, value) in result">
+                        <span class="sparqlvar">{{ key }}</span> : <span class="sparqlval">{{ value }}</span>
+                    </span>
                 </div>
-            </td>
-        </tr>
-    </table>
+            </div>
+        </div>
+    </div>
 
 </div>
