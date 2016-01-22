@@ -18,12 +18,10 @@
                         </tr>
                     </table>
                 </li>
-                <ul class="list-group-small">
-                    <li ng-class="(config.reasoner) ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-warning'">
-                        {{ config.reasoner | displayReasonerStatus }}
-                        <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
-                    </li>
-                </ul>
+                <li ng-class="(config.reasoner) ? 'list-group-item available' : 'list-group-item unavailable'">
+                    {{ config.reasoner | displayReasonerStatus }}
+                    <a href="" ng-show="config.reasoner" ng-click="removeReasoner()">(remove)</a>
+                </li>
                 <li class="list-group-item">
                     <input type="button" id="classifyButton" class="btn btn-default btn-sm" value="Classify ontology" ng-click="startWorker()"/>
                     <input type="button" id="sparqlButton" class="btn btn-default btn-sm" value="Run query" ng-click="executeQuery()"/>
@@ -32,7 +30,7 @@
         </div>
         <div class="col-sm-4">
             <div class="thlabel">
-                Specific queries
+                Example queries
             </div>
             <ul class="list-group list-group-small-forms">
                 <li class="list-group-item">
@@ -71,38 +69,37 @@
             </div>
             <ul class="list-group list-group-small-forms">
                 <li class="list-group-item">
-                    Reasoning:
-                    <label for="classificationRadioServer">Greedy</label>
-                    <input class="uib-btn-radio" id="reasoningGreedy" ng-model="config.reasoningMethod" value="greedy" type="radio"/>
-
-                    <label for="classificationRadioClient">Incremental</label>
-                    <input class="radio-inline" id="reasoningIncremental" ng-model="config.reasoningMethod" value="incremental" type="radio"/>
+                    <div class="thlabel-sm">
+                        Reasoning
+                    </div>
+                    <div class="btn-group-xs" style="text-align:center;">
+                        <label ng-class="config.reasoningMethod == 'greedy' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.reasoningMethod = 'greedy'">Greedy</label>
+                        <label ng-class="config.reasoningMethod == 'incremental' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.reasoningMethod = 'incremental'">Incremental</label>
+                    </div>
                 </li>
                 <li class="list-group-item">
-                    Classification:
-                    <label for="classificationRadioServer">server-side</label>
-                    <input class="radio-inline" id="classificationRadioServer" ng-model="config.classification" value="server" type="radio"/>
-
-                    <label for="classificationRadioClient">client-side</label>
-                    <input class="radio-inline" id="classificationRadioClient" ng-model="config.classification" value="client" type="radio"/>
-
-                    <label for="classificationRadioAuto">auto</label>
-                    <input class="radio-inline" id="classificationRadioAuto" ng-model="config.classification" value="auto" type="radio"/>
+                    <div class="thlabel-sm">
+                        Classification:
+                    </div>
+                    <div class="btn-group-xs" style="text-align:center;">
+                        <label ng-class="config.classification == 'server' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.classification = 'server'">Server-side</label>
+                        <label ng-class="config.classification == 'client' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.classification = 'client'">Client-side</label>
+                        <label ng-class="config.classification == 'auto' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.classification = 'auto'">Auto</label>
+                    </div>
                 </li>
                 <li class="list-group-item">
-                    Querying:
-                    <label for="queryingRadioServer">server-side</label>
-                    <input id="queryingRadioServer" ng-model="config.querying" value="server" type="radio"/>
-
-                    <label for="queryingRadioClient">client-side</label>
-                    <input id="queryingRadioClient" ng-model="config.querying" value="client" checked type="radio"/>
-
-                    <label for="queryingRadioAuto">auto</label>
-                    <input id="queryingRadioAuto" ng-model="config.querying" value="auto" checked type="radio"/>
+                    <div class="thlabel-sm">
+                        Querying
+                    </div>
+                    <div class="btn-group-xs" style="text-align:center;">
+                        <label ng-class="config.querying == 'server' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.querying = 'server'">Server-side</label>
+                        <label ng-class="config.querying == 'client' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.querying = 'client'">Client-side</label>
+                        <label ng-class="config.querying == 'auto' ? 'btn btn-success' : 'btn btn-default'" ng-click="config.querying = 'auto'">Auto</label>
+                    </div>
                 </li>
-                <li class="list-group-item">
-                    <label class="btn btn-sm btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
-                    <input id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
+                <li class="list-group-item" style="text-align:center;">
+                    <label class="btn btn-xs btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
+                    <input class="worker-checkbox" id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
                 </li>
             </ul>
         </div>
