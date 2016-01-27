@@ -9,7 +9,23 @@ This code can be tested at: http://dataconf.liris.cnrs.fr/hylar/
 
 ###services/Hylar###
 
-This main Hylar service integrates **services/HylarClient** and **services/HylarRemote** sub-services (described below). It also proposes request examples for the demo, as well as an initial configuration (reasoning method, location of the components execution, worker enabling or disabling).
+This main Hylar service integrates **services/HylarClient** and **services/HylarRemote** sub-services (described below). It also proposes request examples for the demo, as well as its initial configuration **Hylar.config** (reasoning method, location of the components execution, worker enabling or disabling).
+
+>  **config.classification**
+
+Location of the classification task. Can be set manually or automatically to either `'server'` or `'client'`.
+
+> **config.querying**
+
+Location of the query answering task. Can be set manually or automatically to either `'server'` or `'client'`.
+
+> **config.inWorker**
+
+If set to `'true'`, each component will be executed in a worker.
+
+> **config.reasoningMethod**
+
+Reasoning algorithm used, either `'greedy'` (naive implementation) or `'incremental'`.
 
 ----------
 
