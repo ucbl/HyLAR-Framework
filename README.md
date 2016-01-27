@@ -7,6 +7,22 @@ This code can be tested at: http://dataconf.liris.cnrs.fr/hylar/
 
 ## Client-side components ##
 
+###services/ClientResources###
+
+This service uses the **ServerTime** remote service (through pinging) and the Device API (battery level and status) to decide the location of the classification and the query answering tasks execution (client-side or server-side).
+
+> **resources()**
+
+Returns an Object containing the current server ping, the battery level and charging status of the client device.
+
+> **performClassif()**
+
+Returns 'client' if the ping is too high (>100ms).
+
+> **performQuerying()**
+
+Returns 'server' if the battery level is low (>25%) while not charging.
+
 ###services/Hylar###
 
 This main Hylar service integrates **HylarClient** and **HylarRemote** sub-services (described below). It also proposes request examples for the demo, as well as its initial configuration **Hylar.config** (reasoning method, location of the components execution, worker enabling or disabling).
