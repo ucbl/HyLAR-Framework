@@ -18,9 +18,11 @@ This main Hylar service integrates **services/HylarClient** and **services/Hylar
 HylarClient, as its name implies, is the client-side part of Hylar, invoked when **Hylar.config.classification** or **Hylar.config.querying** are set to `'client'` value. This sub-service integrates both the ReasoningService and OntologyParser (described below).
 
 > **process()**
+
 Invocation of the `process()` function from the **services/ReasoningService** component.
 
 > **parse()**
+
 Invocation of the `parse()` function from the **services/OntologyParser** component.
 
 ###services/HylarRemote###
@@ -32,4 +34,5 @@ HylarRemote, references the server-side components of Hylar, invoked when **Hyla
 ###services/OntologyParser###
 
 > **parse** (*String* data)
+
 Calls `JswParser.parse()` , the original [rdf/xml JSW parser](https://code.google.com/p/owlreasoner/#Ontology_Object), on the `data` parameter.
