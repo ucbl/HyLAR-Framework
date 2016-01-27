@@ -1,7 +1,7 @@
 
 # HyLAR #
 
-HyLAR (for Hybrid Location-Agnostic Reasoning) is an adaptable architecture for OWL reasoning based on [JSW and OWLReasoner](https://code.google.com/p/owlreasoner/). HyLAR includes a rule-based incremental reasoner and can execute its different components (classification, query answering) either on the client-side or on the server side, depending on the client capabilities or the network status.
+HyLAR (for Hybrid Location-Agnostic Reasoning) is an adaptable architecture for OWL reasoning. It uses [JSW and OWLReasoner](https://code.google.com/p/owlreasoner/) as a triplestore and provides an additional a rule-based incremental reasoning engine. Hylar can execute its different components (classification, query answering) either on the client-side or on the server side, depending on the client capabilities or the network status.
 
 This code can be tested at: http://dataconf.liris.cnrs.fr/hylar/
 
@@ -63,7 +63,7 @@ Invocation of the `parse()` function from the **OntologyParser** component.
 
 HylarRemote is used to invoke the server-side components of Hylar, when **Hylar.config.classification** or **Hylar.config.querying** are set to `'server'`. This sub-service integrates both the **OntologyClassifier**, **OntologyFetcher**, **QueryProcessor** and **RemoteOntologies** resources (described below).
 
-> **classify() (*String* filename, *Number* time, *String* reasoningMethod)**
+> **classify()**
 
 Invocation of the `classify()` function from the **resources/OntologyClassifier** component.
 
@@ -91,8 +91,38 @@ Parses the raw ontology `data` using `JswParser.parse()` , the original [rdf/xml
 
 ###services/ReasoningService###
 
-> **process** (*Object* data).
+> **process** (*Object* data)
 
 If `data.command` is set to `start`, it instantiates an returns a JswReasoner instance by classifying the `data.ontology` JswOntology object. Once instantiated, if the `data.command` parameter is set to `process`, it answers the `data.sparqlQuery` String query and returns a set of results. Both commands specify their reasoning method in `data.reasoningMethod`.
 
 ----------
+
+###resources/OntologyClassifier###
+
+> **classify** (GET)
+
+Remotely executes the server-side JSW parser and the JSW classifier (detailed on the server-side components below). Settable request parameters are `filename` (the name of the ontology to be parsed then classified) and  `reasoningMethod` (self-explanatory, either `greedy`or `incremental`).
+
+----------
+
+###resources/OntologyFetcher###
+
+> **fetch** (GET)
+
+Fetches a server-side rdf/xml ontology file. Name is set on the `filename`request parameter.
+
+----------
+
+###resources/QueryProcessor###
+
+> **query** (GET)
+
+Remotely calls the server-side JSW query answering task. Settable request parameters are `filename` (the name of the ontology to be parsed then classified) and  `reasoningMethod` (self-explanatory, either `greedy`or `incremental`).
+
+----------
+
+###resources/RemoteOntologies###
+
+> **getList** (GET)
+
+Returns the list of ontology files available on the server.
