@@ -21,7 +21,7 @@ Returns 'client' if the ping is too high (>100ms).
 
 > **performQuerying()**
 
-Returns 'server' if the battery level is low (>25%) while not charging.
+Returns 'server' if the battery level is low (<25%) while not charging.
 
 ###services/Hylar###
 
@@ -85,4 +85,8 @@ Executes the `getList()` function from the **resources/RemoteOntologies** compon
 
 > **parse** (*String* data)
 
-Calls `JswParser.parse()` , the original [rdf/xml JSW parser](https://code.google.com/p/owlreasoner/#Ontology_Object), on the `data` parameter.
+Parses the raw ontology `data` using `JswParser.parse()` , the original [rdf/xml JSW parser](https://code.google.com/p/owlreasoner/#Ontology_Object). Returns a classifiable JswOntology object.
+
+> **process** (*Object* data).
+
+If `data.command` is set to `start`, it instantiates an returns a JswReasoner instance by classifying the `data.ontology` JswOntology object. Once instantiated, if the `data.command` parameter is set to `process`, it answers the `data.sparqlQuery` String query and returns a set of results. Both commands specify their reasoning method in `data.reasoningMethod`.
