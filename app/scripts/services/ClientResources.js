@@ -21,23 +21,4 @@ app.service('ClientResources', ['ServerTime', function(ServerTime) {
             });
     };
 
-    this.performClassif = function() {
-        return this.resources().then(function(res) {
-            if(res.ping > 100) {
-                return 'client';
-            } else {
-                return 'server';
-            }
-        });
-    };
-
-    this.performQuerying = function() {
-        return this.resources().then(function(res) {
-            if ((res.battery > 0.25) || (res.bcharging)) {
-                return 'client';
-            } else {
-                return 'server';
-            }
-        });
-    };
 }]);
