@@ -11,6 +11,7 @@ var runSequence = require('run-sequence');
 var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
 var replace = require('gulp-replace');
+var debug = require('gulp-debug');
 
 var appPath = ('app');
 var libPath = appPath + '/lib';
@@ -35,7 +36,8 @@ gulp.task('build-bower', function() {
 
 // Client-side code migration
 gulp.task('build-migrate', function() {
-    return gulp.src(serverPath + './ontology/jsw/*.js')
+    return gulp.src(serverPath + '/ontology/jsw/*.js')
+        .pipe(debug())
         .pipe(browserify({
             insertGlobals : true,
             debug : false,
@@ -43,7 +45,7 @@ gulp.task('build-migrate', function() {
         }))
         .pipe(concat('jsw.js'))
         .pipe(replace(regtofix, lodashfix)) // Fixing lodash issues
-        .pipe(gulp.dest(appPath + './scripts/reasoning'));
+        .pipe(gulp.dest(appPath + '/scripts/reasoning'));
 });
 
 // Add js and css dependencies into index.html. Some files and directories are voluntary ordered.

@@ -12,7 +12,7 @@ app.controller('MainCtrl',
     function ($scope, $http, $q,
               Hylar, ClientResources,
               ServerTime, LoggingService,
-              FileUploader) {
+              FileUploader, AdaptationService) {
 
         $scope.clearLog = function() {
             LoggingService.log = [];
@@ -41,6 +41,26 @@ app.controller('MainCtrl',
         };
         $scope.insert50 = function() {
             $scope.query = Hylar.exampleReq.insert50;
+        };
+        $scope.delete10 = function() {
+            $scope.insert10();
+            $scope.deletize();
+        };
+        $scope.delete20 = function() {
+            $scope.insert20();
+            $scope.deletize();
+        };
+        $scope.delete30 = function() {
+            $scope.insert30();
+            $scope.deletize();
+        };
+        $scope.delete40 = function() {
+            $scope.insert40();
+            $scope.deletize();
+        };
+        $scope.delete50 = function() {
+            $scope.insert50();
+            $scope.deletize();
         };
         $scope.select_all = function() {
             $scope.query = Hylar.exampleReq.select_all;
