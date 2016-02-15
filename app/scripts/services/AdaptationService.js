@@ -8,27 +8,27 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
         ontologySizeThreshold: 50,
         pingThreshold: 150,
         batteryLevelThreshold: 0.2
-    },
+    };
 
     this.getOntologySize = function(parsedOntology) {
         var entityCount = parsedOntology.entityCount;
         return entityCount['9'] + entityCount['10'] +
             entityCount['11'] + entityCount['22'] + entityCount['25'];
-    },
+    };
 
     this.generateFacts = function(ontologySize, batteryLevel, ping) {
         var valuePredicate, facts = [];
 
         (ontologySize > this.parameters.ontologySizeThreshold)
-            ? valuePredicate = 'exceeds' : valuePredicate = 'lowerOrEquals';
+            ? valuePredicate = 'exceedsSize' : valuePredicate = 'lowerOrEqualsSize';
         facts.push(new Fact(valuePredicate, 'OntologySize', this.parameters.ontologySizeThreshold.toString()));
 
         (batteryLevel > this.parameters.batteryLevelThreshold)
-            ? valuePredicate = 'exceeds' : valuePredicate = 'lowerOrEquals';
+            ? valuePredicate = 'exceedsPercent' : valuePredicate = 'lowerOrEqualsPercent';
         facts.push(new Fact(valuePredicate, 'BatteryLevel', this.parameters.batteryLevelThreshold.toString()));
 
         (ping > this.parameters.pingThreshold)
-            ? valuePredicate = 'exceeds' : valuePredicate = 'lowerOrEquals';
+            ? valuePredicate = 'exceedsMs' : valuePredicate = 'lowerOrEqualsMs';
         facts.push(new Fact(valuePredicate, 'Ping', this.parameters.pingThreshold.toString()));
 
         return facts;
@@ -37,62 +37,75 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
     this.rules = {
         queryingLocation: [
             new Rule(
-                [new Fact('Ping', 'exceeds', this.parameters.pingThreshold.toString())],
-                new Fact('QueryAnswering', 'execLocation', 'Client')),
+                [new Fact('exceedsMs', 'Ping', this.parameters.pingThreshold.toString())],
+                new Fact('execLocation', 'QueryAnswering', 'client')),
 
             new Rule(
-                [new Fact('BatteryLevel', 'exceeds', this.parameters.batteryLevelThreshold.toString())],
-                new Fact('QueryAnswering', 'execLocation', 'Client')),
+                [new Fact('exceedsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())],
+                new Fact('execLocation', 'QueryAnswering', 'client')),
 
             new Rule(
                 [
-                    new Fact('Ping', 'lowerOrEquals', this.parameters.pingThreshold.toString()),
-                    new Fact('BatteryLevel', 'lowerOrEquals', this.parameters.batteryLevelThreshold.toString())
+                    new Fact('lowerOrEqualsMs', 'Ping', this.parameters.pingThreshold.toString()),
+                    new Fact('lowerOrEqualsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())
                 ],
-                new Fact('QueryAnswering', 'execLocation', 'Server'))
+                new Fact('execLocation', 'QueryAnswering', 'server'))
         ],
 
         classifLocation: [
             new Rule(
-                [new Fact('OntologySize', 'exceeds', this.parameters.ontologySizeThreshold.toString())],
-                new Fact('Classification', 'execLocation', 'Server')),
+                [new Fact('exceedsSize', '?OntologySize', this.parameters.ontologySizeThreshold.toString())],
+                new Fact('execLocation', 'Classification', 'server')),
 
             new Rule(
-                [new Fact('BatteryLevel', 'lowerOrEquals', this.parameters.batteryLevelThreshold.toString())],
-                new Fact('Classification', 'execLocation', 'Server')),
+                [new Fact('lowerOrEqualsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())],
+                new Fact('execLocation', 'Classification', 'server')),
 
             new Rule(
                 [
-                    new Fact('OntologySize', 'lowerOrEquals', this.parameters.ontologySizeThreshold.toString()),
-                    new Fact('BatteryLevel', 'exceeds', this.parameters.batteryLevelThreshold.toString())
+                    new Fact('lowerOrEqualsSize', 'OntologySize', this.parameters.ontologySizeThreshold.toString()),
+                    new Fact('exceedsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())
                 ],
-                new Fact('Classification', 'execLocation', 'Client'))
+                new Fact('execLocation', 'Classification', 'client'))
         ]
-    },
+    };
 
-    this.classificationLocation = function(filename) {
-        var ontologySize, batteryLevel, ping, facts, location, that = this,
-            promise = HylarRemote.fetch({ filename: filename }).$promise;
+    this.answerAdaptationQuestion = function(filename, question) {
+        var ontologySize, batteryLevel, ping, facts, location, that = this;
 
-        promise
+            // Getting the ontology file
+            return HylarRemote.fetch({ filename: filename }).$promise
+
             // Getting ontology size and client resources
             .then(function(file) {
                 ontologySize = that.getOntologySize(OntologyParser.parse(file.data.ontology));
                 return ClientResources.resources();
             })
-            // Getting the execution location
+
+            // Getting the answer of the adaptation question
             .then(function(clientResources) {
                 batteryLevel = clientResources.blevel;
                 ping = clientResources.ping;
                 facts = that.generateFacts(ontologySize, batteryLevel, ping);
-                location = Logics.evaluateRuleSet(that.rules.classifLocation, facts, []);
-                return location.object;
-            });
+                location = Logics.evaluateRuleSet(question, facts, []);
 
-        return promise;
+                // Throwing an exception if there are many possible choices (currently unsupported)
+                // Otherwise, returns the answer to the adaptation question.
+                if(location.length > 1) {
+                    throw new EvalError();
+                    return false;
+                } else {
+                    return location[0].rightIndividual;
+                }
+            });
     };
 
-    this.queryLocation = function(filename) {
+    this.answerClassificationLocationQuestion = function(filename) {
+        return this.answerAdaptationQuestion(filename, this.rules.classifLocation);
+    };
+
+    this.answerQueryAnsweringLocationQuestion = function(filename) {
+        return this.answerAdaptationQuestion(filename, this.rules.queryingLocation);
     };
 
 }]);

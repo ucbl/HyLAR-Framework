@@ -20,13 +20,4 @@ app.service('ClientResources', ['ServerTime', function(ServerTime) {
                 };
             });
     };
-
-    this.performClassif = function() {
-        return this.resources().then(function() {
-            return 'client';
-        });
-
-    }
-    this.performQuerying = this.performClassif;
-
 }]);

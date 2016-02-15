@@ -10,9 +10,8 @@
 app.controller('MainCtrl',
 
     function ($scope, $http, $q,
-              Hylar, ClientResources,
-              ServerTime, LoggingService,
-              FileUploader, AdaptationService) {
+              Hylar, ServerTime,
+              LoggingService, FileUploader,AdaptationService) {
 
         $scope.clearLog = function() {
             LoggingService.log = [];
@@ -110,7 +109,6 @@ app.controller('MainCtrl',
             } else if (data && data.sparqlResults) {
                 $scope.sparqlResults = data.sparqlResults;
             }
-
         };
 
         $scope.removeReasoner = function() {
@@ -119,10 +117,11 @@ app.controller('MainCtrl',
         };
 
         $scope.startWorker = function() {
-            var that = this;
-            ClientResources.performClassif().then(function(res) {
-                if (Hylar.config.classification == 'auto') {
-                    Hylar.config.classification = res;
+            var that = this,
+                classif = Hylar.config.classification;
+            AdaptationService.answerClassificationLocationQuestion(that.owlFileName).then(function(res) {
+                if (classif == 'auto') {
+                    classif = res;
                     LoggingService.msg('Classification on the ' + res + ' side.').submit()
                 }
 
@@ -133,7 +132,7 @@ app.controller('MainCtrl',
 
                     ServerTime.getServerTime().$promise.then(function (time) {
 
-                        if (Hylar.config.classification == 'server') {
+                        if (classif == 'server') {
                             promise = Hylar.remote.classify({
                                 filename: filename,
                                 time: time.milliseconds,
@@ -184,14 +183,15 @@ app.controller('MainCtrl',
         };
 
         $scope.executeQuery = function() {
-            var that = this;
-            ClientResources.performQuerying().then(function(res) {
+            var that = this,
+                querying = Hylar.config.querying;
+            AdaptationService.answerQueryAnsweringLocationQuestion(that.owlFileName).then(function(res) {
                 if (Hylar.config.querying == 'auto') {
-                    Hylar.config.querying = res;
+                    querying = res;
                     LoggingService.msg('Querying on the ' + res + ' side.').submit()
                 }
 
-                if(Hylar.config.querying == 'client' && !localStorage.getItem('reasoner')) {
+                if(querying == 'client' && !localStorage.getItem('reasoner')) {
                     LoggingService.err('Client-side reasoner not ready').submit();
                     return;
                 }
@@ -201,7 +201,7 @@ app.controller('MainCtrl',
                 LoggingService.msg('Evaluating query ... ').submit();
 
                 ServerTime.getServerTime().$promise.then(function(time) {
-                    if(Hylar.config.querying == 'client') {
+                    if(querying == 'client') {
                         promise = Hylar.client.process({
                             command: 'process',
                             reasoner: localStorage.getItem('reasoner'),
