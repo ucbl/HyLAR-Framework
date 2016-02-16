@@ -22,6 +22,13 @@ var lodashfix = 'context = context ? _.defaults(root.Object(), ' +
                 'context, _.pick(root, contextProps)) : root; \n' +
                 ' if (typeof context.Object !== "function") context = this;';
 
+var regDotting = /\/(lib|scripts|styles)/g;
+var dottingFix = './$1';
+
+var regAll = /(.|\n|\r)*/;
+var configDev = "angular.module('config', []).constant('ENV', {name:'development',serverRootPath:'http://localhost:3002'});";
+var configProd = "angular.module('config', []).constant('ENV', {name:'production',serverRootPath:'http://dataconf.liris.cnrs.fr/owlReasonerServer'});";
+
 // Cleans lib folder
 gulp.task('clean', function () {
     return gulp.src([libPath, appPath + '/scripts/reasoning/jsw.js'], {read: false})
@@ -48,6 +55,20 @@ gulp.task('build-migrate', function() {
         .pipe(gulp.dest(appPath + '/scripts/reasoning'));
 });
 
+// Configuring the server URL for the development environment
+gulp.task('config-dev', function() {
+    return gulp.src('./app/scripts/config.js')
+        .pipe(replace(regAll, configDev))
+        .pipe(gulp.dest(appPath + '/scripts/'));
+});
+
+// Configuring the server URL for the production environment
+gulp.task('config-prod', function() {
+    return gulp.src('./app/scripts/config.js')
+        .pipe(replace(regAll, configProd))
+        .pipe(gulp.dest(appPath + '/scripts/'));
+});
+
 // Add js and css dependencies into index.html. Some files and directories are voluntary ordered.
 gulp.task('build-index', function() {
     var target = gulp.src('./app/index.html');
@@ -62,6 +83,13 @@ gulp.task('build-index', function() {
         .pipe(gulp.dest(appPath));
 });
 
+// Fixing dot issues with production
+gulp.task('fix-index', function() {
+    return gulp.src('./app/index.html')
+        .pipe(replace(regDotting, dottingFix))
+        .pipe(gulp.dest(appPath + '/'));
+});
+
 // Starts the webserver
 gulp.task('server', function() {
     gulp.src(appPath)
@@ -70,10 +98,25 @@ gulp.task('server', function() {
         }));
 });
 
-gulp.task('default', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'build-index', 'server');
+// DEV environment
+gulp.task('build-dev', function() {
+    return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index');
 });
 
+gulp.task('build-run-dev', function() {
+    return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index', 'server');
+});
+
+// PROD environment
+gulp.task('build-prod', function() {
+    return runSequence('clean', 'build-bower', 'build-migrate', 'config-prod', 'build-index');
+});
+
+gulp.task('build-run-prod', function() {
+    return runSequence('clean', 'build-bower', 'build-migrate', 'config-prod', 'build-index', 'fix-index', 'server');
+});
+
+// Both
 gulp.task('serve', function() {
     return runSequence('server');
 });
