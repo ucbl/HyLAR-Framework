@@ -2,19 +2,19 @@
  * Created by pc on 21/12/2015.
  */
 
-app.service('ClientResources', ['ServerTime', function(ServerTime) {
+app.service('ClientResources', ['Hello', function(Hello) {
 
     this.resources = function() {
-        var blevel, bcharging;
+        var blevel, bcharging, timeA = new Date().getTime();
         return navigator.getBattery()
             .then(function(battery) {
                 blevel = battery.level;
                 bcharging = true;
-                return ServerTime.getServerTime().$promise
+                return Hello.getHello().$promise
             })
             .then(function(res) {
                 return {
-                    ping: new Date().getTime() - res.milliseconds,
+                    ping: new Date().getTime() - timeA,
                     blevel: blevel,
                     bcharging: bcharging
                 };
