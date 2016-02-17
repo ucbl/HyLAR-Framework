@@ -13,7 +13,7 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
     this.getOntologySize = function(parsedOntology) {
         var entityCount = parsedOntology.entityCount;
         return entityCount['9'] + entityCount['10'] +
-            entityCount['11'] + entityCount['22'] + entityCount['25'];
+            entityCount['11'] + entityCount['22'] + entityCount['25'] + parsedOntology.axioms.length;
     };
 
     this.generateFacts = function(ontologySize, batteryLevel, ping) {
