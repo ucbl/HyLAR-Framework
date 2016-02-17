@@ -10,12 +10,3 @@ app.factory('ServerTime', ['$resource',
         });
     }
 ]);
-
-app.factory('Hello', ['$resource',
-    function($resource) {
-        var ENV = angular.injector(['config']).get('ENV');
-        return $resource(ENV.serverRootPath + '/', {}, {
-            'getHello': { method: 'GET', params: {}, isArray: false }
-        });
-    }
-]);

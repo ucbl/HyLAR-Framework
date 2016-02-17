@@ -2,7 +2,7 @@
  * Created by pc on 21/12/2015.
  */
 
-app.service('ClientResources', ['Hello', function(Hello) {
+app.service('ClientResources', ['ServerTime', function(ServerTime) {
 
     this.resources = function() {
         var blevel, bcharging, timeA = new Date().getTime();
@@ -10,7 +10,7 @@ app.service('ClientResources', ['Hello', function(Hello) {
             .then(function(battery) {
                 blevel = battery.level;
                 bcharging = true;
-                return Hello.getHello().$promise
+                return ServerTime.getServerTime().$promise
             })
             .then(function(res) {
                 return {
