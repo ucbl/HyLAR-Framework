@@ -5,7 +5,7 @@
 app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyParser', function(HylarRemote, ClientResources, OntologyParser) {
 
     this.parameters = {
-        ontologySizeThreshold: 50,
+        ontologySizeThreshold: 200,
         pingThreshold: 150,
         batteryLevelThreshold: 0.2
     };
