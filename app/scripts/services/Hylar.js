@@ -9,7 +9,10 @@ app.service('Hylar', ['HylarClient', 'HylarRemote',
             querying: 'client',
             inWorker: true,
             reasoningMethod: 'greedy',
-            reasoner: localStorage.getItem('reasoner')
+            reasoner: localStorage.getItem('reasoner'),
+            query:  'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+                    'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+                    'SELECT ?a ?b { ?a rdfs:subClassOf ?b }'
         };
 
         this.exampleReq = {

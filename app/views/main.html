@@ -32,7 +32,7 @@
             <div class="thlabel">
                 Example queries
             </div>
-            <ul class="list-group list-group-small-forms">
+            <ul class="list-group list-group-small-forms"  ng-controller="SparqlCtrl">
                 <li class="list-group-item">
                     INSERT
                     <input type="button" id="i1" class="btn btn-default btn-tiny" value="10" ng-click="insert10()"/>
@@ -98,8 +98,15 @@
                     </div>
                 </li>
                 <li class="list-group-item" style="text-align:center;">
-                    <label class="btn btn-xs btn-default" for="executeInWorkerCheckbox">Execute in worker</label>
-                    <input class="worker-checkbox" id="executeInWorkerCheckbox" id="workerCheckbox" type="checkbox" ng-model="config.inWorker"/>
+                    <label class="btn btn-xs btn-default" ng-click="showAdaptationParams = !showAdaptationParams">Adaptation parameters & thresholds...</label>
+                    <div class="list-group-item" style="position: absolute; z-index: 2" ng-show="showAdaptationParams">
+                        <div class="thlabel">Ontology size threshold: {{ adaptationParameters.ontologySizeThreshold }} entities</div>
+                        <slider ng-change="setAdaptationParameters()" ng-model="adaptationParameters.ontologySizeThreshold" min="0" step="1" max="1000" value="200"></slider>
+                        <div class="thlabel">Ping threshold: {{ adaptationParameters.pingThreshold }} milliseconds</div>
+                        <slider ng-change="setAdaptationParameters()" ng-model="adaptationParameters.pingThreshold" min="0" step="1" max="1000" value="150"></slider>
+                        <div class="thlabel">Battery level threshold:  {{ adaptationParameters.batteryLevelThreshold }}%</div>
+                        <slider ng-change="setAdaptationParameters()" ng-model="adaptationParameters.batteryLevelThreshold" min="0" step="1" max="100" value="20"></slider>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -110,7 +117,7 @@
             <div class="thlabel">
                 SPARQL Query
             </div>
-            <textarea style="width:100%" class="form-control sparql" rows="10" ng-model="query">
+            <textarea ng-controller="SparqlCtrl" style="width:100%" class="form-control sparql" rows="10" ng-model="query">
             </textarea>
         </div>
         <div class="col-sm-4">

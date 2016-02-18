@@ -7,7 +7,7 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
     this.parameters = {
         ontologySizeThreshold: 200,
         pingThreshold: 150,
-        batteryLevelThreshold: 0.2
+        batteryLevelThreshold: 20
     };
 
     this.getOntologySize = function(parsedOntology) {
@@ -23,7 +23,7 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
             ? valuePredicate = 'exceedsSize' : valuePredicate = 'lowerOrEqualsSize';
         facts.push(new Fact(valuePredicate, 'OntologySize', this.parameters.ontologySizeThreshold.toString()));
 
-        (batteryLevel > this.parameters.batteryLevelThreshold)
+        (batteryLevel*100 > this.parameters.batteryLevelThreshold)
             ? valuePredicate = 'exceedsPercent' : valuePredicate = 'lowerOrEqualsPercent';
         facts.push(new Fact(valuePredicate, 'BatteryLevel', this.parameters.batteryLevelThreshold.toString()));
 

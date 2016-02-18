@@ -277,3 +277,11 @@ th {
     font-weight: bold;
     border: 2px solid #c1e2b3;
 }
+
+.shadowed {
+    -moz-box-shadow: 10px 10px 25px 1px #656565;
+    -webkit-box-shadow: 10px 10px 25px 1px #656565;
+    -o-box-shadow: 10px 10px 25px 1px #656565;
+    box-shadow: 10px 10px 25px 1px #656565;
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=25);
+}
