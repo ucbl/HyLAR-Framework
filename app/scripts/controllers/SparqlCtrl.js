@@ -10,6 +10,12 @@ app.controller('SparqlCtrl', function($scope, Hylar) {
         $scope.query = Hylar.config.query;
     });
 
+    $scope.$watch(function() {
+        return $scope.query;
+    }, function() {
+        Hylar.config.query= $scope.query;
+    });
+
     $scope.ungraph = function() {
         Hylar.config.query = Hylar.config.query.replace(/(FROM NAMED .+)+(\{ .+ \})/g, '$2');
         Hylar.config.query = Hylar.config.query.replace(/(GRAPH <.+> \{ )(.+)( \})/g, '$2');
