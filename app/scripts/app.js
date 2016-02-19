@@ -9,4 +9,4 @@
  * Main module of the application.
  */
 
-var app = angular.module('owlReasonerApp', ['ngResource', 'config', 'luegg.directives', 'angularFileUpload']);
+var app = angular.module('owlReasonerApp', ['ngResource', 'luegg.directives', 'angularFileUpload', 'ui.bootstrap-slider']);

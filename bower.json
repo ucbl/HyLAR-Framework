@@ -1,5 +1,5 @@
 {
-  "name": "owl-reasoner",
+  "name": "hylar",
   "version": "0.0.0",
   "dependencies": {
     "angular": "~1.2.0",
@@ -11,11 +11,15 @@
     "angular-file-upload": "1.1.5",
     "angularjs-scroll-glue": "~0.0.1",
     "q": "1.0.1",
-    "lodash": "~3.4.0"
+    "lodash": "~3.4.0",
+    "angular-bootstrap-slider": "~0.1.26"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.0",
     "angular-scenario": "~1.2.0"
   },
-  "appPath": "app"
+  "appPath": "app",
+  "resolutions": {
+    "angular": ">=1.4.0"
+  }
 }

@@ -90,6 +90,12 @@ body {
     font-family: courier;
 }
 
+.worker-checkbox {
+    width: 15px;
+    height: 15px;
+    vertical-align: top;
+}
+
 .worker-log {
     font-family: Arial;
     font-size: 12px;
@@ -156,6 +162,23 @@ body {
     100% { background-color: #67b168; }
 }
 
+.thlabel {
+    border-top: solid 1px #DDDDDD;
+    border-bottom: solid 2px #BBBBBB;
+    margin-bottom:10px;
+    margin-top:10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.thlabel-sm {
+    border-bottom: solid 1px #BBBBBB;
+    margin-bottom:5px;
+    margin-top:5px;
+    text-align: center;
+    font-weight: bold;
+}
+
 .scrollable {
     border: 0px;
     background-color: #f7f7f7;
@@ -170,6 +193,16 @@ body {
     padding: 5px;
     margin: 5px;
 
+}
+
+.table-responsive {
+    width: 100%;
+    margin-bottom: 15px;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    border: 1px solid #DDD;
+    -webkit-overflow-scrolling: touch;
 }
 
 .sparqlresult {
@@ -200,6 +233,16 @@ body {
     box-shadow: 2px 2px 2px #aaa;
 }
 
+.available {
+    text-align: center;
+    color: #4cae4c;
+}
+
+.unavailable {
+    text-align: center;
+    color: #843534;
+}
+
 input[type="checkbox"] {
     text-align: center;
 }
@@ -228,4 +271,17 @@ th {
     padding: 3px;
     font-size:10px;
     font-weight: bold;
+}
+
+.btn-success {
+    font-weight: bold;
+    border: 2px solid #c1e2b3;
+}
+
+.shadowed {
+    -moz-box-shadow: 10px 10px 25px 1px #656565;
+    -webkit-box-shadow: 10px 10px 25px 1px #656565;
+    -o-box-shadow: 10px 10px 25px 1px #656565;
+    box-shadow: 10px 10px 25px 1px #656565;
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=25);
 }

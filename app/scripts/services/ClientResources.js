@@ -5,7 +5,7 @@
 app.service('ClientResources', ['ServerTime', function(ServerTime) {
 
     this.resources = function() {
-        var blevel, bcharging;
+        var blevel, bcharging, timeA = new Date().getTime();
         return navigator.getBattery()
             .then(function(battery) {
                 blevel = battery.level;
@@ -14,30 +14,10 @@ app.service('ClientResources', ['ServerTime', function(ServerTime) {
             })
             .then(function(res) {
                 return {
-                    ping: new Date().getTime() - res.milliseconds,
+                    ping: new Date().getTime() - timeA,
                     blevel: blevel,
                     bcharging: bcharging
                 };
             });
-    };
-
-    this.performClassif = function() {
-        return this.resources().then(function(res) {
-            if(res.ping > 100) {
-                return 'client';
-            } else {
-                return 'server';
-            }
-        });
-    };
-
-    this.performQuerying = function() {
-        return this.resources().then(function(res) {
-            if ((res.battery > 0.25) || (res.bcharging)) {
-                return 'client';
-            } else {
-                return 'server';
-            }
-        });
     };
 }]);

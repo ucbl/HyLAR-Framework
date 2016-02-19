@@ -104,6 +104,7 @@ function queryReasoner(queryString, reasoner, inWorker, method) {
         processingDelay = new Date().getTime() - before;
         endMsg = {
             data: results,
+            reasoner: JSON.stringify(reasoner),
             processingDelay: processingDelay,
             toggleLoads: true
         };
