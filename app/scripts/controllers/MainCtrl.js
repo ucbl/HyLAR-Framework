@@ -180,9 +180,9 @@ app.controller('MainCtrl',
                                 if(Hylar.config.query.toLowerCase().indexOf('insert') !== -1) {
                                     resultMsg = response.data.length + ' insertion(s).'
                                 } else if(Hylar.config.query.toLowerCase().indexOf('delete') !== -1) {
-                                    resultMsg = response.data.length + ' deletion(s).'
+                                    resultMsg = 'Deleted';
                                 } else {
-                                    resultMsg = response.data[0].length + ' results.'
+                                    resultMsg = response.data[0].length + ' results.';
                                     $scope.sparqlResults = response.data;
                                 }
 
