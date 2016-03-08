@@ -2,7 +2,7 @@
  * Created by pc on 11/02/2016.
  */
 
-app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyParser', function(HylarRemote, ClientResources, OntologyParser) {
+app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'OntologyParser', function($q, HylarRemote, ClientResources, OntologyParser) {
 
     this.parameters = {
         ontologySizeThreshold: 200,
@@ -71,22 +71,28 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
     };
 
     this.answerAdaptationQuestion = function(filename, question) {
-        var ontologySize, batteryLevel, ping, facts, location, that = this;
+        var facts, location, that = this,
+            status = {};
 
             // Getting the ontology file
             return HylarRemote.fetch({ filename: filename }).$promise
 
             // Getting ontology size and client resources
             .then(function(file) {
-                ontologySize = that.getOntologySize(OntologyParser.parse(file.data.ontology));
+                try {
+                    status.ontologySize = that.getOntologySize(OntologyParser.parse(file.data.ontology));
+                } catch(err) {
+                    status.ontologySize = 0;
+                }
                 return ClientResources.resources();
             })
 
             // Getting the answer of the adaptation question
             .then(function(clientResources) {
-                batteryLevel = clientResources.blevel;
-                ping = clientResources.ping;
-                facts = that.generateFacts(ontologySize, batteryLevel, ping);
+                status.batteryLevel = clientResources.blevel;
+                status.ping = clientResources.ping;
+
+                facts = that.generateFacts(status.ontologySize, status.batteryLevel, status.ping);
                 location = Logics.evaluateRuleSet(question, facts, []);
 
                 // Throwing an exception if there are many possible choices (currently unsupported)
@@ -95,17 +101,26 @@ app.service('AdaptationService', ['HylarRemote', 'ClientResources', 'OntologyPar
                     throw new EvalError();
                     return false;
                 } else {
-                    return location[0].rightIndividual;
+                    return {
+                        location: location[0].rightIndividual,
+                        status: status
+                    };
                 }
             });
     };
 
-    this.answerClassificationLocationQuestion = function(filename) {
-        return this.answerAdaptationQuestion(filename, this.rules.classifLocation);
+    this.answerClassificationLocationQuestion = function(filename, method) {
+        if(method == 'auto') {
+            return this.answerAdaptationQuestion(filename, this.rules.classifLocation);
+        }
+        return $q.when();
     };
 
-    this.answerQueryAnsweringLocationQuestion = function(filename) {
-        return this.answerAdaptationQuestion(filename, this.rules.queryingLocation);
+    this.answerQueryAnsweringLocationQuestion = function(filename, method) {
+        if(method == 'auto') {
+            return this.answerAdaptationQuestion(filename, this.rules.queryingLocation);
+        }
+        return $q.when();
     };
 
 }]);

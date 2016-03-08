@@ -139,8 +139,8 @@
                 SPARQL results (bindings)
             </div>
             <div class="scrollable-results">
-                <div class="sparqlresult"  ng-repeat="result in sparqlResults">
-                    <span ng-repeat="(key, value) in result">
+                <div class="sparqlresult"  ng-repeat="result in sparqlResults track by $index">
+                    <span ng-repeat="(key, value) in result track by $index">
                         <span class="sparqlvar">{{ key }}</span> : <span class="sparqlval">{{ value }}</span>
                     </span>
                 </div>

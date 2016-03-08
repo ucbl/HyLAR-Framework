@@ -172,10 +172,14 @@ module.exports = {
             }
 
             var filePath = ontoDir + filename,
-                fstream = fs.createWriteStream(filePath);
+                fstream = fs.createWriteStream(filePath), list;
             file.pipe(fstream);
             fstream.on('close', function () {
-                res.send(filePath);
+                list = fs.readdirSync(ontoDir);
+                res.json({
+                    filename: filename,
+                    list: list
+                });
             });
         });
     },

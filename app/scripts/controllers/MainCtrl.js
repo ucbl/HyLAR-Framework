@@ -19,8 +19,13 @@ app.controller('MainCtrl',
             console.log(AdaptationService.parameters);
         };
 
-        $scope.updateList = function() {
-            $scope.ontologyList = Hylar.remote.list;
+        $scope.updateList = function(fileToPoint) {
+            var that = this;
+            Hylar.remote.list.$promise
+                .then(function(list) {
+                    that.ontologyList = list;
+                    that.owlFileName = fileToPoint;
+                });
         };
 
         $scope.clearLog = function() {
@@ -30,13 +35,13 @@ app.controller('MainCtrl',
         $scope.uploader = new FileUploader();
         $scope.uploader.url = angular.injector(['config']).get('ENV').serverRootPath +  '/ontology';
         $scope.uploader.autoUpload = true;
-        $scope.uploader.onSuccessItem = function() {
+        $scope.uploader.onSuccessItem = function(item, response) {
             LoggingService.msg('Your file has been sucessfully uploaded. You can choose it on the list !').submit();
-            $scope.updateList();
+            $scope.ontologyList = response.list;
+            $scope.owlFileName = response.filename;
         };
 
         $scope.config = Hylar.config;
-        $scope.owlFileName = 'fipa.owl';
         $scope.workerlog = LoggingService.log;
 
         var processMessage = function(data) {
@@ -58,10 +63,12 @@ app.controller('MainCtrl',
         $scope.startWorker = function() {
             var that = this,
                 classif = Hylar.config.classification;
-            AdaptationService.answerClassificationLocationQuestion(that.owlFileName).then(function(res) {
+            AdaptationService.answerClassificationLocationQuestion(that.owlFileName, classif).then(function(res) {
                 if (classif == 'auto') {
-                    classif = res;
-                    LoggingService.msg('Classification on the ' + res + ' side.').submit()
+                    classif = res.location;
+                    LoggingService.msg('The ontology contains ' + res.status.ontologySize + ' entities, the battery level is '
+                        + res.status.batteryLevel*100 + '% and the ping is ' + res.status.ping + ' ms.').submit();
+                    LoggingService.msg('Classification on the ' + res.location + ' side.').submit()
                 }
 
                 if (that.owlFileName) {
@@ -96,22 +103,24 @@ app.controller('MainCtrl',
                                     data.inWorker = Hylar.config.inWorker;
                                     data.reasoningMethod = $scope.config.reasoningMethod;
 
-                                    Hylar.client.process(data).then(function (message) {
-                                        ServerTime.getServerTime().$promise.then(function (time) {
-                                            var classifyingTime = data.processingDelay || time.milliseconds - startTime;
-                                            processMessage(message);
-                                            LoggingService.msg('Requesting time : ' + data.requestDelay).submit();
-                                            LoggingService.msg('Response delay : ' + responseDelay).submit();
-                                            LoggingService.msg('Classifying time : ' + classifyingTime).submit();
-                                            $scope.config.reasoner = localStorage.getItem('reasoner');
+                                    try {
+                                        Hylar.client.process(data).then(function (message) {
+                                            ServerTime.getServerTime().$promise.then(function (time) {
+                                                var classifyingTime = data.processingDelay || time.milliseconds - startTime;
+                                                processMessage(message);
+                                                LoggingService.msg('Requesting time : ' + data.requestDelay).submit();
+                                                LoggingService.msg('Response delay : ' + responseDelay).submit();
+                                                LoggingService.msg('Classifying time : ' + classifyingTime).submit();
+                                                $scope.config.reasoner = localStorage.getItem('reasoner');
+                                            });
                                         });
-                                    });
+                                    } catch(err) {
+                                        LoggingService.err(err).submit();
+                                    }
                                 });
-
-
                             },
                             function (err) {
-                                LoggingService.err('OWL Parsing failed. ' + err.data).submit();
+                                LoggingService.err(err.data.toString()).submit();
                             }
                         );
 
@@ -122,12 +131,15 @@ app.controller('MainCtrl',
         };
 
         $scope.executeQuery = function() {
-            var that = this,
+            var that = this, promise, resultMsg, responseDelay,
                 querying = Hylar.config.querying;
-            AdaptationService.answerQueryAnsweringLocationQuestion(that.owlFileName).then(function(res) {
+
+            AdaptationService.answerQueryAnsweringLocationQuestion(that.owlFileName, querying).then(function(res) {
                 if (Hylar.config.querying == 'auto') {
-                    querying = res;
-                    LoggingService.msg('Querying on the ' + res + ' side.').submit()
+                    querying = res.location;
+                    LoggingService.msg('The ontology contains ' + res.status.ontologySize + ' entities, the battery level is '
+                        + res.status.batteryLevel*100 + '% and the ping is ' + res.status.ping + ' ms.').submit();
+                    LoggingService.msg('Querying on the ' + res.location + ' side.').submit()
                 }
 
                 if(querying == 'client' && !localStorage.getItem('reasoner')) {
@@ -135,7 +147,6 @@ app.controller('MainCtrl',
                     return;
                 }
 
-                var promise;
                 LoggingService.msg('Evaluating query ... ').submit();
 
                 ServerTime.getServerTime().$promise.then(function(time) {
@@ -158,12 +169,25 @@ app.controller('MainCtrl',
 
                     promise.then(function(response) {
                         ServerTime.getServerTime().$promise.then(function (time) {
+
                             if(response.isError) {
                                 LoggingService.err(response.msg).submit();
+
                             } else {
-                                var responseDelay = time.milliseconds - response.time;
-                                $scope.sparqlResults = response.data;
-                                LoggingService.msg($scope.sparqlResults.length + ' results.').submit();
+
+                                $scope.sparqlResults = [];
+
+                                if(Hylar.config.query.toLowerCase().indexOf('insert') !== -1) {
+                                    resultMsg = response.data.length + ' insertion(s).'
+                                } else if(Hylar.config.query.toLowerCase().indexOf('delete') !== -1) {
+                                    resultMsg = response.data.length + ' deletion(s).'
+                                } else {
+                                    resultMsg = response.data[0].length + ' results.'
+                                    $scope.sparqlResults = response.data;
+                                }
+
+                                responseDelay = time.milliseconds - response.time;
+                                LoggingService.msg(resultMsg).submit();
                                 response.requestDelay && LoggingService.msg('Requesting time : ' + response.requestDelay).submit();
                                 responseDelay && LoggingService.msg('Response delay : ' + responseDelay).submit();
                                 LoggingService.msg('Querying processing time : ' + response.processingDelay).submit();
@@ -175,6 +199,6 @@ app.controller('MainCtrl',
 
         };
 
-        $scope.updateList();
+        $scope.updateList('fipa.owl');
 
   });
