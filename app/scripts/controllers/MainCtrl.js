@@ -9,7 +9,7 @@
  */
 app.controller('MainCtrl',
 
-    function ($scope, $http, $q,
+    function ($scope, $http, $q, upload,
               Hylar, ServerTime, LoggingService,
               FileUploader, AdaptationService) {
 
@@ -32,13 +32,12 @@ app.controller('MainCtrl',
             LoggingService.log = [];
         };
 
-        $scope.uploader = new FileUploader();
-        $scope.uploader.url = angular.injector(['config']).get('ENV').serverRootPath +  '/ontology';
-        $scope.uploader.autoUpload = true;
-        $scope.uploader.onSuccessItem = function(item, response) {
+        $scope.uploadUrl = angular.injector(['config']).get('ENV').serverRootPath +  '/ontology';
+        $scope.successUpload = function(response) {
             LoggingService.msg('Your file has been sucessfully uploaded. You can choose it on the list !').submit();
-            $scope.ontologyList = response.list;
-            $scope.owlFileName = response.filename;
+            $scope.ontologyList = response.data.list;
+            $scope.owlFileName = response.data.filename;
+
         };
 
         $scope.config = Hylar.config;

@@ -173,8 +173,7 @@ module.exports = {
 
             var filePath = ontoDir + filename,
                 fstream = fs.createWriteStream(filePath), list;
-            file.pipe(fstream);
-            fstream.on('close', function () {
+            file.pipe(fstream).on('finish', function () {
                 list = fs.readdirSync(ontoDir);
                 res.json({
                     filename: filename,
