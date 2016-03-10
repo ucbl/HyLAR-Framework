@@ -17,6 +17,9 @@ app.service('LoggingService', function() {
 
     this.err = function(content) {
         msgData = new Object();
+        var elem = document.createElement('textarea');
+        elem.innerHTML = content;
+        content = elem.value;
         msgData.msg = content;
         msgData.isError = true;
         return this;

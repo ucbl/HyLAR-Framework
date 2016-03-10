@@ -15,7 +15,6 @@ var debug = require('gulp-debug');
 
 var appPath = ('app');
 var libPath = appPath + '/lib';
-var serverPath = ('server');
 
 var regtofix = /context = context \? _\.defaults\(root\.Object\(\), context, _\.pick\(root, contextProps\)\) : root;/g;
 var lodashfix = 'context = context ? _.defaults(root.Object(), ' +
@@ -43,16 +42,16 @@ gulp.task('build-bower', function() {
 
 // Client-side code migration
 gulp.task('build-migrate', function() {
-    return gulp.src(serverPath + '/ontology/jsw/*.js')
+    return gulp.src('node_modules/hylar/hylar/core/hylar.js')
         .pipe(debug())
         .pipe(browserify({
             insertGlobals : true,
             debug : false,
             standalone: 'lodash'
         }))
-        .pipe(concat('jsw.js'))
+        .pipe(concat('hylar.js'))
         .pipe(replace(regtofix, lodashfix)) // Fixing lodash issues
-        .pipe(gulp.dest(appPath + '/scripts/reasoning'));
+        .pipe(gulp.dest(libPath));
 });
 
 // Configuring the server URL for the development environment

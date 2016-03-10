@@ -1,0 +1,178 @@
+<Ontology 
+ xmlns="http://www.w3.org/2002/07/owl#"	
+ xml:base="string:ontologyISWM"			
+ xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema#"	  	
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"	
+ xmlns:xml="http://www.w3.org/XML/1998/namespace"			 
+ ontologyIRI="string:ontologyISWM">								
+
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+
+<Prefix name="iswmt" IRI="http://www.univ-lyon1.fr/taxomony#"/>
+<Prefix name="swdf"  IRI="http://data.semanticweb.org/topic/"/>  
+ 
+<!---Declaration: Web Search Class --> 
+<Declaration>  <Class abbreviatedIRI="iswmt:WebSearch"/> 		             </Declaration>
+<!---Declaration: Web Search SubClass --> 
+<Declaration>  <Class abbreviatedIRI="iswmt:WebDynamicsSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:MultifacetedSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:EnterpriseLocalSearch"/> 		 </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:SemanticWebSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:SocialMetadataSearch"/> 		 </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:MultimediaWebSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:MobileSearch"/> 		         </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:InteractionSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:NewsEcommerceSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:RealTimeSearch"/> 		         </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:EngineSearch"/> 		         </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:EfficiencyIssuesSearch"/> 		 </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:WebCrawlingSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:P2PSearch"/> 		             </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:SimilarityMeasures"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:EvaluationMetricsWebSearch"/>    </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:DiversificationSearchResults"/>  </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:PersonalizedSearch"/> 		     </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:SecurityPrivacySearch"/> 		 </Declaration>
+
+
+<!---Declaration Class -->
+<Declaration>  <Class abbreviatedIRI="iswmt:WebMining"/> 		             </Declaration>  
+<Declaration>  <Class abbreviatedIRI="iswmt:InformationExtraction"/> 		 </Declaration>  
+<Declaration>  <Class abbreviatedIRI="iswmt:BehavioralAnalysis"/> 		     </Declaration>   
+<Declaration>  <Class abbreviatedIRI="iswmt:SocialNetworks"/> 		         </Declaration>   
+<Declaration>  <Class abbreviatedIRI="iswmt:DataManagement"/> 		         </Declaration>   
+<Declaration>  <Class abbreviatedIRI="iswmt:SemanticWeb"/> 		             </Declaration>
+<Declaration>  <Class abbreviatedIRI="iswmt:SecurityPrivacy"/> 		         </Declaration>      
+<Declaration>  <Class abbreviatedIRI="iswmt:InternetMonetization"/> 		 </Declaration>          
+<Declaration>  <Class abbreviatedIRI="iswmt:WebEngineering"/> 		         </Declaration>       
+<Declaration>  <Class abbreviatedIRI="iswmt:PerformanceScaleability"/> 		 </Declaration>       
+<Declaration>  <Class abbreviatedIRI="iswmt:InterfacesInteraction"/> 		 </Declaration>       
+<Declaration>  <Class abbreviatedIRI="iswmt:SmartDevices"/> 		         </Declaration>       
+
+<!-- Subclass of WebSearch-->
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:WebDynamicsSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:MultifacetedSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:EnterpriseLocalSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:SemanticWebSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:SocialMetadataSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:MultimediaWebSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:MobileSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:InteractionSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:NewsEcommerceSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:RealTimeSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:EngineSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:EfficiencyIssuesSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:WebCrawlingSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:P2PSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:SimilarityMeasures"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:EvaluationMetricsWebSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:DiversificationSearchResults"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:PersonalizedSearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+<SubClassOf>
+	<Class abbreviatedIRI="iswmt:SecurityPrivacySearch"/>
+	<Class abbreviatedIRI="iswmt:WebSearch"/>
+</SubClassOf>
+
+<!-- Declaration Object Property -->
+<Declaration> <ObjectProperty abbreviatedIRI="iswmt:hasTopic"/> </Declaration>
+<Declaration> <ObjectProperty abbreviatedIRI="iswmt:isTopicOf"/> </Declaration>
+
+<!--Test: Declaration instance -->
+<Declaration> <NamedIndividual abbreviatedIRI="iswmt:web-mining"/> </Declaration>
+<Declaration> <NamedIndividual abbreviatedIRI="iswmt:information-extraction"/> </Declaration>
+<Declaration> <NamedIndividual abbreviatedIRI="iswmt:semantic-web"/> </Declaration>
+<Declaration> <NamedIndividual abbreviatedIRI="iswmt:social-network-analysis"/> </Declaration>
+
+<!-- Add instance -->
+<ObjectPropertyAssertion>
+	<ObjectProperty abbreviatedIRI="rdf:type"/>
+	<NamedIndividual abbreviatedIRI="iswmt:web-mining"/>
+	<NamedIndividual abbreviatedIRI="iswmt:WebMining"/>
+</ObjectPropertyAssertion>
+
+<!-- OWL SameAs entre 2 instances : dans iswmt et swdf -->
+
+<ObjectPropertyAssertion>
+	<ObjectProperty abbreviatedIRI="owl:sameAs"/>
+	<NamedIndividual abbreviatedIRI="iswmt:web-mining"/>
+	<NamedIndividual abbreviatedIRI="swdf:web-mining"/>
+</ObjectPropertyAssertion>
+
+<ObjectPropertyAssertion>
+	<ObjectProperty abbreviatedIRI="owl:sameAs"/>
+	<NamedIndividual abbreviatedIRI="iswmt:information-extraction"/>
+	<NamedIndividual abbreviatedIRI="swdf:information-extraction"/>
+</ObjectPropertyAssertion>
+
+<ObjectPropertyAssertion>
+	<ObjectProperty abbreviatedIRI="owl:sameAs"/>
+	<NamedIndividual abbreviatedIRI="iswmt:semantic-web"/>
+	<NamedIndividual abbreviatedIRI="swdf:semantic-web"/>
+</ObjectPropertyAssertion>
+
+<ObjectPropertyAssertion>
+	<ObjectProperty abbreviatedIRI="owl:sameAs"/>
+	<NamedIndividual abbreviatedIRI="iswmt:social-network-analysis"/>
+	<NamedIndividual abbreviatedIRI="swdf:social-network-analysis"/>
+</ObjectPropertyAssertion>
+<!--Test: Declaration instance -->
+
+</Ontology>

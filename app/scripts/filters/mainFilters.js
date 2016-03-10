@@ -18,8 +18,8 @@ app.filter('displayMsg', function() {
 
     .filter('displayReasonerStatus', function($filter) {
         return function(exists) {
-            if(!exists) return 'No local reasoner';
-            return 'Local reasoner is ready';
+            if(!exists) return 'Ontology not loaded on client.';
+            return 'Ontology loaded on client.';
         }
     })
 
