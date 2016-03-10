@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE Ontology [
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY xml "http://www.w3.org/XML/1998/namespace" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="https://liris.cnrs.fr/~mbennara/ontologies/bookselling.owl"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     ontologyIRI="https://liris.cnrs.fr/~mbennara/ontologies/bookselling.owl#"
+     versionIRI="https://liris.cnrs.fr/~mbennara/ontologies/bookselling.owl#">
+    <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Declaration>
+        <Class IRI="#Action"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CancelOrder"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CancelShipment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ChangeOrder"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ChangeShipment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultBook"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultHotel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultOrder"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultPayment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultRandomResource"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultRandomResourceBis"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultRandomResourceQuad"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultRandomResourceTer"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultReservation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultService"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ConsultShipment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MakePayment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MakeReservation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Manage"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageBook"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageHotel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageHotelReservation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageOrder"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManagePayment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageRandomResource"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageService"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ManageShipment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PlaceOrder"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#RequestShipment"/>
+    </Declaration>
+    <SubClassOf>
+        <Class IRI="#CancelOrder"/>
+        <Class IRI="#ManageOrder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#CancelShipment"/>
+        <Class IRI="#ManageShipment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ChangeOrder"/>
+        <Class IRI="#ManageOrder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ChangeShipment"/>
+        <Class IRI="#ManageShipment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultBook"/>
+        <Class IRI="#ManageBook"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultHotel"/>
+        <Class IRI="#ManageHotel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultOrder"/>
+        <Class IRI="#ManageOrder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultPayment"/>
+        <Class IRI="#ManagePayment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultRandomResource"/>
+        <Class IRI="#ManageRandomResource"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultRandomResourceBis"/>
+        <Class IRI="#ManageRandomResource"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultRandomResourceQuad"/>
+        <Class IRI="#ManageRandomResource"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultRandomResourceTer"/>
+        <Class IRI="#ManageRandomResource"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultReservation"/>
+        <Class IRI="#ManageHotelReservation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultService"/>
+        <Class IRI="#ManageService"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ConsultShipment"/>
+        <Class IRI="#ManageShipment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#MakePayment"/>
+        <Class IRI="#ManagePayment"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#MakeReservation"/>
+        <Class IRI="#ManageHotelReservation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Manage"/>
+        <Class IRI="#Action"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageBook"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageHotel"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageHotelReservation"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageOrder"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManagePayment"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageRandomResource"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageService"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ManageShipment"/>
+        <Class IRI="#Manage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PlaceOrder"/>
+        <Class IRI="#ManageOrder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#RequestShipment"/>
+        <Class IRI="#ManageShipment"/>
+    </SubClassOf>
+    <ClassAssertion>
+        <Class IRI="#RequestShipment"/>
+        <NamedIndividual IRI="#shipment_1"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#PlaceOrder"/>
+        <NamedIndividual IRI="#order_1"/>
+    </ClassAssertion><ClassAssertion>
+        <Class IRI="#Manage"/>
+        <NamedIndividual IRI="#manage_1"/>
+   </ClassAssertion>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 3.5.0) http://owlapi.sourceforge.net -->
+
