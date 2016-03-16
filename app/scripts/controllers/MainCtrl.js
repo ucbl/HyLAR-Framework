@@ -177,9 +177,9 @@ app.controller('MainCtrl',
                                 $scope.sparqlResults = [];
 
                                 if(Hylar.config.query.toLowerCase().indexOf('insert') !== -1) {
-                                    resultMsg = response.data.length + ' insertion(s).'
+                                    resultMsg = 'Insertion sucessful. KB now contains ' + response.data.length + ' triple(s).'
                                 } else if(Hylar.config.query.toLowerCase().indexOf('delete') !== -1) {
-                                    resultMsg = 'Deleted';
+                                    resultMsg = 'Deletion sucessful. KB now contains ' + response.data.length + ' triple(s).'
                                 } else {
                                     resultMsg = response.data[0].length + ' results.';
                                     $scope.sparqlResults = response.data;

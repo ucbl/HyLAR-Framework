@@ -30,7 +30,7 @@ var configProd = "angular.module('config', []).constant('ENV', {name:'production
 
 // Cleans lib folder
 gulp.task('clean', function () {
-    return gulp.src([libPath, appPath + '/scripts/reasoning/jsw.js'], {read: false})
+    return gulp.src(libPath, {read: false})
         .pipe(clean());
 });
 
@@ -42,7 +42,7 @@ gulp.task('build-bower', function() {
 
 // Client-side code migration
 gulp.task('build-migrate', function() {
-    return gulp.src('node_modules/hylar/hylar/core/hylar.js')
+    return gulp.src('node_modules/hylar/hylar/hylar.js')
         .pipe(debug())
         .pipe(browserify({
             insertGlobals : true,

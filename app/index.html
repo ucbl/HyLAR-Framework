@@ -29,9 +29,9 @@
         <script src="/scripts/controllers/SparqlCtrl.js"></script>
         <script src="/scripts/controllers/about.js"></script>
         <script src="/scripts/filters/mainFilters.js"></script>
+        <script src="/scripts/reasoning/JswReasoner.js"></script>
         <script src="/scripts/resources/HylarRemoteComponents.js"></script>
         <script src="/scripts/resources/Utils.js"></script>
-        <script src="/scripts/reasoning/JswReasoner.js"></script>
         <script src="/scripts/services/AdaptationService.js"></script>
         <script src="/scripts/services/ClientResources.js"></script>
         <script src="/scripts/services/Hylar.js"></script>
@@ -53,12 +53,24 @@
 
         <div class="container">
             <div class="header">
-                <ul class="nav nav-pills pull-right">
-                    <li class="active"><a ng-href="#">Home</a></li>
-                    <li><a ng-href="#">About</a></li>
-                    <li><a ng-href="#">Contact</a></li>
-                </ul>
-                <h3 class="text-muted">HyLAR</h3>
+                <table>
+                    <tr>
+                        <td width="60%">
+                            <h1 class="text-muted">HyLAR+</h1>
+                        </td>
+                        <td>
+                            <a href="https://liris.cnrs.fr/asawoo/">
+                              <img style="padding: 20px; max-height: 100px" class="img-responsive" src="http://liris.cnrs.fr/asawoo/lib/exe/fetch.php?media=logo_asawoo.png"/>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="https://liris.cnrs.fr/">
+                                <img style="padding: 20px; max-height: 100px" class="img-responsive" src="http://liris.cnrs.fr/asawoo/lib/exe/fetch.php?media=logo_liris.png"/>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                </div>
             </div>
 
             <div ng-include="'views/main.html'" ng-controller="MainCtrl"></div>
