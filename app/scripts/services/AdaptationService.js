@@ -4,6 +4,8 @@
 
 app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'OntologyParser', function($q, HylarRemote, ClientResources, OntologyParser) {
 
+    var rules = {};
+
     this.parameters = {
         ontologySizeThreshold: 200,
         pingThreshold: 150,
@@ -34,40 +36,46 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
         return facts;
     };
 
-    this.rules = {
-        queryingLocation: [
-            new Rule(
-                [new Fact('exceedsMs', 'Ping', this.parameters.pingThreshold.toString())],
-                new Fact('execLocation', 'QueryAnswering', 'client')),
+    this.ruleDesc = {
 
-            new Rule(
-                [new Fact('exceedsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())],
-                new Fact('execLocation', 'QueryAnswering', 'client')),
+    };
 
-            new Rule(
-                [
-                    new Fact('lowerOrEqualsMs', 'Ping', this.parameters.pingThreshold.toString()),
-                    new Fact('lowerOrEqualsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())
-                ],
-                new Fact('execLocation', 'QueryAnswering', 'server'))
-        ],
+    this.regenerateRules = function() {
+        rules = {
+            queryingLocation: [
+                new Rule(
+                    [new Fact('exceedsMs', 'Ping', this.parameters.pingThreshold.toString())],
+                    [new Fact('execLocation', 'QueryAnswering', 'client')]),
 
-        classifLocation: [
-            new Rule(
-                [new Fact('exceedsSize', '?OntologySize', this.parameters.ontologySizeThreshold.toString())],
-                new Fact('execLocation', 'Classification', 'server')),
+                new Rule(
+                    [new Fact('exceedsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())],
+                    [new Fact('execLocation', 'QueryAnswering', 'client')]),
 
-            new Rule(
-                [new Fact('lowerOrEqualsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())],
-                new Fact('execLocation', 'Classification', 'server')),
+                new Rule(
+                    [
+                        new Fact('lowerOrEqualsMs', 'Ping', this.parameters.pingThreshold.toString()),
+                        new Fact('lowerOrEqualsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())
+                    ],
+                    [new Fact('execLocation', 'QueryAnswering', 'server')])
+            ],
 
-            new Rule(
-                [
-                    new Fact('lowerOrEqualsSize', 'OntologySize', this.parameters.ontologySizeThreshold.toString()),
-                    new Fact('exceedsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())
-                ],
-                new Fact('execLocation', 'Classification', 'client'))
-        ]
+            classifLocation: [
+                new Rule(
+                    [new Fact('exceedsSize', 'OntologySize', this.parameters.ontologySizeThreshold.toString())],
+                    [new Fact('execLocation', 'Classification', 'server')]),
+
+                new Rule(
+                    [new Fact('lowerOrEqualsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())],
+                    [new Fact('execLocation', 'Classification', 'server')]),
+
+                new Rule(
+                    [
+                        new Fact('lowerOrEqualsSize', 'OntologySize', this.parameters.ontologySizeThreshold.toString()),
+                        new Fact('exceedsPercent', 'BatteryLevel', this.parameters.batteryLevelThreshold.toString())
+                    ],
+                    [new Fact('execLocation', 'Classification', 'client')])
+            ]
+        };
     };
 
     this.answerAdaptationQuestion = function(filename, question) {
@@ -93,7 +101,7 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
                 status.ping = clientResources.ping;
 
                 facts = that.generateFacts(status.ontologySize, status.batteryLevel, status.ping);
-                location = Logics.evaluateRuleSet(question, facts, []);
+                location = Solver.evaluateRuleSet(question, facts, []);
 
                 // Throwing an exception if there are many possible choices (currently unsupported)
                 // Otherwise, returns the answer to the adaptation question.
@@ -102,7 +110,7 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
                     return false;
                 } else {
                     return {
-                        location: location[0].rightIndividual,
+                        location: location[0].object,
                         status: status
                     };
                 }
@@ -111,14 +119,16 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
 
     this.answerClassificationLocationQuestion = function(filename, method) {
         if(method == 'auto') {
-            return this.answerAdaptationQuestion(filename, this.rules.classifLocation);
+            this.regenerateRules();
+            return this.answerAdaptationQuestion(filename, rules.classifLocation);
         }
         return $q.when();
     };
 
     this.answerQueryAnsweringLocationQuestion = function(filename, method) {
         if(method == 'auto') {
-            return this.answerAdaptationQuestion(filename, this.rules.queryingLocation);
+            this.regenerateRules();
+            return this.answerAdaptationQuestion(filename, rules.queryingLocation);
         }
         return $q.when();
     };
