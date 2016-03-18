@@ -12,20 +12,21 @@ var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
 var replace = require('gulp-replace');
 var debug = require('gulp-debug');
+var exec = require('child_process').exec;
+var path = require('path');
 
-var appPath = ('app');
-var libPath = appPath + '/lib';
+var appPath = path.resolve('app');
+var libPath = path.resolve(appPath + '/lib');
+var ontologyDirectoryPath = path.resolve(appPath + '/../ontologies/') + '/';
+var devNodeServerPort = 3002;
 
 var regtofix = /context = context \? _\.defaults\(root\.Object\(\), context, _\.pick\(root, contextProps\)\) : root;/g;
 var lodashfix = 'context = context ? _.defaults(root.Object(), ' +
                 'context, _.pick(root, contextProps)) : root; \n' +
                 ' if (typeof context.Object !== "function") context = this;';
 
-var regDotting = /\/(lib|scripts|styles)/g;
-var dottingFix = './$1';
-
 var regAll = /(.|\n|\r)*/;
-var configDev = "angular.module('config', []).constant('ENV', {name:'development',serverRootPath:'http://localhost:3002'});";
+var configDev = "angular.module('config', []).constant('ENV', {name:'development',serverRootPath:'http://localhost:" + devNodeServerPort.toString() + "'});";
 var configProd = "angular.module('config', []).constant('ENV', {name:'production',serverRootPath:'http://dataconf.liris.cnrs.fr/owlReasonerServer'});";
 
 // Cleans lib folder
@@ -78,19 +79,16 @@ gulp.task('build-index', function() {
             appPath + '/scripts/**/*.js',
             appPath + '/**/*.css'
     ]);
-    return target.pipe(inject(sources, { 'ignorePath': appPath }))
+    return target
+        .pipe(inject(sources, {
+            'ignorePath': appPath,
+            'addRootSlash': false
+        }))
         .pipe(gulp.dest(appPath));
 });
 
-// Fixing dot issues with production
-gulp.task('fix-index', function() {
-    return gulp.src('./app/index.html')
-        .pipe(replace(regDotting, dottingFix))
-        .pipe(gulp.dest(appPath + '/'));
-});
-
 // Starts the webserver
-gulp.task('server', function() {
+gulp.task('webserver', function() {
     browserSync.init({
         server: {
             baseDir: appPath
@@ -100,13 +98,25 @@ gulp.task('server', function() {
     });
 });
 
+// Starts the node.js server
+gulp.task('nodeserver', function(cb) {
+    exec('node_modules/hylar/hylar/server/server.js -p ' + devNodeServerPort + ' -od ' + ontologyDirectoryPath,
+        function (err, stdout, stderr) {
+            console.log(stdout);
+            console.log(stderr);
+            cb(err);
+        });
+    console.log('Deploying hylar server, port 3002.');
+    console.log('HyLAR ontology directory set at ' + ontologyDirectoryPath);
+});
+
 // DEV environment
 gulp.task('build-dev', function() {
     return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index');
 });
 
 gulp.task('build-run-dev', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index', 'server');
+    return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index', 'webserver', 'nodeserver');
 });
 
 // PROD environment
@@ -115,10 +125,10 @@ gulp.task('build-prod', function() {
 });
 
 gulp.task('build-run-prod', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'config-prod', 'build-index', 'fix-index', 'server');
+    return runSequence('clean', 'build-bower', 'build-migrate', 'config-prod', 'build-index', 'webserver', 'nodeserver');
 });
 
 // Both
 gulp.task('serve', function() {
-    return runSequence('server');
+    return runSequence('webserver', 'nodeserver');
 });
