@@ -76,8 +76,7 @@ gulp.task('build-index', function() {
             appPath + '/lib/jquery.js',
             appPath + '/lib/*.js',
             appPath + '/scripts/**/*.js',
-            appPath + '/**/*.css',
-            appPath + '/images'
+            appPath + '/**/*.css'
     ]);
     return target.pipe(inject(sources, { 'ignorePath': appPath }))
         .pipe(gulp.dest(appPath));
