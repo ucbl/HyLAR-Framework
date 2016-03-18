@@ -91,7 +91,7 @@ gulp.task('fix-index', function() {
 
 // Starts the webserver
 gulp.task('server', function() {
-    gulp.src(appPath)
+    gulp.src([appPath, appPath + ''])
         .pipe(webserver({
             open: true
         }));
