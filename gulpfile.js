@@ -3,7 +3,7 @@
  */
 
 var gulp = require('gulp');
-var webserver = require('gulp-webserver');
+var browserSync = require('browser-sync').create();
 var mainBowerFiles = require('main-bower-files');
 var clean = require('gulp-clean');
 var inject = require('gulp-inject');
@@ -76,7 +76,8 @@ gulp.task('build-index', function() {
             appPath + '/lib/jquery.js',
             appPath + '/lib/*.js',
             appPath + '/scripts/**/*.js',
-            appPath + '/**/*.css'
+            appPath + '/**/*.css',
+            appPath + '/images'
     ]);
     return target.pipe(inject(sources, { 'ignorePath': appPath }))
         .pipe(gulp.dest(appPath));
@@ -91,10 +92,13 @@ gulp.task('fix-index', function() {
 
 // Starts the webserver
 gulp.task('server', function() {
-    gulp.src([appPath, appPath + ''])
-        .pipe(webserver({
-            open: true
-        }));
+    browserSync.init({
+        server: {
+            baseDir: appPath
+        },
+        notify: false,
+        port: 8000
+    });
 });
 
 // DEV environment
