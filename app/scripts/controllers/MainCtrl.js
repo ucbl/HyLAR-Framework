@@ -14,9 +14,15 @@ app.controller('MainCtrl',
               FileUploader, AdaptationService) {
 
         $scope.adaptationParameters = AdaptationService.parameters;
+        $scope.updateTooltip = function () {
+            AdaptationService.regenerateRules();
+            $scope.ruleDesc = AdaptationService.ruleDesc.queryingLocation +
+                AdaptationService.ruleDesc.classifLocation;
+        };
+
         $scope.setAdaptationParameters = function() {
             AdaptationService.parameters = this.adaptationParameters;
-            console.log(AdaptationService.parameters);
+            $scope.updateTooltip();
         };
 
         $scope.updateList = function(fileToPoint) {
@@ -199,5 +205,6 @@ app.controller('MainCtrl',
         };
 
         $scope.updateList('fipa.owl');
+        $scope.updateTooltip();
 
-  });
+    });

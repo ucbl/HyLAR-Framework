@@ -4,7 +4,8 @@
 
 app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'OntologyParser', function($q, HylarRemote, ClientResources, OntologyParser) {
 
-    var rules = {};
+    this.rules = {};
+    this.ruleDesc = {};
 
     this.parameters = {
         ontologySizeThreshold: 200,
@@ -36,12 +37,8 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
         return facts;
     };
 
-    this.ruleDesc = {
-
-    };
-
     this.regenerateRules = function() {
-        rules = {
+        this.rules = {
             queryingLocation: [
                 new Rule(
                     [new Fact('exceedsMs', 'Ping', this.parameters.pingThreshold.toString())],
@@ -76,6 +73,19 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
                     [new Fact('execLocation', 'Classification', 'client')])
             ]
         };
+
+        this.ruleDesc = {
+            queryingLocation:
+            "If the ping duration is lower than (or equals) " + this.parameters.pingThreshold.toString() +
+            "ms and the battery level is also lower than (or equals) " + this.parameters.batteryLevelThreshold.toString() +
+            "%, the query answering location will be on the server side. Otherwise, it will be on the client side. ",
+
+            classifLocation:
+            "If the ontology size is lower than (or equals) " + this.parameters.ontologySizeThreshold.toString() +
+            " entities and the battery level exceeds " + this.parameters.batteryLevelThreshold.toString() +
+            "%, the classification location will be on the client side. Otherwise, it will be on the server side."
+        };
+
     };
 
     this.answerAdaptationQuestion = function(filename, question) {
@@ -119,16 +129,14 @@ app.service('AdaptationService', ['$q', 'HylarRemote', 'ClientResources', 'Ontol
 
     this.answerClassificationLocationQuestion = function(filename, method) {
         if(method == 'auto') {
-            this.regenerateRules();
-            return this.answerAdaptationQuestion(filename, rules.classifLocation);
+            return this.answerAdaptationQuestion(filename, this.rules.classifLocation);
         }
         return $q.when();
     };
 
     this.answerQueryAnsweringLocationQuestion = function(filename, method) {
         if(method == 'auto') {
-            this.regenerateRules();
-            return this.answerAdaptationQuestion(filename, rules.queryingLocation);
+            return this.answerAdaptationQuestion(filename, this.rules.queryingLocation);
         }
         return $q.when();
     };

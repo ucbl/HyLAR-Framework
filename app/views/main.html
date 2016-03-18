@@ -99,7 +99,11 @@
                 </li>
                 <li class="list-group-item" style="text-align:center;">
                     <label class="btn btn-xs btn-default" ng-click="showAdaptationParams = !showAdaptationParams">Adaptation parameters & thresholds...</label>
+
                     <div class="list-group-item" style="position: absolute; z-index: 2" ng-show="showAdaptationParams">
+                        <span popover-title="How do thresholds work?" popover-placement="bottom" uib-popover="{{ruleDesc}}" popover-trigger="mouseenter">
+                            Rule description <img width="12px" src="/images/info.png"/>
+                        </span>
                         <div class="thlabel">Ontology size threshold: {{ adaptationParameters.ontologySizeThreshold }} entities</div>
                         <slider ng-change="setAdaptationParameters()" ng-model="adaptationParameters.ontologySizeThreshold" min="0" step="1" max="1000" value="200"></slider>
                         <div class="thlabel">Ping threshold: {{ adaptationParameters.pingThreshold }} milliseconds</div>
