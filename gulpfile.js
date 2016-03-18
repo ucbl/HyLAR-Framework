@@ -15,10 +15,11 @@ var debug = require('gulp-debug');
 var exec = require('child_process').exec;
 var path = require('path');
 
-var appPath = path.resolve('app');
-var libPath = path.resolve(appPath + '/lib');
+var appPath = 'app';
+var libPath = appPath + '/lib';
 var ontologyDirectoryPath = path.resolve(appPath + '/../ontologies/') + '/';
 var devNodeServerPort = 3002;
+var webServerPort = 8000;
 
 var regtofix = /context = context \? _\.defaults\(root\.Object\(\), context, _\.pick\(root, contextProps\)\) : root;/g;
 var lodashfix = 'context = context ? _.defaults(root.Object(), ' +
@@ -89,25 +90,28 @@ gulp.task('build-index', function() {
 
 // Starts the webserver
 gulp.task('webserver', function() {
+    console.log('[HyLAR] Deploying CORS webserver, port ' + webServerPort);
+
     browserSync.init({
         server: {
             baseDir: appPath
         },
         notify: false,
-        port: 8000
+        port: webServerPort
     });
 });
 
 // Starts the node.js server
 gulp.task('nodeserver', function(cb) {
+    console.log('[HyLAR] Deploying hylar server, port ' + devNodeServerPort);
+    console.log('[HyLAR] HyLAR ontology directory set at ' + ontologyDirectoryPath);
+
     exec('node_modules/hylar/hylar/server/server.js -p ' + devNodeServerPort + ' -od ' + ontologyDirectoryPath,
         function (err, stdout, stderr) {
             console.log(stdout);
             console.log(stderr);
             cb(err);
         });
-    console.log('Deploying hylar server, port 3002.');
-    console.log('HyLAR ontology directory set at ' + ontologyDirectoryPath);
 });
 
 // DEV environment
