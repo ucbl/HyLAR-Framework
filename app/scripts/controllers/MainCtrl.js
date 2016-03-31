@@ -9,7 +9,7 @@
  */
 app.controller('MainCtrl',
 
-    function ($scope, $http, $q, upload,
+    function ($scope, $http, $q, $timeout, upload,
               Hylar, ServerTime, LoggingService,
               FileUploader, AdaptationService) {
 
@@ -25,14 +25,14 @@ app.controller('MainCtrl',
             $scope.updateTooltip();
         };
 
-        $scope.updateList = function(fileToPoint) {
-            var that = this;
-            Hylar.remote.list.$promise
-                .then(function(list) {
-                    that.ontologyList = list;
-                    that.owlFileName = fileToPoint;
-                });
-        };
+        (function updateList() {
+            var that = $scope;
+            Hylar.remote.list().$promise.then(function (list) {
+                console.log(list.length);
+                that.ontologyList = list;
+                $timeout(updateList, 200);
+            });
+        })();
 
         $scope.clearLog = function() {
             LoggingService.log = [];
@@ -41,7 +41,6 @@ app.controller('MainCtrl',
         $scope.uploadUrl = angular.injector(['config']).get('ENV').serverRootPath +  '/ontology';
         $scope.successUpload = function(response) {
             LoggingService.msg('Your file has been sucessfully uploaded. You can choose it on the list !').submit();
-            $scope.ontologyList = response.data.list;
             $scope.owlFileName = response.data.filename;
 
         };
@@ -63,6 +62,19 @@ app.controller('MainCtrl',
         $scope.removeReasoner = function() {
             localStorage.removeItem('reasoner');
             $scope.config.reasoner = localStorage.getItem('reasoner');
+        };
+
+        $scope.deleteFile = function() {
+            var that = this;
+            Hylar.remote.delete({
+                filename:  that.owlFileName
+            }).$promise.then(
+                function(success) {
+                    LoggingService.msg(success.filename + ' successfully deleted.').submit();
+                },
+                function(err) {
+                    LoggingService.err(err.statusText).submit();
+                });
         };
 
         $scope.startWorker = function() {
@@ -204,7 +216,7 @@ app.controller('MainCtrl',
 
         };
 
-        $scope.updateList('fipa.owl');
+        $scope.owlFileName = 'fipa.owl';
         $scope.updateTooltip();
 
     });

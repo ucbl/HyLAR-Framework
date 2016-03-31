@@ -20,6 +20,15 @@ app.factory('OntologyClassifier', ['$resource',
         }
     ])
 
+    .factory('OntologyDeleter', ['$resource',
+        function($resource) {
+            var ENV = angular.injector(['config']).get('ENV');
+            return $resource(ENV.serverRootPath + '/ontology/:filename', {}, {
+                'delete': { method: 'DELETE', params: {filename: '@filename'}, isArray: false }
+            });
+        }
+    ])
+
     .factory('RemoteOntologies', ['$resource',
         function($resource) {
             var ENV = angular.injector(['config']).get('ENV');

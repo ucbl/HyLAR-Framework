@@ -1,6 +1,6 @@
 {
-  "name": "hylar",
-  "version": "0.0.0",
+  "name": "hylar-framework",
+  "version": "0.0.1",
   "dependencies": {
     "angular": "~1.2.0",
     "json3": "~3.3.1",

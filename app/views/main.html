@@ -15,6 +15,9 @@
                             <td>
                                 <select ng-model="owlFileName" ng-options="filename for filename in ontologyList"/>
                             </td>
+                            <td>
+                                <a href="#" ng-click="deleteFile()" style="color:indianred; padding:4px; margin:4px;">DELETE FILE</a>
+                            </td>
                         </tr>
                     </table>
                 </li>
