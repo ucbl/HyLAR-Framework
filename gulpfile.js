@@ -16,7 +16,7 @@ var exec = require('child_process').exec;
 var path = require('path');
 
 var appPath = 'app';
-var libPath = appPath + '/lib';
+var libPath = 'lib';
 var ontologyDirectoryPath = path.resolve(appPath + '/../ontologies/') + '/';
 var devNodeServerPort = 3002;
 var webServerPort = 8000;
@@ -53,32 +53,27 @@ gulp.task('config-prod', function() {
 
 // Add js and css dependencies into index.html. Some files and directories are voluntary ordered.
 gulp.task('build-index', function() {
-    var target = gulp.src('./app/index.html');
+    var target = gulp.src('./index.html');
     var sources = gulp.src([
-            appPath + '/lib/angular.js',
-            appPath + '/lib/jquery.js',
-            appPath + '/lib/*.js',
-            appPath + '/scripts/**/*.js',
-            appPath + '/**/*.css'
+            libPath + '/angular.js',
+            libPath + '/jquery.js',
+            libPath + '/*.js',
+            libPath + '/*.css'
     ]);
     return target
         .pipe(inject(sources, {
             'ignorePath': appPath,
             'addRootSlash': false
         }))
-        .pipe(gulp.dest(appPath));
+        .pipe(gulp.dest('./'));
 });
 
 // Starts the webserver
 gulp.task('webserver', function() {
-    console.log('[HyLAR] Deploying CORS webserver, port ' + webServerPort);
-
-    browserSync.init({
-        server: {
-            baseDir: appPath
-        },
-        notify: false,
-        port: webServerPort
+    exec('npm start', function (err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
     });
 });
 
