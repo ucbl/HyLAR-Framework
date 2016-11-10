@@ -5,8 +5,8 @@
 app.factory('OntologyParser',
     function() {
         return {
-            parse: function(data) {
-                return JswParser.parse(data, function(e) {
+            parse: function(data, mimeType) {
+                return Hylar.load(data, 'text/turtle', function(e) {
                     console.log('error when parsing');
                 });
             }
@@ -38,9 +38,9 @@ app.factory('OntologyParser',
                         data.reasoner = JSON.parse(data.reasoner);
                     }
 
-                    if(data.inWorker) {
-                        ReasonerWorker.postMessage(JSON.stringify(data));
-                    } else {
+                    //if(data.inWorker) {
+                    //    ReasonerWorker.postMessage(JSON.stringify(data));
+                    //} else {
                         // Special case when processing outside of the worker
                         var received = receive({
                             data: JSON.stringify(data)
@@ -50,7 +50,7 @@ app.factory('OntologyParser',
                             localStorage.setItem('create',received.reasoner);
                         }
                         defer.resolve(received);
-                    }
+                    //}
 
                     return defer.promise;
                 }

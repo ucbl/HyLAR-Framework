@@ -3,7 +3,7 @@
  */
 
 importScripts('./ReasonerReceive.js');
-importScripts('../lib/hylar.js');
+importScripts('../lib/hylar-client.js');
 importScripts('../scripts/reasoning/JswReasoner.js');
 
 function send(data) {

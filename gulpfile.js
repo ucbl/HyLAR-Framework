@@ -21,11 +21,6 @@ var ontologyDirectoryPath = path.resolve(appPath + '/../ontologies/') + '/';
 var devNodeServerPort = 3002;
 var webServerPort = 8000;
 
-var regtofix = /context = context \? _\.defaults\(root\.Object\(\), context, _\.pick\(root, contextProps\)\) : root;/g;
-var lodashfix = 'context = context ? _.defaults(root.Object(), ' +
-                'context, _.pick(root, contextProps)) : root; \n' +
-                ' if (typeof context.Object !== "function") context = this;';
-
 var regAll = /(.|\n|\r)*/;
 var configDev = "angular.module('config', []).constant('ENV', {name:'development',serverRootPath:'http://localhost:" + devNodeServerPort.toString() + "'});";
 var configProd = "angular.module('config', []).constant('ENV', {name:'production',serverRootPath:'http://dataconf.liris.cnrs.fr/owlReasonerServer'});";
@@ -39,20 +34,6 @@ gulp.task('clean', function () {
 // Puts bower dependencies into app/lib
 gulp.task('build-bower', function() {
     return gulp.src(mainBowerFiles())
-        .pipe(gulp.dest(libPath));
-});
-
-// Client-side code migration
-gulp.task('build-migrate', function() {
-    return gulp.src('node_modules/hylar/hylar/hylar.js')
-        .pipe(debug())
-        .pipe(browserify({
-            insertGlobals : true,
-            debug : false,
-            standalone: 'lodash'
-        }))
-        .pipe(concat('hylar.js'))
-        .pipe(replace(regtofix, lodashfix)) // Fixing lodash issues
         .pipe(gulp.dest(libPath));
 });
 
@@ -103,10 +84,7 @@ gulp.task('webserver', function() {
 
 // Starts the node.js server
 gulp.task('nodeserver', function(cb) {
-    console.log('[HyLAR] Deploying hylar server, port ' + devNodeServerPort);
-    console.log('[HyLAR] HyLAR ontology directory set at ' + ontologyDirectoryPath);
-
-    exec('node_modules/hylar/hylar/server/server.js -p ' + devNodeServerPort + ' -od ' + ontologyDirectoryPath,
+    exec('hylar -p ' + devNodeServerPort + ' -od ' + ontologyDirectoryPath,
         function (err, stdout, stderr) {
             console.log(stdout);
             console.log(stderr);
@@ -116,23 +94,23 @@ gulp.task('nodeserver', function(cb) {
 
 // DEV environment
 gulp.task('build-dev', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index');
+    return runSequence('clean', 'build-bower', 'config-dev', 'build-index');
 });
 
 gulp.task('build-run-dev', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'config-dev', 'build-index', 'webserver', 'nodeserver');
+    return runSequence('clean', 'build-bower', 'config-dev', 'build-index', 'webserver', 'nodeserver');
 });
 
 // PROD environment
 gulp.task('build-prod', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'config-prod', 'build-index');
+    return runSequence('clean', 'build-bower', 'config-prod', 'build-index');
 });
 
 gulp.task('build-run-prod', function() {
-    return runSequence('clean', 'build-bower', 'build-migrate', 'config-prod', 'build-index', 'webserver', 'nodeserver');
+    return runSequence('clean', 'build-bower', 'config-prod', 'build-index', 'webserver', 'nodeserver');
 });
 
 // Both
-gulp.task('serve', function() {
+gulp.task('run', function() {
     return runSequence('webserver', 'nodeserver');
 });
