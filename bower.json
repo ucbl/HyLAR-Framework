@@ -2,27 +2,9 @@
   "name": "hylar-framework",
   "version": "0.0.1",
   "dependencies": {
-    "angular": "~1.2.0",
-    "json3": "~3.3.1",
-    "es5-shim": "~3.1.0",
-    "bootstrap": "~3.2.0",
-    "angular-resource": "~1.2.26",
-    "angular-local-storage": "~0.1.4",
-    "angular-file-upload": "1.1.5",
-    "angularjs-scroll-glue": "~0.0.1",
     "q": "1.0.1",
     "lodash": "~3.4.0",
-    "angular-bootstrap-slider": "~0.1.26",
-    "angular-upload": "^1.0.12",
-    "angular-bootstrap": "^1.2.4",
     "hylar": "^1.7.24"
   },
-  "devDependencies": {
-    "angular-mocks": "~1.2.0",
-    "angular-scenario": "~1.2.0"
-  },
-  "appPath": "app",
-  "resolutions": {
-    "angular": ">=1.4.0"
-  }
+  "appPath": "app"
 }

@@ -16,7 +16,7 @@ var exec = require('child_process').exec;
 var path = require('path');
 
 var appPath = 'app';
-var libPath = 'lib';
+var libPath = './lib';
 var ontologyDirectoryPath = path.resolve(appPath + '/../ontologies/') + '/';
 var devNodeServerPort = 3002;
 var webServerPort = 8000;
@@ -55,16 +55,14 @@ gulp.task('config-prod', function() {
 gulp.task('build-index', function() {
     var target = gulp.src('./index.html');
     var sources = gulp.src([
-            libPath + '/angular.js',
-            libPath + '/jquery.js',
             libPath + '/*.js',
             libPath + '/*.css'
-    ]);
+    ]).pipe(debug(libPath));
     return target
         .pipe(inject(sources, {
-            'ignorePath': appPath,
+            'ignorePath': libPath,
             'addRootSlash': false
-        }))
+        }))                
         .pipe(gulp.dest('./'));
 });
 
