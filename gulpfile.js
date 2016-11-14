@@ -25,6 +25,10 @@ var regAll = /(.|\n|\r)*/;
 var configDev = "angular.module('config', []).constant('ENV', {name:'development',serverRootPath:'http://localhost:" + devNodeServerPort.toString() + "'});";
 var configProd = "angular.module('config', []).constant('ENV', {name:'production',serverRootPath:'http://dataconf.liris.cnrs.fr/owlReasonerServer'});";
 
+var cb = function(val) {
+    console.log(val);
+};
+
 // Cleans lib folder
 gulp.task('clean', function () {
     return gulp.src(libPath, {read: false})
@@ -55,9 +59,11 @@ gulp.task('config-prod', function() {
 gulp.task('build-index', function() {
     var target = gulp.src('./index.html');
     var sources = gulp.src([
+            libPath + '/jquery.js',
             libPath + '/*.js',
             libPath + '/*.css'
     ]).pipe(debug(libPath));
+    
     return target
         .pipe(inject(sources, {
             'ignorePath': libPath,
