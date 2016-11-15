@@ -10,3 +10,4 @@ Thu Nov 10 2016 13:45:04 GMT+0100 (Paris, Madrid) TypeError: Hylar.load(...).the
     at FSReqWrap.readFileAfterClose [as oncomplete] (fs.js:404:3)
 Mon Nov 14 2016 11:00:50 GMT+0100 (Paris, Madrid) HyLAR is running on port 3002.
 Mon Nov 14 2016 11:38:00 GMT+0100 (Paris, Madrid) HyLAR is running on port 3002.
+Tue Nov 15 2016 16:32:17 GMT+0100 (Paris, Madrid) HyLAR is running on port 3002.

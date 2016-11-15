@@ -9,24 +9,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require('@angular/core');
-var platform_browser_1 = require('@angular/platform-browser');
-var forms_1 = require('@angular/forms');
-var http_1 = require('@angular/http');
-var app_component_1 = require('./app.component');
-var hylar_component_1 = require('./hylar.component');
-var ng2_file_upload_1 = require('ng2-file-upload/ng2-file-upload');
-var AppModule = (function () {
-    function AppModule() {
+var Sparql = (function () {
+    function Sparql() {
     }
-    AppModule = __decorate([
-        core_1.NgModule({
-            imports: [platform_browser_1.BrowserModule, forms_1.FormsModule, http_1.HttpModule],
-            declarations: [app_component_1.AppComponent, hylar_component_1.HylarComponent, ng2_file_upload_1.FileSelectDirective],
-            bootstrap: [app_component_1.AppComponent]
+    Sparql = __decorate([
+        core_1.Directive({
+            selector: "sparql"
         }), 
         __metadata('design:paramtypes', [])
-    ], AppModule);
-    return AppModule;
+    ], Sparql);
+    return Sparql;
 }());
-exports.AppModule = AppModule;
-//# sourceMappingURL=app.module.js.map
+//# sourceMappingURL=sparql.directive.js.map

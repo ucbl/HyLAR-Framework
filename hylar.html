@@ -16,15 +16,25 @@
     <table class="table table-bordered">
         <tr>
             <th>Upload ontology</th>
-            <th>Classify ontology</th>
+            <th>Actions</th>
             <th>Controls</th>
         </tr>        
         <tr>
             <td>
-                <input title="Ontology file to upload" type="file" ng2FileSelect [uploader]="uploader" />
+                <input title="Ontology file to upload" class="file" type="file" ng2FileSelect [uploader]="uploader" />                
             </td>
             <td>
-                <button type="button" class="btn btn-primary" (click)="classify()">Classify</button>
+                <span class="dropdown">
+                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Classify...
+                    <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="files">
+                        <li *ngFor="let file of ontologyFiles"><a href="#" (click)="classify(file)">{{ file }}</a></li>
+                    </ul>
+                </span>
+
+                <button type="button" class="btn btn-secondary" (click)="clear()">Clear reasoner</button>
             </td>                
             <td></td>
         </tr>
@@ -34,12 +44,24 @@
             <th>SPARQL query <span style="float:right;"><button type="button" class="btn btn-secondary" (click)="sparql()">Execute query</button></span></th>
         </tr>
         <tr>
-            <textarea style="font-family: 'Courier New'; font-size: 16px;" class="form-control" rows="10">{{ sparqlQuery }}</textarea>            
+            <textarea id="sparqlQuery" [(ngModel)]="sparqlQuery" style="font-family: 'Courier New'; font-size: 16px;" class="form-control" rows="10"></textarea>            
         </tr>
     </table>
     <table class="table table-bordered">
         <tr>
             <th>Results</th>
+            <table class="table table-bordered sparqlresults-table">
+                <tr>
+                    <th *ngFor="let variable of results[0]">{{ variable }}</th>
+                </tr>                
+                <tr *ngFor="let result of results">                    
+                    <td *ngFor="let entry of result">
+                        <small class="sparqlresults">
+                            {{ entry.value }}
+                        </small>
+                    </td>
+                </tr>
+             </table>
         </tr>
         <tr>
             
@@ -50,7 +72,7 @@
 <footer style="height: 20%;" class="footer navbar navbar-default navbar-fixed-bottom">
     <div class="container-fluid">
         <h4 class="brand">Log</h4>
-        <div style="font-family: 'Courier New'; font-size: 16px;">
+        <div style="font-family: 'Courier New'; font-size: 12px;">
             <div *ngFor="let entry of log">
                 <b>{{ entry[0] }} ></b> {{ entry[1] }}
             </div>
