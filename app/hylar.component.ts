@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FileSelectDirective, FileDropDirective, FileUploader } from 'ng2-file-upload/ng2-file-upload';
 import { Http, Headers, Response, Request } from '@angular/http';
-import {Observable} from 'rxjs/Rx';
+import { Observable } from 'rxjs/Rx';
 import 'rxjs/Rx';
 
 declare var Hylar: any;
@@ -129,7 +129,11 @@ export class HylarComponent {
                 this.hylarClient
                     .query(this.sparqlQuery)
                     .then((results) => {   
-                        this.postLog(`Finished, ${ results.length } results found`);
+                        if (results[0] && results[0] === true) {
+                            this.postLog(`Updated completed.`);
+                        } else {
+                            this.postLog(`Finished, ${ results.length } results found`);
+                        }
                         this.results = results;
                     }).catch((ex) => {
                         this.postLog(ex);
@@ -143,8 +147,12 @@ export class HylarComponent {
 
                 request
                     .map((res:Response) => res.json())
-                    .subscribe(res => {   
-                            this.postLog(`Finished, ${ res.data.length } results found`);
+                    .subscribe(res => { 
+                            if (res.data[0] && res.data[0] === true) {
+                                this.postLog(`Updated completed.`);
+                            } else {  
+                                this.postLog(`Finished, ${ res.data.length } results found`);
+                            }
                             this.results = res.data;
                         });
 

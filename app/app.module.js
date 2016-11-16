@@ -15,6 +15,7 @@ var http_1 = require('@angular/http');
 var app_component_1 = require('./app.component');
 var hylar_component_1 = require('./hylar.component');
 var ng2_file_upload_1 = require('ng2-file-upload/ng2-file-upload');
+var adaptation_service_1 = require('./adaptation.service');
 var pipes_1 = require('./pipes');
 var AppModule = (function () {
     function AppModule() {
@@ -22,7 +23,7 @@ var AppModule = (function () {
     AppModule = __decorate([
         core_1.NgModule({
             imports: [platform_browser_1.BrowserModule, forms_1.FormsModule, http_1.HttpModule],
-            declarations: [app_component_1.AppComponent, hylar_component_1.HylarComponent, ng2_file_upload_1.FileSelectDirective, pipes_1.KeysPipe],
+            declarations: [app_component_1.AppComponent, hylar_component_1.HylarComponent, ng2_file_upload_1.FileSelectDirective, pipes_1.KeysPipe, adaptation_service_1.AdaptationService],
             bootstrap: [app_component_1.AppComponent]
         }), 
         __metadata('design:paramtypes', [])

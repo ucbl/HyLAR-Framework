@@ -106,7 +106,12 @@ var HylarComponent = (function () {
                 this.hylarClient
                     .query(this.sparqlQuery)
                     .then(function (results) {
-                    _this.postLog("Finished, " + results.length + " results found");
+                    if (results[0] && results[0] === true) {
+                        _this.postLog("Updated completed.");
+                    }
+                    else {
+                        _this.postLog("Finished, " + results.length + " results found");
+                    }
                     _this.results = results;
                 }).catch(function (ex) {
                     _this.postLog(ex);
@@ -120,7 +125,12 @@ var HylarComponent = (function () {
                 request
                     .map(function (res) { return res.json(); })
                     .subscribe(function (res) {
-                    _this.postLog("Finished, " + res.data.length + " results found");
+                    if (res.data[0] && res.data[0] === true) {
+                        _this.postLog("Updated completed.");
+                    }
+                    else {
+                        _this.postLog("Finished, " + res.data.length + " results found");
+                    }
                     _this.results = res.data;
                 });
                 request.catch(function (error) {
