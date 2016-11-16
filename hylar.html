@@ -17,11 +17,15 @@
         <tr>
             <th>Upload ontology</th>
             <th>Actions</th>
-            <th>Controls</th>
+            <th>Classification location</th>
+            <th>Querying location</th>
         </tr>        
-        <tr>
+        <tr style="text-align:center;">
             <td>
-                <input title="Ontology file to upload" class="file" type="file" ng2FileSelect [uploader]="uploader" />                
+                <label class="btn btn-default btn-file">
+                    Browse <input title="Ontology file to upload" type="file" style="display:none;" ng2FileSelect [uploader]="uploader" />
+                </label>         
+                <span *ngIf="state.upload == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
             </td>
             <td>
                 <span class="dropdown">
@@ -32,11 +36,34 @@
                     <ul class="dropdown-menu" aria-labelledby="files">
                         <li *ngFor="let file of ontologyFiles"><a href="#" (click)="classify(file)">{{ file }}</a></li>
                     </ul>
+                    <span *ngIf="state.classification == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
+                </span>
+
+                <span class="dropdown">
+                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Delete...
+                    <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="files">
+                        <li *ngFor="let file of ontologyFiles"><a href="#" (click)="delete(file)">{{ file }}</a></li>
+                    </ul>
+                    <span *ngIf="state.delete == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
                 </span>
 
                 <button type="button" class="btn btn-secondary" (click)="clear()">Clear reasoner</button>
             </td>                
-            <td></td>
+            <td>
+                <label class="radio-inline"><input (click)="configuration.classification = 'client'" [checked]="configuration.classification == 'client'" type="radio" name="classification">Client</label>
+                <label class="radio-inline"><input (click)="configuration.classification = 'server'" [checked]="configuration.classification == 'server'" type="radio" name="classification">Server</label>
+                <label class="radio-inline"><input (click)="configuration.classification = 'auto'" [checked]="configuration.classification == 'auto'" type="radio" name="classification">Adaptive</label>
+            </td>
+            <td>
+            <div class="btn-group" role="group" aria-label="...">
+                <label class="radio-inline"><input (click)="configuration.querying = 'client'" [checked]="configuration.querying == 'client'" type="radio" name="querying">Client</label>
+                <label class="radio-inline"><input (click)="configuration.querying = 'server'" [checked]="configuration.querying == 'server'" type="radio" name="querying">Server</label>
+                <label class="radio-inline"><input (click)="configuration.querying = 'auto'" [checked]="configuration.querying == 'auto'" type="radio" name="querying">Adaptive</label>
+                </div>
+            </td>
         </tr>
     </table>
     <table class="table table-bordered">
@@ -49,22 +76,21 @@
     </table>
     <table class="table table-bordered">
         <tr>
-            <th>Results</th>
-            <table class="table table-bordered sparqlresults-table">
+            <th>Results</th>            
+        </tr>
+        <tr>
+            <table class="table table-bordered" style="table-layout: fixed;">
                 <tr>
-                    <th *ngFor="let variable of results[0]">{{ variable }}</th>
+                    <th *ngFor="let item of results[0] | keys">{{ item.key }}</th>
                 </tr>                
                 <tr *ngFor="let result of results">                    
-                    <td *ngFor="let entry of result">
-                        <small class="sparqlresults">
-                            {{ entry.value }}
+                    <td *ngFor="let entry of result | keys" style="word-wrap: break-word;">
+                        <small>
+                            {{ entry.value.value }}
                         </small>
                     </td>
                 </tr>
              </table>
-        </tr>
-        <tr>
-            
         </tr>
     </table>
 </div>

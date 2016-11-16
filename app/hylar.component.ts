@@ -8,7 +8,8 @@ declare var Hylar: any;
 
 class HConfig {
     static server = "server";
-    static client = "client";    
+    static client = "client";
+    static auto = "auto";   
 }
 
 @Component({
@@ -22,6 +23,10 @@ export class HylarComponent {
     @Input() reasoningMethod: String;    
     @Input() configuration: {
         classification: HConfig, querying: HConfig
+    };
+
+    state: {
+        upload: Boolean, classification: Boolean, delete: Boolean
     };
 
     hylarClient: any;
@@ -39,7 +44,7 @@ export class HylarComponent {
 
         this.hylarClient = new Hylar();
         this.localOntology = localStorage.getItem('ontology');
-        this.sparqlQuery = `SELECT * { ?s ?p ?o }`;
+        this.sparqlQuery = `SELECT * { ?s ?p ?o } LIMIT 100`;
         this.log = [];
         this.results = [];
 
@@ -56,6 +61,12 @@ export class HylarComponent {
             querying: HConfig.client
         };
 
+        this.state = {
+            upload: false,
+            classification: false,
+            delete: false
+        }
+
         this.uploader = new FileUploader({
             url: this.getHylarServerAddress("ontology"),
             autoUpload: true            
@@ -67,6 +78,7 @@ export class HylarComponent {
 
         this.uploader.onSuccessItem = (item) => {            
             that.postLog(`${item._file.name} successfully uploaded.`);
+            this.triggerOkState("upload");
             this.updateFileList();
         }
 
@@ -76,6 +88,13 @@ export class HylarComponent {
 
         this.updateFileList();
         this.postLog(`HyLAR-Framework is now ready.`);
+    };
+
+    public triggerOkState(action:any) {
+        this.state[action] = true;
+        setTimeout(() => {
+            this.state[action] = false;
+        }, 1000);
     };
 
     public getHylarServerAddress(command: String) {
@@ -139,7 +158,8 @@ export class HylarComponent {
                         this.hylarClient
                             .load(ontology.data.ontologyTxt, ontology.data.mimeType, null, null, true)
                             .then((result) => {   
-                                this.postLog(`Classification succeeded.`);                                
+                                this.postLog(`Classification succeeded.`);  
+                                this.triggerOkState('classification');                              
                             }).catch((ex) => {
                                 this.postLog(ex);
                             });
@@ -154,6 +174,24 @@ export class HylarComponent {
             default:
                 this.postLog(`Expected either client or server configuration, none found.`);
         }
+    }
+
+    public delete(filename:String) {
+        let request = this.http                
+                    .get(this.getHylarServerAddress(`remove/${filename}`));
+
+                request
+                    .map((res:Response) => res.text())
+                    .subscribe(res => {
+                        this.postLog(`${filename} successfully deleted.`);
+                        this.updateFileList();
+                        this.triggerOkState("delete");
+                    });
+
+                request.catch(error => {
+                    this.postLog(error);
+                    return Observable.throw(error.json());
+                });
     }
 
     public clear() {

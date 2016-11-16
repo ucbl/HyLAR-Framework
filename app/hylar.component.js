@@ -18,6 +18,7 @@ var HConfig = (function () {
     }
     HConfig.server = "server";
     HConfig.client = "client";
+    HConfig.auto = "auto";
     return HConfig;
 }());
 var HylarComponent = (function () {
@@ -29,7 +30,7 @@ var HylarComponent = (function () {
         var that = this;
         this.hylarClient = new Hylar();
         this.localOntology = localStorage.getItem('ontology');
-        this.sparqlQuery = "SELECT * { ?s ?p ?o }";
+        this.sparqlQuery = "SELECT * { ?s ?p ?o } LIMIT 100";
         this.log = [];
         this.results = [];
         /*window.onerror = (error:any) => {
@@ -43,6 +44,11 @@ var HylarComponent = (function () {
             classification: HConfig.client,
             querying: HConfig.client
         };
+        this.state = {
+            upload: false,
+            classification: false,
+            delete: false
+        };
         this.uploader = new ng2_file_upload_1.FileUploader({
             url: this.getHylarServerAddress("ontology"),
             autoUpload: true
@@ -52,6 +58,7 @@ var HylarComponent = (function () {
         };
         this.uploader.onSuccessItem = function (item) {
             that.postLog(item._file.name + " successfully uploaded.");
+            _this.triggerOkState("upload");
             _this.updateFileList();
         };
         this.uploader.onErrorItem = function (item) {
@@ -60,6 +67,14 @@ var HylarComponent = (function () {
         this.updateFileList();
         this.postLog("HyLAR-Framework is now ready.");
     }
+    ;
+    HylarComponent.prototype.triggerOkState = function (action) {
+        var _this = this;
+        this.state[action] = true;
+        setTimeout(function () {
+            _this.state[action] = false;
+        }, 1000);
+    };
     ;
     HylarComponent.prototype.getHylarServerAddress = function (command) {
         return "http://" + this.remoteHost + ":" + this.remotePort + "/" + command;
@@ -119,6 +134,7 @@ var HylarComponent = (function () {
                         .load(ontology.data.ontologyTxt, ontology.data.mimeType, null, null, true)
                         .then(function (result) {
                         _this.postLog("Classification succeeded.");
+                        _this.triggerOkState('classification');
                     }).catch(function (ex) {
                         _this.postLog(ex);
                     });
@@ -131,6 +147,22 @@ var HylarComponent = (function () {
             default:
                 this.postLog("Expected either client or server configuration, none found.");
         }
+    };
+    HylarComponent.prototype.delete = function (filename) {
+        var _this = this;
+        var request = this.http
+            .get(this.getHylarServerAddress("remove/" + filename));
+        request
+            .map(function (res) { return res.text(); })
+            .subscribe(function (res) {
+            _this.postLog(filename + " successfully deleted.");
+            _this.updateFileList();
+            _this.triggerOkState("delete");
+        });
+        request.catch(function (error) {
+            _this.postLog(error);
+            return Rx_1.Observable.throw(error.json());
+        });
     };
     HylarComponent.prototype.clear = function () {
         this.hylarClient = new Hylar();
