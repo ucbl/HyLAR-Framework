@@ -112,17 +112,34 @@ var HylarComponent = (function () {
                     _this.postLog(ex);
                 });
                 break;
+            case HConfig.server:
+                var request = this.http
+                    .post(this.getHylarServerAddress("query"), {
+                    query: this.sparqlQuery
+                });
+                request
+                    .map(function (res) { return res.json(); })
+                    .subscribe(function (res) {
+                    _this.postLog("Finished, " + res.data.length + " results found");
+                    _this.results = res.data;
+                });
+                request.catch(function (error) {
+                    _this.postLog(error);
+                    return Rx_1.Observable.throw(error.json());
+                });
+                break;
             default:
                 this.postLog("Expected either client or server configuration, none found.");
         }
     };
     HylarComponent.prototype.classify = function (filename) {
         var _this = this;
+        var request;
         switch (this.configuration.classification) {
             case HConfig.client:
                 var headers = new http_1.Headers();
                 headers.append('Accept', 'application/json');
-                var request = this.http
+                request = this.http
                     .get(this.getHylarServerAddress("ontology/" + filename), {
                     headers: headers
                 });
@@ -134,6 +151,27 @@ var HylarComponent = (function () {
                         .load(ontology.data.ontologyTxt, ontology.data.mimeType, null, null, true)
                         .then(function (result) {
                         _this.postLog("Classification succeeded.");
+                        _this.triggerOkState('classification');
+                    }).catch(function (ex) {
+                        _this.postLog(ex);
+                    });
+                });
+                request.catch(function (error) {
+                    _this.postLog(error);
+                    return Rx_1.Observable.throw(error.json());
+                });
+                break;
+            case HConfig.server:
+                request = this.http
+                    .get(this.getHylarServerAddress("classifyRemotely/" + filename));
+                request
+                    .map(function (res) { return res.json(); })
+                    .subscribe(function (res) {
+                    _this.postLog(filename + " successfully classified on the server-side.");
+                    _this.hylarClient
+                        .import(res.dictionary.dict)
+                        .then(function (result) {
+                        _this.postLog("Import succeeded.");
                         _this.triggerOkState('classification');
                     }).catch(function (ex) {
                         _this.postLog(ex);

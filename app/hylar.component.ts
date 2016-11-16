@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FileSelectDirective, FileDropDirective, FileUploader } from 'ng2-file-upload/ng2-file-upload';
-import { Http, Headers, Response } from '@angular/http';
+import { Http, Headers, Response, Request } from '@angular/http';
 import {Observable} from 'rxjs/Rx';
 import 'rxjs/Rx';
 
@@ -135,18 +135,38 @@ export class HylarComponent {
                         this.postLog(ex);
                     });
                 break;
+            case HConfig.server:
+                let request = this.http                
+                    .post(this.getHylarServerAddress(`query`), {
+                            query: this.sparqlQuery
+                        });
+
+                request
+                    .map((res:Response) => res.json())
+                    .subscribe(res => {   
+                            this.postLog(`Finished, ${ res.data.length } results found`);
+                            this.results = res.data;
+                        });
+
+                request.catch(error => {
+                    this.postLog(error);
+                    return Observable.throw(error.json());
+                });
+                break;
             default: 
                 this.postLog(`Expected either client or server configuration, none found.`);
         }
     }
 
-    public classify(filename:String) {        
+    public classify(filename:String) {   
+        let request:Observable<Response>;
+
         switch (this.configuration.classification) {
             case HConfig.client:
                 let headers = new Headers();
                 headers.append('Accept', 'application/json'); 
 
-                let request = this.http                
+                request = this.http                
                     .get(this.getHylarServerAddress(`ontology/${filename}`), {
                         headers: headers
                     });
@@ -170,6 +190,29 @@ export class HylarComponent {
                     return Observable.throw(error.json());
                 });
 
+                break;
+            case HConfig.server:
+                request = this.http                
+                    .get(this.getHylarServerAddress(`classifyRemotely/${filename}`));
+
+                request
+                    .map((res:Response) => res.json())
+                    .subscribe(res => {
+                        this.postLog(`${filename} successfully classified on the server-side.`);
+                        this.hylarClient
+                            .import(res.dictionary.dict)
+                            .then((result) => {   
+                                this.postLog(`Import succeeded.`);  
+                                this.triggerOkState('classification');                              
+                            }).catch((ex) => {
+                                this.postLog(ex);
+                            });
+                    });
+
+                request.catch(error => {
+                    this.postLog(error);
+                    return Observable.throw(error.json());
+                });
                 break;
             default:
                 this.postLog(`Expected either client or server configuration, none found.`);
