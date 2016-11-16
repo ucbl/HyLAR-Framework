@@ -23,9 +23,7 @@ var AdaptationService = (function () {
         ];
     };
     AdaptationService = __decorate([
-        core_1.Injectable()({
-            selector: 'adaptation'
-        }), 
+        core_1.Injectable(), 
         __metadata('design:paramtypes', [])
     ], AdaptationService);
     return AdaptationService;

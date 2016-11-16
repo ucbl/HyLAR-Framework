@@ -2,9 +2,7 @@ import { Injectable, Input } from '@angular/core';
 
 declare var Hylar: any;
 
-@Injectable()({
-    selector: 'adaptation'
-})
+@Injectable()
 
 export class AdaptationService {
 
