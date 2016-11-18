@@ -143,7 +143,7 @@ export class HylarComponent {
         this.postLog(`SPARQL query '${this.sparqlQuery.substr(0,10)}...' sent.`);
         switch (this.configuration.querying) {
             case HConfig.client:
-                this.hylarClient
+                return this.hylarClient
                     .query(this.sparqlQuery)
                     .then((results) => {
                         processingDelay = new Date().getTime() - processingDelay;   
@@ -153,10 +153,9 @@ export class HylarComponent {
                             this.postLog(`Finished, ${ results.length } results found on the client in ${processingDelay} ms.`);
                         }
                         this.results = results;
-                    }).catch((ex) => {
+                    }).fail((ex) => {
                         this.postLog(ex);
                     });
-                break;
             case HConfig.server:
                 that = this;
                 new RemoteService(this.http).getServerTime(this.getHylarServerAddress(`time`), function(time) {
@@ -248,13 +247,13 @@ export class HylarComponent {
                     .subscribe(ontology => {
                         this.postLog(`${filename} successfully retrieved. Starting client-side classification.`);
                         processingDelay = new Date().getTime();
-                        this.hylarClient
+                        return this.hylarClient
                             .load(ontology.data.ontologyTxt, ontology.data.mimeType, null, null, true)
                             .then((result) => {   
                                 processingDelay = new Date().getTime() - processingDelay;
                                 this.postLog(`Classification succeeded in ${processingDelay} ms.`);  
                                 this.triggerOkState('classification');                              
-                            }).catch((ex) => {
+                            }).fail((ex) => {
                                 this.postLog(ex);
                             });
                     });

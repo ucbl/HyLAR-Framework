@@ -119,7 +119,7 @@ var HylarComponent = (function () {
         this.postLog("SPARQL query '" + this.sparqlQuery.substr(0, 10) + "...' sent.");
         switch (this.configuration.querying) {
             case HConfig.client:
-                this.hylarClient
+                return this.hylarClient
                     .query(this.sparqlQuery)
                     .then(function (results) {
                     processingDelay = new Date().getTime() - processingDelay;
@@ -130,10 +130,9 @@ var HylarComponent = (function () {
                         _this.postLog("Finished, " + results.length + " results found on the client in " + processingDelay + " ms.");
                     }
                     _this.results = results;
-                }).catch(function (ex) {
+                }).fail(function (ex) {
                     _this.postLog(ex);
                 });
-                break;
             case HConfig.server:
                 that = this;
                 new remote_service_1.RemoteService(this.http).getServerTime(this.getHylarServerAddress("time"), function (time) {
@@ -216,13 +215,13 @@ var HylarComponent = (function () {
                     .subscribe(function (ontology) {
                     _this.postLog(filename + " successfully retrieved. Starting client-side classification.");
                     processingDelay = new Date().getTime();
-                    _this.hylarClient
+                    return _this.hylarClient
                         .load(ontology.data.ontologyTxt, ontology.data.mimeType, null, null, true)
                         .then(function (result) {
                         processingDelay = new Date().getTime() - processingDelay;
                         _this.postLog("Classification succeeded in " + processingDelay + " ms.");
                         _this.triggerOkState('classification');
-                    }).catch(function (ex) {
+                    }).fail(function (ex) {
                         _this.postLog(ex);
                     });
                 });
