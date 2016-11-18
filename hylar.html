@@ -13,59 +13,92 @@
 </header>
 
 <div class="container">
-    <table class="table table-bordered">
-        <tr>
-            <th>Upload ontology</th>
-            <th>Actions</th>
-            <th>Classification location</th>
-            <th>Querying location</th>
-        </tr>        
-        <tr style="text-align:center;">
-            <td>
-                <label class="btn btn-default btn-file">
-                    Browse <input title="Ontology file to upload" type="file" style="display:none;" ng2FileSelect [uploader]="uploader" />
-                </label>         
-                <span *ngIf="state.upload == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
-            </td>
-            <td>
-                <span class="dropdown">
-                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Classify...
-                    <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="files">
-                        <li *ngFor="let file of ontologyFiles"><a href="#" (click)="classify(file)">{{ file }}</a></li>
-                    </ul>
-                    <span *ngIf="state.classification == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
-                </span>
+    <!--<div class="table-responsive">-->
+        <table class="table table-bordered">
+            <tr>
+                <th>Upload ontology</th>
+                <th>Actions</th>
+                <th>Classification location</th>
+                <th>Querying location</th>
+                <th>Adaptation thresholds</th>
+            </tr>        
+            <tr style="text-align: center;">
+                <td style="vertical-align: middle; display: table-cell;">
+                    <label class="btn btn-default btn-file">
+                        Browse <input title="Ontology file to upload" type="file" style="display:none;" ng2FileSelect [uploader]="uploader" />
+                    </label>         
+                    <span *ngIf="state.upload == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
+                </td>
+                <td style="vertical-align: middle; display: table-cell;">
+                    <span class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Classify...
+                        <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="files">
+                            <li *ngFor="let file of ontologyFiles"><a href="#" (click)="classify(file)">{{ file }}</a></li>
+                        </ul>
+                        <span *ngIf="state.classification == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
+                    </span>
 
-                <span class="dropdown">
-                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Delete...
-                    <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="files">
-                        <li *ngFor="let file of ontologyFiles"><a href="#" (click)="delete(file)">{{ file }}</a></li>
-                    </ul>
-                    <span *ngIf="state.delete == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
-                </span>
+                    <span class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Delete...
+                        <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="files">
+                            <li *ngFor="let file of ontologyFiles"><a href="#" (click)="delete(file)">{{ file }}</a></li>
+                        </ul>
+                        <span *ngIf="state.delete == true" style="position:absolute; z-index:10;" class="label label-success">OK!</span>       
+                    </span>
 
-                <button type="button" class="btn btn-secondary" (click)="clear()">Clear reasoner</button>
-            </td>                
-            <td>
-                <label class="radio-inline"><input (click)="configuration.classification = 'client'" [checked]="configuration.classification == 'client'" type="radio" name="classification">Client</label>
-                <label class="radio-inline"><input (click)="configuration.classification = 'server'" [checked]="configuration.classification == 'server'" type="radio" name="classification">Server</label>
-                <label class="radio-inline"><input (click)="configuration.classification = 'auto'" [checked]="configuration.classification == 'auto'" type="radio" name="classification">Adaptive</label>
-            </td>
-            <td>
-            <div class="btn-group" role="group" aria-label="...">
-                <label class="radio-inline"><input (click)="configuration.querying = 'client'" [checked]="configuration.querying == 'client'" type="radio" name="querying">Client</label>
-                <label class="radio-inline"><input (click)="configuration.querying = 'server'" [checked]="configuration.querying == 'server'" type="radio" name="querying">Server</label>
-                <label class="radio-inline"><input (click)="configuration.querying = 'auto'" [checked]="configuration.querying == 'auto'" type="radio" name="querying">Adaptive</label>
-                </div>
-            </td>
-        </tr>
-    </table>
+                    <button type="button" class="btn btn-secondary" (click)="clear()">Clear HyLAR</button>
+                </td>                
+                <td style="vertical-align: middle; display: table-cell;">
+                    <div class="input-group">
+                        <label class="radio-inline"><input (click)="configuration.classification = 'client'" [checked]="configuration.classification == 'client'" type="radio" name="classification">Client</label>
+                    </div>
+                    <div class="input-group">
+                        <label class="radio-inline"><input (click)="configuration.classification = 'server'" [checked]="configuration.classification == 'server'" type="radio" name="classification">Server</label>
+                    </div>
+                    <div class="input-group">
+                        <label class="radio-inline"><input (click)="configuration.classification = 'auto'" [checked]="configuration.classification == 'auto'" type="radio" name="classification">Adaptive</label>
+                    </div>
+                </td>
+                <td style="vertical-align: middle; display: table-cell;">
+                    <div class="input-group">
+                        <label class="radio-inline"><input (click)="configuration.querying = 'client'" [checked]="configuration.querying == 'client'" type="radio" name="querying">Client</label>
+                    </div>
+                    <div class="input-group">   
+                        <label class="radio-inline"><input (click)="configuration.querying = 'server'" [checked]="configuration.querying == 'server'" type="radio" name="querying">Server</label>
+                    </div>
+                    <div class="input-group">
+                        <label class="radio-inline"><input (click)="configuration.querying = 'auto'" [checked]="configuration.querying == 'auto'" type="radio" name="querying">Adaptive</label>
+                    </div>
+                </td>
+                <td style="width:20%; vertical-align: middle; display: table-cell;">
+                    <div class="input-group">
+                        <div style="font-weight:bold;" class="input-group-addon">Ontology</div>
+                        <input [(ngModel)]="thresholds.ontologySize" type="text" class="form-control" id="ontologyThreshold">
+                        <div style="font-size:12px;" class="input-group-addon">triples</div>
+                    </div>         
+
+                    <div class="input-group">           
+                        <div style="font-weight:bold;" class="input-group-addon">Battery</div>
+                        <input [(ngModel)]="thresholds.batteryLevel" type="text" class="form-control" id="batteryThreshold">
+                        <div style="font-size:12px;" class="input-group-addon">[0;1]</div>
+                    </div>                    
+
+                    <div class="input-group">
+                        <div style="font-weight:bold;" class="input-group-addon">Ping</div>
+                        <input [(ngModel)]="thresholds.ping" type="text" class="form-control" id="pingThreshold">
+                        <div style="font-size:12px;" class="input-group-addon">(ms)</div>
+                    </div>      
+                </td>
+            </tr>
+        </table>
+    <!--</div>-->
+
     <table class="table table-bordered">
         <tr>
             <th>SPARQL query <span style="float:right;"><button type="button" class="btn btn-secondary" (click)="sparql()">Execute query</button></span></th>
@@ -95,7 +128,7 @@
     </table>
 </div>
 
-<footer class="footer navbar-default navbar-fixed-bottom">
+<footer class="footer navbar-default navbar-fixed-bottom" style="overflow:scroll">
     <div class="container-fluid">
         <h4 class="brand">Log</h4>
         <div style="font-family: 'Courier New'; font-size: 12px;">

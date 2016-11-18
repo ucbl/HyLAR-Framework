@@ -12,6 +12,8 @@ var core_1 = require('@angular/core');
 var ng2_file_upload_1 = require('ng2-file-upload/ng2-file-upload');
 var http_1 = require('@angular/http');
 var Rx_1 = require('rxjs/Rx');
+var adaptation_service_1 = require('./adaptation.service');
+var remote_service_1 = require('./remote.service');
 require('rxjs/Rx');
 var HConfig = (function () {
     function HConfig() {
@@ -21,10 +23,17 @@ var HConfig = (function () {
     HConfig.auto = "auto";
     return HConfig;
 }());
+var Parameters = (function () {
+    function Parameters() {
+    }
+    return Parameters;
+}());
 var HylarComponent = (function () {
     function HylarComponent(http) {
         var _this = this;
         this.http = http;
+        this.thresholds = new Parameters();
+        this.current = new Parameters();
         this.remoteHost = "localhost";
         this.remotePort = 3002;
         var that = this;
@@ -43,6 +52,11 @@ var HylarComponent = (function () {
         this.configuration = {
             classification: HConfig.client,
             querying: HConfig.client
+        };
+        this.thresholds = {
+            ontologySize: 200,
+            batteryLevel: 0.5,
+            ping: 100
         };
         this.state = {
             upload: false,
@@ -100,17 +114,19 @@ var HylarComponent = (function () {
     };
     HylarComponent.prototype.sparql = function () {
         var _this = this;
-        this.postLog("SPARQL query '" + this.sparqlQuery.substr(0, 10) + "...' sent to the " + this.configuration.querying + ".");
+        var processingDelay = new Date().getTime(), that, request;
+        this.postLog("SPARQL query '" + this.sparqlQuery.substr(0, 10) + "...' sent.");
         switch (this.configuration.querying) {
             case HConfig.client:
                 this.hylarClient
                     .query(this.sparqlQuery)
                     .then(function (results) {
+                    processingDelay = new Date().getTime() - processingDelay;
                     if (results[0] && results[0] === true) {
-                        _this.postLog("Updated completed.");
+                        _this.postLog("Updated completed on the client side in " + processingDelay + " ms.");
                     }
                     else {
-                        _this.postLog("Finished, " + results.length + " results found");
+                        _this.postLog("Finished, " + results.length + " results found on the client in " + processingDelay + " ms.");
                     }
                     _this.results = results;
                 }).catch(function (ex) {
@@ -118,24 +134,64 @@ var HylarComponent = (function () {
                 });
                 break;
             case HConfig.server:
-                var request = this.http
-                    .post(this.getHylarServerAddress("query"), {
-                    query: this.sparqlQuery
+                that = this;
+                new remote_service_1.RemoteService(this.http).getServerTime(this.getHylarServerAddress("time"), function (time) {
+                    request = that.http
+                        .post(that.getHylarServerAddress("query?time=" + time), {
+                        query: that.sparqlQuery
+                    });
+                    request
+                        .map(function (res) { return res.json(); })
+                        .subscribe(function (res) {
+                        that.postLog("Request delay: " + res.requestDelay);
+                        that.postLog("Response delay: " + (new Date().getTime() - res.serverTime));
+                        if (res.data[0] && res.data[0] === true) {
+                            that.postLog("Updated completed on the server-side in " + res.processingDelay + " ms.");
+                        }
+                        else {
+                            that.postLog("Finished, " + res.data.length + " results found on the server in " + res.processingDelay + " ms");
+                        }
+                        that.results = res.data;
+                    });
+                    request.catch(function (error) {
+                        that.postLog(error);
+                        return Rx_1.Observable.throw(error.json());
+                    });
                 });
-                request
-                    .map(function (res) { return res.json(); })
-                    .subscribe(function (res) {
-                    if (res.data[0] && res.data[0] === true) {
-                        _this.postLog("Updated completed.");
-                    }
-                    else {
-                        _this.postLog("Finished, " + res.data.length + " results found");
-                    }
-                    _this.results = res.data;
-                });
-                request.catch(function (error) {
-                    _this.postLog(error);
-                    return Rx_1.Observable.throw(error.json());
+                break;
+            case HConfig.auto:
+                var timeNow_1, headers_1 = new http_1.Headers();
+                that = this;
+                headers_1.append('Accept', 'application/json');
+                new remote_service_1.RemoteService(this.http).getServerTime(this.getHylarServerAddress("time"), function (time) {
+                    timeNow_1 = time;
+                    request = that.http
+                        .get(that.getHylarServerAddress("time"), {
+                        headers: headers_1
+                    });
+                    request
+                        .map(function (res) { return res.json(); })
+                        .subscribe(function (res) {
+                        that.current.ping = parseInt(res.ms) - timeNow_1;
+                        setTimeout(function () {
+                            that.hylarClient.query("CONSTRUCT WHERE { ?s ?p ?o }").then(function (res) {
+                                that.current.ontologySize = res.triples.length;
+                                navigator.getBattery().then(function (battery) {
+                                    that.current.batteryLevel = battery.level;
+                                    new adaptation_service_1.AdaptationService().getReasoningLocations(that.thresholds, that.current, function (results) {
+                                        that.postLog("The ontology contains " + that.current.ontologySize + " triples, the\n                                                            ping is " + that.current.ping + " and\n                                                            the battery level is " + that.current.batteryLevel + ".");
+                                        that.postLog("Querying on the " + results.querying + "-side.");
+                                        that.configuration.querying = results.querying;
+                                        that.sparql();
+                                    });
+                                });
+                            });
+                        }, 200);
+                    });
+                    request.catch(function (error) {
+                        that.postLog(error);
+                        return Rx_1.Observable.throw(error.json());
+                    });
                 });
                 break;
             default:
@@ -144,10 +200,10 @@ var HylarComponent = (function () {
     };
     HylarComponent.prototype.classify = function (filename) {
         var _this = this;
-        var request;
+        var request, headers, current, processingDelay, that;
         switch (this.configuration.classification) {
             case HConfig.client:
-                var headers = new http_1.Headers();
+                headers = new http_1.Headers();
                 headers.append('Accept', 'application/json');
                 request = this.http
                     .get(this.getHylarServerAddress("ontology/" + filename), {
@@ -157,10 +213,12 @@ var HylarComponent = (function () {
                     .map(function (ontology) { return ontology.json(); })
                     .subscribe(function (ontology) {
                     _this.postLog(filename + " successfully retrieved. Starting client-side classification.");
+                    processingDelay = new Date().getTime();
                     _this.hylarClient
                         .load(ontology.data.ontologyTxt, ontology.data.mimeType, null, null, true)
                         .then(function (result) {
-                        _this.postLog("Classification succeeded.");
+                        processingDelay = new Date().getTime() - processingDelay;
+                        _this.postLog("Classification succeeded in " + processingDelay + " ms.");
                         _this.triggerOkState('classification');
                     }).catch(function (ex) {
                         _this.postLog(ex);
@@ -172,24 +230,68 @@ var HylarComponent = (function () {
                 });
                 break;
             case HConfig.server:
-                request = this.http
-                    .get(this.getHylarServerAddress("classifyRemotely/" + filename));
-                request
-                    .map(function (res) { return res.json(); })
-                    .subscribe(function (res) {
-                    _this.postLog(filename + " successfully classified on the server-side.");
-                    _this.hylarClient
-                        .import(res.dictionary.dict)
-                        .then(function (result) {
-                        _this.postLog("Import succeeded.");
-                        _this.triggerOkState('classification');
-                    }).catch(function (ex) {
-                        _this.postLog(ex);
+                that = this;
+                new remote_service_1.RemoteService(this.http).getServerTime(this.getHylarServerAddress("time"), function (time) {
+                    request = that.http
+                        .get(that.getHylarServerAddress("classifyRemotely/" + filename + "?time=" + time));
+                    request
+                        .map(function (res) { return res.json(); })
+                        .subscribe(function (res) {
+                        that.postLog("Request delay: " + res.requestDelay);
+                        that.postLog("Response delay: " + (new Date().getTime() - res.serverTime));
+                        that.postLog(filename + " successfully classified on the server-side in " + res.processingDelay + " ms.");
+                        that.hylarClient
+                            .import(res.dictionary.dict)
+                            .then(function (result) {
+                            that.postLog("Import succeeded.");
+                            that.triggerOkState('classification');
+                        }).catch(function (ex) {
+                            that.postLog(ex);
+                        });
+                    });
+                    request.catch(function (error) {
+                        that.postLog(error);
+                        return Rx_1.Observable.throw(error.json());
                     });
                 });
-                request.catch(function (error) {
-                    _this.postLog(error);
-                    return Rx_1.Observable.throw(error.json());
+                break;
+            case HConfig.auto:
+                var timeNow_2;
+                that = this;
+                headers = new http_1.Headers();
+                headers.append('Accept', 'application/json');
+                new remote_service_1.RemoteService(this.http).getServerTime(this.getHylarServerAddress("time"), function (time) {
+                    timeNow_2 = time;
+                    request = that.http
+                        .get(that.getHylarServerAddress("ontology/" + filename + "?time=" + timeNow_2), {
+                        headers: headers
+                    });
+                    request
+                        .map(function (ontology) { return ontology.json(); })
+                        .subscribe(function (ontology) {
+                        var tmpStorage = new Hylar().sm.storage;
+                        setTimeout(function () {
+                            tmpStorage.load(ontology.data.mimeType, ontology.data.ontologyTxt, function (err, ok) {
+                                tmpStorage.execute("CONSTRUCT WHERE { ?s ?p ?o }", function (err, res) {
+                                    that.current.ping = ontology.requestDelay;
+                                    that.current.ontologySize = res.triples.length;
+                                    navigator.getBattery().then(function (battery) {
+                                        that.current.batteryLevel = battery.level;
+                                        new adaptation_service_1.AdaptationService().getReasoningLocations(that.thresholds, that.current, function (results) {
+                                            that.postLog("The ontology contains " + that.current.ontologySize + " triples, the\n                                                                ping is " + that.current.ping + " and\n                                                                the battery level is " + that.current.batteryLevel + ".");
+                                            that.postLog("Classification on the " + results.classification + "-side.");
+                                            that.configuration.classification = results.classification;
+                                            that.classify(filename);
+                                        });
+                                    });
+                                });
+                            });
+                        }, 200);
+                    });
+                    request.catch(function (error) {
+                        that.postLog(error);
+                        return Rx_1.Observable.throw(error.json());
+                    });
                 });
                 break;
             default:
@@ -232,6 +334,10 @@ var HylarComponent = (function () {
         core_1.Input(), 
         __metadata('design:type', Object)
     ], HylarComponent.prototype, "configuration", void 0);
+    __decorate([
+        core_1.Input(), 
+        __metadata('design:type', Object)
+    ], HylarComponent.prototype, "thresholds", void 0);
     HylarComponent = __decorate([
         core_1.Component({
             selector: 'hylar',
