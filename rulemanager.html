@@ -1,0 +1,30 @@
+<div class="container">
+    <table class="table table-bordered">        
+        <tr>
+            <td>
+                <div class="input-group">           
+                        <input [(ngModel)]="newRule.name" placeholder="Name" type="text" class="form-control">
+                </div>                 
+            </td>
+            <td>
+                <div class="input-group">                           
+                    <input [(ngModel)]="newRule.rule" placeholder="Rule" type="text" class="form-control">
+                </div>                
+            
+            </td>
+            <td>
+                <button (click)="addRule()" type="button" class="btn btn-secondary">Add Rule</button>
+            </td>
+        </tr>
+        <tr style="text-align:center;">
+            <th colspan="2">Rule</th>
+            <th>Activate</th>
+        </tr>
+        <tr (ngModel)="rules" *ngFor="let rule of rules | keys">
+            <td colspan="2">{{ rule.value.name }}</td>
+            <td style="text-align:center;">
+                <input type="checkbox" [(ngModel)]="rule.value.activated" (change)="updateLocalStorage()">
+            </td>
+        </tr>
+    </table>
+</div>

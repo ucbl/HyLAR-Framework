@@ -115,6 +115,7 @@ var HylarComponent = (function () {
     HylarComponent.prototype.sparql = function () {
         var _this = this;
         var processingDelay = new Date().getTime(), that, request;
+        this.updateHylarRules();
         this.postLog("SPARQL query '" + this.sparqlQuery.substr(0, 10) + "...' sent.");
         switch (this.configuration.querying) {
             case HConfig.client:
@@ -201,6 +202,7 @@ var HylarComponent = (function () {
     HylarComponent.prototype.classify = function (filename) {
         var _this = this;
         var request, headers, current, processingDelay, that;
+        this.updateHylarRules();
         switch (this.configuration.classification) {
             case HConfig.client:
                 headers = new http_1.Headers();
@@ -317,6 +319,29 @@ var HylarComponent = (function () {
     HylarComponent.prototype.clear = function () {
         this.hylarClient = new Hylar();
         this.postLog("HyLAR has been cleared.");
+    };
+    HylarComponent.prototype.updateHylarRules = function () {
+        if (localStorage.getItem("rules")) {
+            var stringRules = [];
+            for (var _i = 0, _a = JSON.parse(localStorage.getItem("rules")); _i < _a.length; _i++) {
+                var rule = _a[_i];
+                if (rule.activated) {
+                    stringRules.push(rule.rule);
+                }
+            }
+            this.hylarClient.rules = Logics.parseRules(stringRules);
+        }
+    };
+    HylarComponent.prototype.insertDataset = function () {
+        this.sparqlQuery = "INSERT DATA {\n            <http://www.apple.com/product/iPad3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#ProductOrService> .\n            <http://www.apple.com/product/iPad3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.my-online-store.fr/Tablet> .\n            <http://www.apple.com/product/iPad3> <http://purl.org/goodrelations/v1#hasBrand> <http://www.apple.com/Apple> .\n            <http://www.apple.com/Apple> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#Brand> .\n            <http://components.org/4G> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://ns.inria.fr/provoc#Component> .\n            <http://www.parisleshalles.fr/stores/FNAC> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#BusinessEntity> .\n            <http://www.parisleshalles.fr/stores/FNAC> <http://purl.org/goodrelations/v1#hasBrand> <http://www.samsung.com/Samsung> .\n            <http://www.parisleshalles.fr/stores/FNAC> <http://purl.org/goodrelations/v1#hasPOS> <http://www.parisleshalles.fr/stores/FNAC/location> .\n            <http://www.parisleshalles.fr/stores/FNAC> <http://purl.org/goodrelations/v1#offers> <http://www.parisleshalles.fr/stores/FNAC/offering/GalaxyTab4> .\n            <http://www.parisleshalles.fr/stores/FNAC> <http://purl.org/goodrelations/v1#offers> <http://www.parisleshalles.fr/stores/FNAC/offering/GalaxyTab4_4G> .\n            <http://www.samsung.com/Samsung> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#Brand> .\n            <http://www.parisleshalles.fr/stores/FNAC/location> <http://schema.org/place> <http://fr.dbpedia.org/page/Paris> .\n            <http://www.parisleshalles.fr/stores/FNAC/offering/GalaxyTab4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#Offering> .\n            <http://www.parisleshalles.fr/stores/FNAC/offering/GalaxyTab4> <http://purl.org/goodrelations/v1#includes> <http://www.samsung.com/GalaxyTab4> .\n            <http://www.parisleshalles.fr/stores/FNAC/offering/GalaxyTab4_4G> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#Offering> .\n            <http://www.parisleshalles.fr/stores/FNAC/offering/GalaxyTab4_4G> <http://purl.org/goodrelations/v1#includes> <http://www.samsung.com/GalaxyTab4_4G> .\n            <http://www.samsung.com/GalaxyTab4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.my-online-store.fr/Tablet> .\n            <http://www.samsung.com/GalaxyTab4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#ProductOrService> .\n            <http://purl.org/goodrelations/v1#Location> <http://www.w3.org/2002/07/owl#sameAs> <http://schema.org/Place> .\n            <http://www.parisleshalles.fr/stores/FNAC/offering/iPad3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#Offering> .\n            <http://www.parisleshalles.fr/stores/FNAC/offering/iPad3> <http://purl.org/goodrelations/v1#includes> <http://www.parisleshalles.fr/stores/FNAC/iPad3> .\n            <http://fr.dbpedia.org/page/Paris> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Place> .\n            <http://www.samsung.com/GalaxyTab4_4G> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.my-online-store.fr/Tablet> .\n            <http://www.samsung.com/GalaxyTab4_4G> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#ProductOrService> .\n            <http://www.samsung.com/GalaxyTab4_4G> <http://ns.inria.fr/provoc#hasComponent> <http://components.org/4G> .\n            <http://www.samsung.com/GalaxyTab4_4G> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.samsung.com/GalaxyTab4> .\n            <http://www.parisleshalles.fr/stores/AppleStore/offering/iPad3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#Offering> .\n            <http://www.parisleshalles.fr/stores/AppleStore/offering/iPad3> <http://purl.org/goodrelations/v1#includes> <http://www.apple.com/product/iPad3> .\n            <http://www.parisleshalles.fr/stores/AppleStore/location> <http://schema.org/place> <http://fr.dbpedia.org/page/Paris> .\n            <http://www.parisleshalles.fr/stores/AppleStore> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/goodrelations/v1#BusinessEntity> .\n            <http://www.parisleshalles.fr/stores/AppleStore> <http://purl.org/goodrelations/v1#hasBrand> <http://www.apple.com/Apple> .\n            <http://www.parisleshalles.fr/stores/AppleStore> <http://purl.org/goodrelations/v1#hasPOS> <http://www.parisleshalles.fr/stores/AppleStore/location> .\n            <http://www.parisleshalles.fr/stores/AppleStore> <http://purl.org/goodrelations/v1#offers> <http://www.parisleshalles.fr/stores/AppleStore/offering/iPad3> .\n        }";
+    };
+    ;
+    HylarComponent.prototype.insertComplexSelect = function () {
+        this.sparqlQuery = "PREFIX vocab: <http://www.my-online-store.fr/> \n    PREFIX pv: <http://ns.inria.fr/provoc#> \n    PREFIX gr: <http://purl.org/goodrelations/v1#> \n    PREFIX schema: <http://schema.org/> \n\n    SELECT ?product ?store { \n        # Je veux une tablette 4G \n        ?product a vocab:Tablet . \n        ?product pv:hasComponent <http://components.org/4G> . \n        \n        # Propos\u00E9e par un magasin ... \n        ?store gr:offers ?offer .  \n        ?offer gr:includes ?product . \n        \n        # ... localis\u00E9 \u00E0 Paris\n        ?store gr:hasPOS ?location . \n        ?location schema:place <http://fr.dbpedia.org/page/Paris> . \n    }";
+    };
+    ;
+    HylarComponent.prototype.insertSmallerSelect = function () {
+        this.sparqlQuery = "PREFIX vocab: <http://www.my-online-store.fr/> \n    PREFIX pv: <http://ns.inria.fr/provoc#> \n    PREFIX gr: <http://purl.org/goodrelations/v1#> \n    PREFIX schema: <http://schema.org/> \n\n    SELECT ?product ?store { \n        # Je veux une tablette 4G \n        ?product a vocab:Tablet . \n        ?product pv:hasComponent <http://components.org/4G> . \n        \n        # Propos\u00E9e par un magasin ... \n        ?store gr:offers ?offer .  \n        ?offer gr:includes ?product . \n        \n        # ... localis\u00E9 \u00E0 Paris\n        ?store schema:containedInPlace <http://fr.dbpedia.org/page/Paris> . \n    }";
     };
     __decorate([
         core_1.Input(), 

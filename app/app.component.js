@@ -15,7 +15,7 @@ var AppComponent = (function () {
     AppComponent = __decorate([
         core_1.Component({
             selector: 'my-app',
-            template: '<hylar></hylar>'
+            template: "\n        <header>\n            <nav class=\"navbar navbar-default navbar-fixed-right\" role=\"navigation\">\n                <div class=\"container-fluid\">\n                    <div class=\"navbar-header\">\n                        <a class=\"navbar-brand\">\n                            <img style=\"float: left; max-width:100%; max-height:100%;\" src=\"favicon.ico\"/>\n                            &nbsp;\n                            HyLAR-Framework\n                        </a>\n                    </div>            \n                </div>\n            </nav>\n        </header>\n    <router-outlet></router-outlet>"
         }), 
         __metadata('design:paramtypes', [])
     ], AppComponent);
