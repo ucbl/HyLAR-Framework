@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" style="padding-bottom:10%;">
     <!--<div class="table-responsive">-->
         <table class="table table-bordered">
             <tr>
@@ -122,10 +122,10 @@
     </table>
 </div>
 
-<footer class="footer navbar-default navbar-fixed-bottom" style="overflow:scroll">
+<footer class="footer navbar-default navbar-fixed-bottom">
     <div class="container-fluid">
         <h4 class="brand">Log</h4>
-        <div style="font-family: 'Courier New'; font-size: 12px;">
+        <div style="font-family: 'Courier New'; font-size: 12px; overflow:scroll; height:100%">
             <div *ngFor="let entry of log">
                 <b>{{ entry[0] }} ></b> {{ entry[1] }}
             </div>
