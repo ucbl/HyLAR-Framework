@@ -340,7 +340,7 @@ var HylarComponent = (function () {
     };
     ;
     HylarComponent.prototype.insertSmallerSelect = function () {
-        this.sparqlQuery = "PREFIX vocab: <http://www.my-online-store.fr/> \n    PREFIX pv: <http://ns.inria.fr/provoc#> \n    PREFIX gr: <http://purl.org/goodrelations/v1#> \n    PREFIX schema: <http://schema.org/> \n\n    SELECT ?product ?store { \n        # Je veux une tablette 4G \n        ?product a vocab:Tablet . \n        ?product pv:hasComponent <http://components.org/4G> . \n        \n        # Propos\u00E9e par un magasin ... \n        ?store gr:offers ?offer .  \n        ?offer gr:includes ?product . \n        \n        # ... localis\u00E9 \u00E0 Paris\n        ?store schema:containedInPlace <http://fr.dbpedia.org/page/Paris> . \n    }";
+        this.sparqlQuery = "PREFIX vocab: <http://www.my-online-store.fr/> \nPREFIX pv: <http://ns.inria.fr/provoc#> \nPREFIX gr: <http://purl.org/goodrelations/v1#> \nPREFIX schema: <http://schema.org/> \nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\nSELECT ?product ?store { \n   # Je veux une tablette 4G \n   ?product a vocab:Tablet . \n   ?product pv:hasComponent <http://components.org/4G> . \n \n   # Propos\u00E9e par un magasin ... \n   ?store gr:offers ?offer .  \n   ?offer gr:includes ?product . \n \n   # ... localis\u00E9 \u00E0 Paris\n   ?store vocab:isNearBy xsd:true . \n}";
     };
     __decorate([
         core_1.Input(), 

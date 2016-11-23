@@ -438,21 +438,22 @@ export class HylarComponent {
 
     public insertSmallerSelect() {
         this.sparqlQuery = `PREFIX vocab: <http://www.my-online-store.fr/> 
-    PREFIX pv: <http://ns.inria.fr/provoc#> 
-    PREFIX gr: <http://purl.org/goodrelations/v1#> 
-    PREFIX schema: <http://schema.org/> 
+PREFIX pv: <http://ns.inria.fr/provoc#> 
+PREFIX gr: <http://purl.org/goodrelations/v1#> 
+PREFIX schema: <http://schema.org/> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-    SELECT ?product ?store { 
-        # Je veux une tablette 4G 
-        ?product a vocab:Tablet . 
-        ?product pv:hasComponent <http://components.org/4G> . 
-        
-        # Proposée par un magasin ... 
-        ?store gr:offers ?offer .  
-        ?offer gr:includes ?product . 
-        
-        # ... localisé à Paris
-        ?store schema:containedInPlace <http://fr.dbpedia.org/page/Paris> . 
-    }`
+SELECT ?product ?store { 
+   # Je veux une tablette 4G 
+   ?product a vocab:Tablet . 
+   ?product pv:hasComponent <http://components.org/4G> . 
+ 
+   # Proposée par un magasin ... 
+   ?store gr:offers ?offer .  
+   ?offer gr:includes ?product . 
+ 
+   # ... localisé à Paris
+   ?store vocab:isNearBy xsd:true . 
+}`
     }
 }
