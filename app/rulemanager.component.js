@@ -8,7 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require('@angular/core');
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = require("@angular/core");
 var Rule = (function () {
     function Rule() {
         this.activated = true;
@@ -53,22 +54,22 @@ var RuleManagerComponent = (function () {
         this.updateLocalStorage();
         this.newRule = new Rule();
     };
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Array)
-    ], RuleManagerComponent.prototype, "rules", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Rule)
-    ], RuleManagerComponent.prototype, "newRule", void 0);
-    RuleManagerComponent = __decorate([
-        core_1.Component({
-            selector: 'rule-manager',
-            templateUrl: '../rulemanager.html'
-        }), 
-        __metadata('design:paramtypes', [])
-    ], RuleManagerComponent);
     return RuleManagerComponent;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array)
+], RuleManagerComponent.prototype, "rules", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Rule)
+], RuleManagerComponent.prototype, "newRule", void 0);
+RuleManagerComponent = __decorate([
+    core_1.Component({
+        selector: 'rule-manager',
+        templateUrl: '../rulemanager.html'
+    }),
+    __metadata("design:paramtypes", [])
+], RuleManagerComponent);
 exports.RuleManagerComponent = RuleManagerComponent;
 //# sourceMappingURL=rulemanager.component.js.map

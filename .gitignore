@@ -6,6 +6,7 @@ bower_components
 db/*
 dist
 .tmp
+app/*.js.map
 .sass-cache
 app/context.json
 npm-debug.log

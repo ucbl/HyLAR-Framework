@@ -40,7 +40,7 @@ export class HylarComponent {
 
     hylarClient: any;
     remoteHost = "localhost";
-    remotePort = 3002;
+    remotePort = 3000;
 
     localOntology: String;    
     uploader: FileUploader;
@@ -113,7 +113,8 @@ export class HylarComponent {
     };
 
     public getHylarServerAddress(command: String) {
-        return `http://${this.remoteHost}:${this.remotePort}/${command}`;
+        return `http://sympozer.liris.cnrs.fr/hylar/${command}`;
+        //return `http://${this.remoteHost}:${this.remotePort}/${command}`;
     }
 
     public postLog(message:String) {

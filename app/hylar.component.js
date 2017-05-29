@@ -8,21 +8,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require('@angular/core');
-var ng2_file_upload_1 = require('ng2-file-upload/ng2-file-upload');
-var http_1 = require('@angular/http');
-var Rx_1 = require('rxjs/Rx');
-var adaptation_service_1 = require('./adaptation.service');
-var remote_service_1 = require('./remote.service');
-require('rxjs/Rx');
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = require("@angular/core");
+var ng2_file_upload_1 = require("ng2-file-upload/ng2-file-upload");
+var http_1 = require("@angular/http");
+var Rx_1 = require("rxjs/Rx");
+var adaptation_service_1 = require("./adaptation.service");
+var remote_service_1 = require("./remote.service");
+require("rxjs/Rx");
 var HConfig = (function () {
     function HConfig() {
     }
-    HConfig.server = "server";
-    HConfig.client = "client";
-    HConfig.auto = "auto";
     return HConfig;
 }());
+HConfig.server = "server";
+HConfig.client = "client";
+HConfig.auto = "auto";
 var Parameters = (function () {
     function Parameters() {
     }
@@ -35,7 +36,7 @@ var HylarComponent = (function () {
         this.thresholds = new Parameters();
         this.current = new Parameters();
         this.remoteHost = "localhost";
-        this.remotePort = 3002;
+        this.remotePort = 3000;
         var that = this;
         this.hylarClient = new Hylar();
         this.localOntology = localStorage.getItem('ontology');
@@ -91,7 +92,8 @@ var HylarComponent = (function () {
     };
     ;
     HylarComponent.prototype.getHylarServerAddress = function (command) {
-        return "http://" + this.remoteHost + ":" + this.remotePort + "/" + command;
+        return "http://sympozer.liris.cnrs.fr/hylar/" + command;
+        //return `http://${this.remoteHost}:${this.remotePort}/${command}`;
     };
     HylarComponent.prototype.postLog = function (message) {
         this.log.unshift([new Date().toUTCString(), message]);
@@ -342,34 +344,34 @@ var HylarComponent = (function () {
     HylarComponent.prototype.insertSmallerSelect = function () {
         this.sparqlQuery = "PREFIX vocab: <http://www.my-online-store.fr/> \nPREFIX pv: <http://ns.inria.fr/provoc#> \nPREFIX gr: <http://purl.org/goodrelations/v1#> \nPREFIX schema: <http://schema.org/> \nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\nSELECT ?product ?store { \n   # Je veux une tablette 4G \n   ?product a vocab:Tablet . \n   ?product pv:hasComponent <http://components.org/4G> . \n \n   # Propos\u00E9e par un magasin ... \n   ?store gr:offers ?offer .  \n   ?offer gr:includes ?product . \n \n   # ... localis\u00E9 \u00E0 Paris\n   ?store vocab:isNearBy xsd:true . \n}";
     };
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', String)
-    ], HylarComponent.prototype, "sparqlQuery", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Array)
-    ], HylarComponent.prototype, "ontologyFiles", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', String)
-    ], HylarComponent.prototype, "reasoningMethod", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Object)
-    ], HylarComponent.prototype, "configuration", void 0);
-    __decorate([
-        core_1.Input(), 
-        __metadata('design:type', Object)
-    ], HylarComponent.prototype, "thresholds", void 0);
-    HylarComponent = __decorate([
-        core_1.Component({
-            selector: 'hylar',
-            templateUrl: '../hylar.html'
-        }), 
-        __metadata('design:paramtypes', [http_1.Http])
-    ], HylarComponent);
     return HylarComponent;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], HylarComponent.prototype, "sparqlQuery", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array)
+], HylarComponent.prototype, "ontologyFiles", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], HylarComponent.prototype, "reasoningMethod", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], HylarComponent.prototype, "configuration", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], HylarComponent.prototype, "thresholds", void 0);
+HylarComponent = __decorate([
+    core_1.Component({
+        selector: 'hylar',
+        templateUrl: '../hylar.html'
+    }),
+    __metadata("design:paramtypes", [http_1.Http])
+], HylarComponent);
 exports.HylarComponent = HylarComponent;
 //# sourceMappingURL=hylar.component.js.map
