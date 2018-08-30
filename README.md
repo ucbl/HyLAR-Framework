@@ -1,13 +1,15 @@
 
-# HyLAR #
+# ![Warning](https://cdn1.iconfinder.com/data/icons/CrystalClear/32x32/actions/messagebox_warning.png) Warning: Deprecated! This project will soon be merged with https://github.com/ucbl/HyLAR-Reasoner ![Warning](https://cdn1.iconfinder.com/data/icons/CrystalClear/32x32/actions/messagebox_warning.png) #
 
-HyLAR (for Hybrid Location-Agnostic Reasoning) is an adaptable architecture for OWL reasoning. It uses [JSW and OWLReasoner](https://code.google.com/p/owlreasoner/) as a triplestore and provides an additional a rule-based incremental reasoning engine. Hylar can execute its different components (classification, query answering) either on the client-side or on the server side, depending on the client capabilities or the network status.
+# Adaptive HyLAR-Framework #
+
+Adaptive HyLAR (for Hybrid Location-Agnostic Reasoning) is an adaptable architecture for OWL reasoning. It uses [JSW and OWLReasoner](https://code.google.com/p/owlreasoner/) as a triplestore and provides an additional a rule-based incremental reasoning engine. This architecture can execute its different components (classification, query answering) either on the client-side or on the server side, depending on the client capabilities or the network status.
 
 This code can be tested at: http://dataconf.liris.cnrs.fr/hylar/
 
 ## Client-side components ##
 
-###services/ClientResources###
+### services/ClientResources ###
 
 This service uses the **ServerTime** remote service (through pinging) and the Device API (battery level and status) to decide the location of the classification and the query answering tasks execution (client-side or server-side).
 
@@ -23,7 +25,7 @@ Returns 'client' if the ping is too high (>100ms).
 
 Returns 'server' if the battery level is low (<25%) while not charging.
 
-###services/Hylar###
+### services/Hylar ###
 
 This main Hylar service integrates **HylarClient** and **HylarRemote** sub-services (described below). It also proposes request examples for the demo, as well as its initial configuration **Hylar.config** (reasoning method, location of the components execution, worker enabling or disabling).
 
@@ -45,7 +47,7 @@ Reasoning algorithm used, either `'greedy'` (naive implementation) or `'incremen
 
 ----------
 
-###services/HylarClient###
+### services/HylarClient ###
 
 HylarClient, as its name implies, is the client-side part of Hylar, invoked when **Hylar.config.classification** or **Hylar.config.querying** are set to `'client'` value. This sub-service integrates both the **ReasoningService** and **OntologyParser** (described below).
 
@@ -59,7 +61,7 @@ Invocation of the `parse()` function from the **OntologyParser** component.
 
 ----------
 
-###services/HylarRemote###
+### services/HylarRemote ###
 
 HylarRemote is used to invoke the server-side components of Hylar, when **Hylar.config.classification** or **Hylar.config.querying** are set to `'server'`. This sub-service integrates both the **OntologyClassifier**, **OntologyFetcher**, **QueryProcessor** and **RemoteOntologies** resources (described below).
 
@@ -81,7 +83,7 @@ Executes the `getList()` function from the **resources/RemoteOntologies** compon
 
 ----------
 
-###services/OntologyParser###
+### services/OntologyParser ###
 
 > **parse** (*String* data)
 
@@ -89,7 +91,7 @@ Parses the raw ontology `data` using `JswParser.parse()` , the original [rdf/xml
 
 ----------
 
-###services/ReasoningService###
+### ervices/ReasoningService ###
 
 > **process** (*Object* data)
 
@@ -97,7 +99,7 @@ If `data.command` is set to `start`, it instantiates an returns a JswReasoner in
 
 ----------
 
-###resources/OntologyClassifier###
+### resources/OntologyClassifier ###
 
 > **classify** (GET)
 
@@ -105,7 +107,7 @@ Remotely executes the server-side JSW parser and the JSW classifier (detailed on
 
 ----------
 
-###resources/OntologyFetcher###
+### resources/OntologyFetcher ###
 
 > **fetch** (GET)
 
@@ -113,7 +115,7 @@ Fetches a server-side rdf/xml ontology file. Name is set on the `filename`reques
 
 ----------
 
-###resources/QueryProcessor###
+### resources/QueryProcessor ###
 
 > **query** (GET)
 
@@ -121,7 +123,7 @@ Remotely calls the server-side JSW query answering task. Settable request parame
 
 ----------
 
-###resources/RemoteOntologies###
+### resources/RemoteOntologies ###
 
 > **getList** (GET)
 
